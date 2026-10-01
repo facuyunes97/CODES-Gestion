@@ -15,7 +15,7 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 - **Centros de costo**: obras (con cliente y valor de contrato), máquinas y administración; saldo pendiente de cobro por obra y por cliente.
 - **Resumen automático** por período, centro de costo, forma de pago, obra y cliente.
 - **Resumen por cuenta** (solo lectura) con saldo acumulado.
-- **Usuarios**: ingreso, alta propia de contadores, roles Administrador y Contador; todo queda en Auditoría con las iniciales de quien lo hizo.
+- **Usuarios**: ingreso, alta propia de contadores y dos roles: **Dueño** (uno solo, puede modificar, anular y eliminar) y **Contador** (carga y consulta, sin modificar ni borrar). Todo queda en Auditoría con las iniciales de quien lo hizo.
 - **Excel**: cada planilla se descarga en `.xlsx`.
 
 ## Usuarios y seguridad
@@ -39,4 +39,5 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 | `img/` | Logos de CODES e ícono |
 | `sql/01_esquema.sql` | Base de datos: tablas, reglas, vistas de control y auditoría |
 | `sql/02_seguridad_usuarios.sql` | Usuarios con aprobación del administrador y reglas de acceso |
+| `sql/03_roles_dueno_contador.sql` | Roles Dueño y Contador: solo el dueño modifica o elimina |
 | `manifest.webmanifest` | Para instalarlo como app en el celular |
