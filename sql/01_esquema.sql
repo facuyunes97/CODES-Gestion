@@ -13,7 +13,7 @@ create type tipo_centro_costo as enum ('obra', 'maquina', 'administracion', 'otr
 create type tipo_cuenta       as enum ('caja', 'banco', 'billetera_virtual', 'cartera_cheques');
 create type moneda            as enum ('ARS', 'USD', 'EUR');
 create type medio_pago        as enum ('efectivo', 'transferencia', 'cheque', 'echeq',
-                                       'deposito', 'extraccion', 'tarjeta', 'otro');
+                                       'deposito', 'extraccion', 'tarjeta', 'debito', 'otro');
 create type tipo_cheque       as enum ('fisico', 'echeq');
 create type origen_cheque     as enum ('propio', 'tercero');
 create type estado_cheque     as enum ('en_cartera', 'depositado', 'endosado', 'cobrado',
@@ -231,6 +231,10 @@ begin
   end if;
 
   if new.medio = 'otro' then return new; end if;
+
+  if new.medio = 'debito' and not es_banco_ori then
+    raise exception 'El débito bancario sale de un banco o Mercado Pago';
+  end if;
 
   if new.medio = 'extraccion' and v_tipo <> 'interna' then
     raise exception 'La extracción solo se usa en movimientos internos';
