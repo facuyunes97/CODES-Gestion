@@ -1,0 +1,12 @@
+{
+  "name": "CODES Gestión",
+  "short_name": "CODES",
+  "description": "Sistema de gestión de CODES Construcciones",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#26292d",
+  "theme_color": "#26292d",
+  "lang": "es-AR",
+  "icons": [{ "src": "img/icono.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }]
+}

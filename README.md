@@ -2,7 +2,7 @@
 
 Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingreso, egreso y movimiento interno con su centro de costo, forma de pago, cliente o proveedor y factura.
 
-> **Estado: prototipo.** Funciona completo en el navegador con datos de ejemplo, pero todavía no guarda en una base de datos: al recargar la página vuelve a los datos de ejemplo. El paso siguiente es conectarlo a Supabase usando `sql/01_esquema.sql`.
+> **Estado:** el ingreso con usuario y contraseña ya funciona con Supabase. Las pantallas del sistema todavía usan **datos de ejemplo**: lo que se carga no se guarda al recargar. El siguiente paso es guardar transacciones, cheques y facturas en la base de datos.
 
 ## Qué hace
 
@@ -18,6 +18,14 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 - **Usuarios**: ingreso, alta propia de contadores, roles Administrador y Contador; todo queda en Auditoría con las iniciales de quien lo hizo.
 - **Excel**: cada planilla se descarga en `.xlsx`.
 
+## Usuarios y seguridad
+
+- Cada persona crea su usuario con **email y contraseña** (mínimo 8 caracteres, letras y números) y confirma su email.
+- El usuario queda **pendiente**: no puede ver nada hasta que un administrador lo habilita en **Usuarios**.
+- Recuperación de contraseña por email.
+- La base de datos solo deja leer o escribir a usuarios activos (Row Level Security) y registra todo en `auditoria` con las iniciales de quien lo hizo.
+- Funciona en computadora y celular; en el celular se puede "Agregar a pantalla de inicio".
+
 ## Cómo abrirlo
 
 - **En línea**: desde la página de GitHub Pages del repositorio.
@@ -29,4 +37,6 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 |---|---|
 | `index.html` | El programa completo (una sola página) |
 | `img/` | Logos de CODES e ícono |
-| `sql/01_esquema.sql` | Base de datos para Supabase/PostgreSQL: tablas, reglas, vistas de control y auditoría |
+| `sql/01_esquema.sql` | Base de datos: tablas, reglas, vistas de control y auditoría |
+| `sql/02_seguridad_usuarios.sql` | Usuarios con aprobación del administrador y reglas de acceso |
+| `manifest.webmanifest` | Para instalarlo como app en el celular |
