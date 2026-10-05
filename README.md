@@ -13,6 +13,8 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 - **Cheques y Echeqs**: cartera, endosos, depósitos y almanaque mensual por fecha de pago.
 - **Facturas**: emitidas y recibidas separadas por mes, aviso de factura repetida y posición de IVA mensual con arrastre del saldo a favor.
 - **Centros de costo**: obras (con cliente y valor de contrato), máquinas y administración; saldo pendiente de cobro por obra y por cliente.
+- **Modificar y eliminar (solo el dueño)**: en transacciones, cheques, facturas, centros de costo y clientes/proveedores se marcan una o varias filas; aparece una barra con **Modificar** (cada fila se edita en el lugar) y **Eliminar**. Antes de guardar o borrar sale un cartel que resume los cambios. Lo que está en uso (un cheque en una transacción, una factura con pagos, un centro con movimientos, un cliente con obras) no se puede eliminar y el cartel explica por qué.
+- **Clientes y proveedores**: pantalla propia, y también se crean al vuelo desde Nueva transacción y desde Centros de costo. Los tipos de centro de costo también se pueden crear (con o sin cliente y contrato).
 - **Resumen automático** por período, centro de costo, forma de pago, obra y cliente.
 - **Resumen por cuenta** (solo lectura) con saldo acumulado.
 - **Usuarios**: ingreso, alta propia de contadores y dos roles: **Dueño** (uno solo, puede modificar, anular y eliminar) y **Contador** (carga y consulta, sin modificar ni borrar). Todo queda en Auditoría con las iniciales de quien lo hizo.

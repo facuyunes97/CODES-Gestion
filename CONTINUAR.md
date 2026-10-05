@@ -11,7 +11,14 @@
 - Roles: **dueño** (solo Facundo, FY; único que modifica, anula o elimina) y **contador** (ve y carga, no modifica ni borra).
 - URL Configuration de Supabase cargada para github.io.
 
+## Hecho el 05/10/2026
+- Dominio propio activo (CNAME en el repo, Site URL y Redirect URL de Supabase cargadas).
+- Selección múltiple con Modificar / Eliminar solo para el dueño, con cartel de confirmación (transacciones, cheques, facturas, centros, clientes y proveedores). Todo sigue en memoria: se pierde al recargar.
+- Pantalla Clientes y proveedores; alta de cliente/proveedor al vuelo en Nueva transacción; tipos de centro de costo creables; cliente nuevo desde el alta de centro.
+- Reglas al borrar: cheque en una transacción, factura con pagos, centro con movimientos y tercero en uso no se eliminan.
+- Total de una transacción editable solo si tiene un único pago sin cheque y hasta una factura; al cambiarlo se recalcula el impuesto D/C.
+
 ## Pendiente
 1. **Lo principal:** que las pantallas guarden y lean de Supabase. Hoy usan datos de ejemplo en memoria y se pierden al recargar. Orden propuesto: centros de costo y terceros, transacciones con pagos e impuesto D/C, saldos; después cheques, facturas e IVA.
-2. Dominio codesconstrucciones.com.ar: ya activo en GitHub Pages con HTTPS y archivo `CNAME` en el repo. Falta confirmar que `https://codesconstrucciones.com.ar/**` esté en las Redirect URLs de Supabase (Authentication → URL Configuration).
+2. Dominio codesconstrucciones.com.ar: listo.
 3. Cargar datos reales: clientes, proveedores, obras y saldos iniciales.
