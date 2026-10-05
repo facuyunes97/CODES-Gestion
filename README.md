@@ -28,7 +28,7 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 
 ## Cómo abrirlo
 
-- **En línea**: desde la página de GitHub Pages del repositorio.
+- **En línea**: https://codesconstrucciones.com.ar/
 - **En la computadora**: descargá el repositorio y abrí `index.html` en el navegador. No necesita instalar nada.
 
 ## Archivos
@@ -40,4 +40,5 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 | `sql/01_esquema.sql` | Base de datos: tablas, reglas, vistas de control y auditoría |
 | `sql/02_seguridad_usuarios.sql` | Usuarios con aprobación del administrador y reglas de acceso |
 | `sql/03_roles_dueno_contador.sql` | Roles Dueño y Contador: solo el dueño modifica o elimina |
+| `CNAME` | Dominio propio de GitHub Pages (codesconstrucciones.com.ar) |
 | `manifest.webmanifest` | Para instalarlo como app en el celular |

@@ -1,6 +1,6 @@
 # CODES Gestión: estado para continuar (01/10/2026)
 
-**Web:** https://facuyunes97.github.io/CODES-Gestion/
+**Web:** https://codesconstrucciones.com.ar/ (también https://facuyunes97.github.io/CODES-Gestion/ redirige ahí). El archivo `CNAME` del repo fija el dominio.
 **Repo:** github.com/facuyunes97/CODES-Gestion (rama main). `index.html` tiene todo el programa en una sola página.
 **Supabase:** proyecto `codes-gestion` (ref `ljnhikarhvwgbktkkzug`, sa-east-1). No tocar el proyecto `codes-construcciones`: es del sistema anterior y tiene datos reales.
 
@@ -13,5 +13,5 @@
 
 ## Pendiente
 1. **Lo principal:** que las pantallas guarden y lean de Supabase. Hoy usan datos de ejemplo en memoria y se pierden al recargar. Orden propuesto: centros de costo y terceros, transacciones con pagos e impuesto D/C, saldos; después cheques, facturas e IVA.
-2. Dominio codesconstrucciones.com.ar: Cloudflare y DNS listos, pero el CNAME se borró en GitHub. Volver a ponerlo en Settings → Pages → Custom domain y agregar `https://codesconstrucciones.com.ar/**` en las Redirect URLs de Supabase.
+2. Dominio codesconstrucciones.com.ar: ya activo en GitHub Pages con HTTPS y archivo `CNAME` en el repo. Falta confirmar que `https://codesconstrucciones.com.ar/**` esté en las Redirect URLs de Supabase (Authentication → URL Configuration).
 3. Cargar datos reales: clientes, proveedores, obras y saldos iniciales.
