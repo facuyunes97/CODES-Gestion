@@ -309,7 +309,7 @@ tr.mesrow td{background:var(--surface-2);padding:7px 12px;font-size:13px}
 .rol li{padding-left:22px;position:relative}.rol li::before{position:absolute;left:0;font-weight:700}
 .rol li.si::before{content:"✓";color:var(--ok)}.rol li.no::before{content:"✕";color:var(--bad)}.rol li.no{color:var(--ink-2)}
 .rol-dueno{border-top:3px solid var(--brand)}.rolsel{padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface)}
-body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open]{display:none!important}
+body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open],body.lector [data-act=nffac-open]{display:none!important}
 /* Estado de guardado */
 .sync{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}.sync i.live{background:var(--ok)}
@@ -739,7 +739,9 @@ function factFormHTML(Fm,ctx){
   ${Fm.err?`<div class="alerta" role="alert"><b>${esc(Fm.err)}</b></div>`:''}
   <div class="fields">
    ${ctx==='fac'?`<div class="f"><label for="nf-fac-lado">Emitida o recibida</label><select id="nf-fac-lado" data-nf="lado" data-ctx="fac">${opt('debito','Emitida por CODES (débito fiscal)',Fm.lado)}${opt('credito','Recibida de un proveedor (crédito fiscal)',Fm.lado)}</select></div>
-   <div class="f"><label for="nf-fac-terceroId">${Fm.lado==='debito'?'Cliente':'Proveedor'} <em>*</em></label><select id="nf-fac-terceroId" data-nf="terceroId" data-ctx="fac">${opt('','Elegir…',Fm.terceroId)}${S.terceros.filter(t=>tf.includes(t.tipo)&&!t.sistema).map(t=>opt(t.id,t.razon,Fm.terceroId)).join('')}</select></div>`:''}
+   <div class="f"><label for="nf-fac-terceroId">${Fm.lado==='debito'?'Cliente':'Proveedor'} <em>*</em></label><select id="nf-fac-terceroId" data-nf="terceroId" data-ctx="fac">${opt('','Elegir…',Fm.terceroId)}${S.terceros.filter(t=>tf.includes(t.tipo)&&!t.sistema).map(t=>opt(t.id,t.razon,Fm.terceroId)).join('')}${opt('__nuevo__','+ Crear '+(Fm.lado==='debito'?'cliente':'proveedor')+' nuevo…',Fm.terceroId)}</select></div>
+   ${Fm.terceroId==='__nuevo__'?`<div class="f" style="grid-column:span 2"><label for="nf-fac-ntRazon">Nombre o razón social del ${Fm.lado==='debito'?'cliente':'proveedor'} <em>*</em></label><input id="nf-fac-ntRazon" data-nf="ntRazon" data-ctx="fac" value="${esc(Fm.ntRazon||'')}" placeholder="Ej: Corralón San Martín"></div>
+   <div class="f"><label for="nf-fac-ntCuit">CUIT</label><input id="nf-fac-ntCuit" data-nf="ntCuit" data-ctx="fac" inputmode="numeric" value="${esc(Fm.ntCuit||'')}" placeholder="30-12345678-9"><span class="hint">Opcional.</span></div>`:''}`:''}
    <div class="f"><label for="nf-${ctx}-tipo">Tipo de comprobante</label><select id="nf-${ctx}-tipo" data-nf="tipo" data-ctx="${ctx}">${TIPOS_F.map(t=>opt(t,tipoFTxt(t),Fm.tipo)).join('')}</select></div>
    <div class="f"><label for="nf-${ctx}-pv">Punto de venta <em>*</em></label><input inputmode="numeric" id="nf-${ctx}-pv" data-nf="pv" data-ctx="${ctx}" value="${esc(Fm.pv)}" placeholder="0001"></div>
    <div class="f"><label for="nf-${ctx}-nro">Número <em>*</em></label><input inputmode="numeric" id="nf-${ctx}-nro" data-nf="nro" data-ctx="${ctx}" value="${esc(Fm.nro)}" placeholder="00000000"></div>
@@ -756,11 +758,13 @@ function factFormHTML(Fm,ctx){
 function crearFactura(Fm){
   Fm.err='';Fm.dup=null;
   if(!Fm.terceroId){Fm.err='Elegí el cliente o proveedor.';return null}
+  let tNuevo=null;if(Fm.terceroId==='__nuevo__'){tNuevo=validarTercero(Fm.ntRazon||'',Fm.ntCuit||'');if(tNuevo.err){Fm.err=tNuevo.err;return null}}
   const pv=parseInt(Fm.pv,10),nro=parseInt(Fm.nro,10);
   if(!(pv>0)||!(nro>0)){Fm.err='Cargá punto de venta y número de la factura.';return null}
   if(!Fm.fecha){Fm.err='Cargá la fecha de la factura.';return null}
   const total=factTotal(Fm);if(!(total>0)){Fm.err='El total de la factura tiene que ser mayor a cero.';return null}
-  const d=findDup(Fm);if(d){Fm.dup=d.id;return null}
+  const d=tNuevo?null:findDup(Fm);if(d){Fm.dup=d.id;return null}
+  if(tNuevo)Fm.terceroId=nuevoTercero(tNuevo,Fm.lado==='debito'?'cliente':'proveedor').id;
   const f={id:nid('f'),terceroId:Fm.terceroId,lado:Fm.lado,tipo:Fm.tipo,pv,nro,fecha:Fm.fecha,neto:num(Fm.neto),iva:num(Fm.iva),otros:num(Fm.otros),total:r2(total),user:S.user,creada:TODAY};
   S.facturas.push(f);S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Factura '+nroFact(f)+' · '+tercero(f.terceroId).razon,txId:null});
   return f;
@@ -1923,6 +1927,7 @@ main.addEventListener('change',e=>{
   if(el.dataset.grava){cuenta(el.dataset.grava).gravaIdc=el.checked;toast(cuenta(el.dataset.grava).nombre+(el.checked?' paga':' no paga')+' impuesto D/C');return}
   if(el.dataset.res){if(el.value||el.dataset.res==='rCc'){S[el.dataset.res]=el.value;render()}return}
   if(el.dataset.nf&&el.tagName==='SELECT'){const Fm=el.dataset.ctx==='tx'?D.nf:S.nfFac;const k=el.dataset.nf;Fm[k]=el.value;
+    if(k==='terceroId'&&el.value==='__nuevo__'){Fm.ntRazon='';Fm.ntCuit='';render();setTimeout(()=>{const x=document.getElementById('nf-fac-ntRazon');if(x)x.focus()},0);return}
     if(k==='lado')Fm.terceroId='';if(k==='tipo'&&['B','C'].includes(el.value)&&Fm.lado==='credito')Fm.alic='0';if(k==='alic'||k==='tipo')factCalc(Fm);Fm.dup=null;render();return}
   if(el.dataset.d==='terceroId'&&el.value==='__nuevo__'){D.nt={razon:'',cuit:'',err:''};D.terceroId='';D.facts={};render();setTimeout(()=>{const x=document.getElementById('nt-razon');if(x)x.focus()},0);return}
   if(el.dataset.d&&el.tagName==='SELECT'){D[el.dataset.d]=el.value;if(el.dataset.d==='terceroId'){D.facts={};D.nf=null}if(el.dataset.d==='moneda')D.pagos.forEach(p=>applyDefaults(p,D.tipo));if(el.dataset.re)render();return}
