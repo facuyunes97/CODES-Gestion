@@ -620,7 +620,7 @@ const NAV=[['nueva','Nueva transacción','mas'],['inicio','Inicio','casco'],['re
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
-  const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span></span><button data-act="logout">Salir</button>`:'';
+  const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span><span style="font-size:10px;opacity:.55">versión 5-oct 18:10</span></span><button data-act="logout">Salir</button>`:'';
   document.getElementById('nav').innerHTML=NAV.filter(([v])=>(v!=='usuarios'||esAdmin())&&(v!=='nueva'||puedeCargar())).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
 }
 function go(v){S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
