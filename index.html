@@ -300,6 +300,7 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
   .seg b{font-size:17px}.seg span{display:none}
   .search{width:100%}
 }
+tr.mesrow td{background:var(--surface-2);padding:7px 12px;font-size:13px}
 /* Roles y solo lectura */
 .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;padding:4px 16px 16px}
 .rol{border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
@@ -432,7 +433,7 @@ const mesTxt=ym=>{const [y,m]=ym.split('-');return MESES[+m-1]+' '+y};
 /* ---------- Datos de ejemplo ---------- */
 const S={
  user:'FY',view:'inicio',filtro:'todas',q:'',sel:null,confirm:null,errors:[],
- ctaF:'todas',bancoF:'',factF:'todas',nfFac:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
+ audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',bancoF:'',factF:'todas',nfFac:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
  rDesde:(()=>{const [y,m]=TODAY.split('-').map(Number);const py=m===1?y-1:y,pm=m===1?12:m-1;return py+'-'+String(pm).padStart(2,'0')+'-01'})(),rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
@@ -706,7 +707,7 @@ function detail(t){
   const pagos=t.pagos.map(p=>{const ch=p.chequeId&&cheque(p.chequeId);return `<tr><td>${medioLbl(t.tipo,p.medio)}${ch?`<br><span class="sub">${esc(ch.numero)} · ${esc(ch.banco)} · paga ${fd(ch.fechaPago)}</span>`:''}</td><td>${p.origen?esc(cuenta(p.origen).nombre):'<span class="sub">—</span>'}</td><td>${p.destino?esc(cuenta(p.destino).nombre):'<span class="sub">—</span>'}</td><td class="mono">${esc(p.ref||'')}</td><td class="num">${money(p.importe,t.moneda)}</td></tr>`}).join('');
   const rets=t.rets.map(r=>`<tr><td>${r.clase==='retencion'?'Retención':'Percepción'} ${impTxt[r.impuesto]}${r.jur?' · '+esc(r.jur):''} <span class="sub">${esSufrida(t,r)?'sufrida':'practicada'}</span></td><td class="mono">${esc(r.cert||'')}</td><td class="num">${money(r.importe,t.moneda)}</td></tr>`).join('');
   const facs=t.facts.map(f=>{const fa=factura(f.facturaId);return `<tr><td class="mono">${nroFact(fa)}</td><td class="mono">${fd(fa.fecha)}</td><td class="num">${money(fa.total)}</td><td class="num">${money(f.importe)}</td><td class="num">${money(saldoFact(fa))}</td></tr>`}).join('');
-  const aud=S.audit.filter(a=>a.txId===t.id).map(a=>`<tr><td class="mono">${fd(a.fecha.slice(0,10))} ${a.fecha.slice(11)}</td><td class="mono"><b>${a.ini}</b></td><td>${esc(a.accion)}</td><td>${esc(a.detalle)}</td></tr>`).join('');
+  const aud=(AUTH&&S.audTx[t.id]?S.audTx[t.id]:S.audit.filter(a=>a.txId===t.id)).map(a=>`<tr><td class="mono">${fd(a.fecha.slice(0,10))} ${a.fecha.slice(11)}</td><td class="mono"><b>${a.ini}</b></td><td>${esc(a.accion)}</td><td>${esc(a.detalle)}</td></tr>`).join('');
   const esHijo=!!t.padreId;
   const anular=!esDueno()?(t.estado==='anulada'?'<span class="pill p-mute">Anulada</span>':'<span class="sub">Solo el dueño puede modificar, anular o eliminar</span>')
    :S.confirm===t.id?`<div class="confirm" role="alert">¿Anular la transacción Nº ${t.numero}? Queda en el registro marcada como anulada${esHijo?'':', junto con su impuesto D/C'}.<button class="btn small danger" data-act="anular-ok">Sí, anular</button><button class="btn small" data-act="anular-no">Cancelar</button></div>`
@@ -1251,7 +1252,7 @@ async function correrSync(){
   if(SY.corriendo){SY.again=true;return}
   const d=diff();if(d.add.length+d.mod.length+d.del.length===0)return;
   SY.corriendo=true;SY.estado='guardando';pintaChip();let hubo=false,ok=false;
-  try{hubo=await aplicar(d);ok=true;SY.estado='ok';SY.err='';SY.ultimo=new Date()}
+  try{hubo=await aplicar(d);ok=true;S.audTx={};SY.estado='ok';SY.err='';SY.ultimo=new Date()}
   catch(e){SY.estado='error';SY.err=msgErr(e);toast('No se pudo guardar: '+SY.err);console.error(e)}
   SY.corriendo=false;
   if(!ok){try{await cargarDatos()}catch(e){}render();return}
@@ -1277,15 +1278,22 @@ function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||
    case 'perfiles':det=(d.nombre||'')+' '+(d.apellido||'')+' · '+d.iniciales;acc='Modificación de usuario';break;
    default:return null}
   return {fecha:new Date(a.fecha).toLocaleString('sv-SE',{timeZone:TZ}).slice(0,16),ini:a.iniciales||'—',accion:acc,detalle:(TL[a.tabla]||a.tabla)+' · '+det,txId:a.tabla==='transacciones'?a.registro_id:null}}
+async function cargarAudit(){
+  const y=+S.audY,m=S.audM?+S.audM:null,iso=d=>new Date(d.getTime()+3*3600e3).toISOString();
+  const d0=m?new Date(Date.UTC(y,m-1,1)):new Date(Date.UTC(y,0,1)),d1=m?new Date(Date.UTC(y,m,1)):new Date(Date.UTC(y+1,0,1));
+  let out=[],desde=0;
+  for(;;){const {data,error}=await sb.from('auditoria').select('*').gte('fecha',iso(d0)).lt('fecha',iso(d1)).order('fecha',{ascending:false}).order('id',{ascending:false}).range(desde,desde+999);if(error)throw error;out=out.concat(data);if(data.length<1000)break;desde+=1000}
+  S.audit=out.map(audDe).filter(Boolean)}
+async function cambiaAudit(){render();if(!AUTH)return;try{await cargarAudit()}catch(e){toast('No se pudo cargar la auditoría: '+msgErr(e))}render()}
+async function cargarAuditTx(id){try{const {data,error}=await sb.from('auditoria').select('*').eq('tabla','transacciones').eq('registro_id',id).order('fecha',{ascending:false});if(error)throw error;S.audTx[id]=data.map(audDe).filter(Boolean)}catch(e){S.audTx[id]=[]}S.audTxPend=null;render()}
 async function cargarDatos(){
   SY.cargando=true;
   try{
-    const [cu,ti,te,ce,ch,fa,tx,au,pa]=await Promise.all([
+    const [cu,ti,te,ce,ch,fa,tx,pa]=await Promise.all([
       traer('cuentas','*',[['created_at',true],['id',true]]),traer('tipos_centro','*',[['created_at',true],['id',true]]),
       traer('terceros','*',[['created_at',true],['id',true]]),traer('centros_costo','*',[['created_at',true],['id',true]]),
       traer('cheques','*',[['created_at',true],['id',true]]),traer('facturas','*',[['created_at',true],['id',true]]),
       traer('transacciones','*, transaccion_pagos(*), transaccion_retenciones(*), transaccion_facturas(*)',[['numero',true]]),
-      sb.from('auditoria').select('*').order('fecha',{ascending:false}).order('id',{ascending:false}).limit(1000).then(must).then(r=>r.data),
       sb.from('parametros').select('*').eq('clave','alicuota_impuesto_dc').then(must).then(r=>r.data)]);
     await cargarPerfiles();
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
@@ -1293,7 +1301,7 @@ async function cargarDatos(){
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
-    S.audit=au.map(audDe).filter(Boolean);
+    S.audTx={};await cargarAudit();
     nextNum=S.trans.reduce((m,t)=>Math.max(m,t.numero),0)+1;
     SY.sh=snap();SY.estado='ok';SY.err='';SY.ultimo=new Date();
   }finally{SY.cargando=false}
@@ -1442,10 +1450,23 @@ function vUsuarios(){
 }
 
 /* ---------- Auditoría ---------- */
+const MES_C=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const audPref=()=>S.audM?S.audY+'-'+S.audM:S.audY;
+const audList=()=>S.audit.filter(a=>a.fecha.startsWith(audPref())).sort((a,b)=>b.fecha.localeCompare(a.fecha));
 function vAudit(){
-  const list=[...S.audit].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  return head('Auditoría','Cada alta, cambio o anulación queda registrada con las iniciales de quien la hizo.',xlsBtn('audit'))+
-  `<section class="panel"><div class="tw"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>${list.map(a=>`<tr><td class="mono">${fd(a.fecha.slice(0,10))} ${a.fecha.slice(11)}</td><td class="mono"><b>${a.ini}</b></td><td>${esc(a.accion)}</td><td>${esc(a.detalle)}</td></tr>`).join('')}</tbody></table></div></section>`;
+  const list=audList(),y0=+TODAY.slice(0,4),yrs=[];for(let y=y0;y>=Math.min(2026,y0);y--)yrs.push(String(y));
+  if(!yrs.includes(S.audY))yrs.push(S.audY);
+  const chY=yrs.map(y=>`<button class="chip" data-audy="${y}" aria-pressed="${S.audY===y}">${y}</button>`).join('');
+  const chM=`<button class="chip" data-audm="" aria-pressed="${S.audM===''}">Todo el año</button>`+MES_C.map((n,i)=>{const m=String(i+1).padStart(2,'0');return `<button class="chip" data-audm="${m}" aria-pressed="${S.audM===m}">${n}</button>`}).join('');
+  const cnt=f=>list.filter(a=>f(a.accion)).length;
+  const resumen=`<b>${list.length}</b> registro${list.length===1?'':'s'} · ${cnt(x=>/^Alta/.test(x))} altas · ${cnt(x=>/^Modificaci|^Cambio/.test(x))} modificaciones · ${cnt(x=>/^Anulaci/.test(x))} anulaciones · ${cnt(x=>/^Eliminaci/.test(x))} eliminaciones`;
+  let body='',mesAct='';
+  list.forEach(a=>{const ym=a.fecha.slice(0,7);if(!S.audM&&ym!==mesAct){mesAct=ym;body+=`<tr class="mesrow"><td colspan="4"><b>${mesTxt(ym).replace(/^./,c=>c.toUpperCase())}</b> · ${list.filter(x=>x.fecha.startsWith(ym)).length} registros</td></tr>`}
+    body+=`<tr><td class="mono">${fd(a.fecha.slice(0,10))} ${a.fecha.slice(11)}</td><td class="mono"><b>${esc(a.ini)}</b></td><td>${esc(a.accion)}</td><td>${esc(a.detalle)}</td></tr>`});
+  const titulo=S.audM?mesTxt(audPref()).replace(/^./,c=>c.toUpperCase()):'Año '+S.audY;
+  return head('Auditoría','Cada alta, cambio o anulación queda registrada con las iniciales de quien la hizo, ordenada por año y por mes. Nada se borra.',xlsBtn('audit'))+
+  `<section class="panel"><div class="toolbar"><div class="grp"><span class="lbl">Año</span><div class="chips">${chY}</div></div></div><div class="toolbar"><div class="grp"><span class="lbl">Mes</span><div class="chips">${chM}</div></div></div></section>
+  <section class="panel"><h2>${titulo} <small>${resumen}</small></h2>${list.length?`<div class="tw"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>${body}</tbody></table></div>`:'<div class="empty">No hay registros en este período.</div>'}</section>`;
 }
 
 /* ---------- Clientes y proveedores ---------- */
@@ -1768,7 +1789,7 @@ const EXPORTS={
     R.rows.forEach(m=>{const o=m.p.origen===c.id?m.p.destino:m.p.origen;const r=[fd(m.t.fecha),m.t.numero,TIPO_LBL[m.t.tipo]+(m.t.auto==='idc'?' (Imp. D/C)':''),m.t.concepto,o?cuenta(o).nombre:(tercero(m.t.terceroId)?.razon||''),centro(m.t.ccId).codigo+' · '+centro(m.t.ccId).nombre,medioLbl(m.t.tipo,m.p.medio),m.p.ref||'',m.entra||'',m.sale||''];if(!R.filtros)r.push(m.saldo);mov.push(r)});
     return {name:c.nombre,sheets:[{name:'Resumen',rows:[['Cuenta',c.nombre],['Moneda',c.moneda],['Período',per],['Saldo inicial',R.ini],['Entradas',R.E],['Salidas',R.Sa],['Saldo final',R.fin],['Movimientos',R.rows.length]].concat(c.gravaIdc?[['Impuesto D/C pagado',R.idc]]:[])},{name:'Movimientos',rows:mov}]}},
   terceros(){return {name:'Clientes y proveedores',sheets:[{name:'Clientes y proveedores',rows:[['Nombre','CUIT','Es','Transacciones','Facturas','Obras']].concat(terList().map(t=>{const u=terceroUso(t.id);return [t.razon,t.cuit||'',TERC_TIPOS[t.tipo],u.tx.length,u.fa.length,u.ce.length]}))}]}},
-  audit(){return {name:'Auditoría',sheets:[{name:'Auditoría',rows:[['Fecha','Hora','Usuario','Acción','Detalle']].concat([...S.audit].sort((a,b)=>b.fecha.localeCompare(a.fecha)).map(a=>[fd(a.fecha.slice(0,10)),a.fecha.slice(11),a.ini,a.accion,a.detalle]))}]}}
+  audit(){return {name:'Auditoría '+audPref(),sheets:[{name:'Auditoría',rows:[['Fecha','Hora','Usuario','Acción','Detalle']].concat(audList().map(a=>[fd(a.fecha.slice(0,10)),a.fecha.slice(11),a.ini,a.accion,a.detalle]))}]}}
 };
 
 /* ---------- Render y eventos ---------- */
@@ -1781,7 +1802,7 @@ function render(){
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
   const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros}[S.view];
-  document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();tarjetas();if(AUTH)progSync();
+  document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
 function tarjetas(){
@@ -1799,6 +1820,8 @@ document.addEventListener('click',e=>{
   const sc=e.target.closest('[data-scroll]');if(sc){document.getElementById(sc.dataset.scroll)?.scrollIntoView({behavior:'smooth',block:'start'});return}
   const x=e.target.closest('[data-xls]');if(x){exportar(x.dataset.xls);return}
   const b=e.target.closest('[data-view]');if(b){e.preventDefault();if(b.dataset.view!=='trans')S.sel=null;go(b.dataset.view);return}
+  const ay=e.target.closest('[data-audy]');if(ay){S.audY=ay.dataset.audy;cambiaAudit();return}
+  const am=e.target.closest('[data-audm]');if(am){S.audM=am.dataset.audm;cambiaAudit();return}
   const fl=e.target.closest('[data-filtro]');if(fl){S.filtro=fl.dataset.filtro;render();return}
   const ct=e.target.closest('[data-cta]');if(ct){S.ctaF=ct.dataset.cta;if(S.ctaF!=='bancos')S.bancoF='';render();return}
   const cq=e.target.closest('[data-chq]');if(cq){S.chqFiltro=cq.dataset.chq;render();return}

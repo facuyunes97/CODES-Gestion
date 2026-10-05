@@ -23,6 +23,7 @@
 - Cómo funciona: `index.html` compara lo que hay en pantalla con lo último guardado y manda solo la diferencia (bloque "Guardado en Supabase"). Si la base rechaza algo, avisa el motivo y vuelve a lo guardado. Otros usuarios se ven solos (Realtime) y el botón verde "Guardado" actualiza a mano.
 - Abierto como archivo (file://) sigue el modo demo con datos de ejemplo.
 - `sql/04_guardado_tiempo_real.sql`: tipos_centro, centros_costo.tipo_id, tercero ARCA, función guardar_transaccion, Realtime. Ya aplicado en `codes-gestion`.
+- Auditoría ordenada por año y mes (chips; "Todo el año" agrupa por mes); en la base se carga solo el período elegido y el Excel exporta ese período. Nunca se borra.
 - Celular: las tablas pasan a tarjetas (menos de 700 px).
 - Límites: modificar una transacción borra y vuelve a cargar sus líneas en dos pasos (si falla el segundo se restaura la versión anterior); la auditoría muestra las últimas 1.000 acciones.
 
