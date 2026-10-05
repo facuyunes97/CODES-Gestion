@@ -1553,6 +1553,20 @@ const tercOpts=(tipo,cur)=>[['','Elegir…']].concat(S.terceros.filter(t=>!t.sis
 const ccOpts=cur=>S.centros.filter(c=>c.activo!==false||c.id===cur).map(c=>[c.id,c.codigo+' · '+c.nombre]);
 const cliOpts=()=>[['','Elegir…']].concat(S.terceros.filter(t=>!t.sistema&&['cliente','ambos'].includes(t.tipo)).map(t=>[t.id,t.razon]));
 const totalEditable=t=>t.estado==='activa'&&!t.auto&&t.pagos.length===1&&!t.pagos[0].chequeId&&t.facts.length<=1;
+const pagoEditable=t=>t.estado==='activa'&&!t.auto&&t.pagos.length===1&&!t.pagos[0].chequeId&&t.pagos[0].medio!=='cheque'&&t.pagos[0].medio!=='echeq';
+const cambiaPagoTx=(t,v)=>pagoEditable(t)&&((v.pmedio||'')!==(t.pagos[0].medio||'')||(v.porigen||'')!==(t.pagos[0].origen||'')||(v.pdestino||'')!==(t.pagos[0].destino||''));
+const MEDIOS_EDIT=tipo=>MEDIOS[tipo].filter(m=>m!=='cheque'&&m!=='echeq');
+function ajustaPago(t,v){
+  const r=reglas(t.tipo,{medio:v.pmedio},t.moneda);
+  ['origen','destino'].forEach(k=>{const f='p'+k;
+    if(!r[k]){v[f]='';return}
+    const ok=S.cuentas.filter(r[k]);if(!ok.some(c=>c.id===v[f]))v[f]=ok[0]?.id||''});
+  if(v.porigen&&v.porigen===v.pdestino){const ok=S.cuentas.filter(reglas(t.tipo,{medio:v.pmedio},t.moneda).destino||ANY).filter(c=>c.id!==v.porigen);v.pdestino=ok[0]?.id||''}
+}
+const cuentaOpts=(t,k,v)=>{const p=t.pagos[0]||{},cur=k==='origen'?p.origen:p.destino;
+  if(!pagoEditable(t)){return t.pagos.length>1?[['','Varias cuentas']]:[[cur||'',cur?(cuenta(cur)?.nombre||'—'):'—']]}
+  const r=reglas(t.tipo,{medio:v.pmedio},t.moneda)[k];const ok=r?S.cuentas.filter(r):[];
+  return ok.map(c=>[c.id,c.nombre+(c.moneda!=='ARS'?' ('+c.moneda+')':'')])};
 const plural=(n,a,b)=>n===1?a:b;
 const part=(def,raiz,n)=>raiz+(def.f?'a':'o')+(n===1?'':'s');
 function borrarTx(id){
@@ -1566,9 +1580,9 @@ const EDIT={
  trans:{un:'transacción',pl:'transacciones',f:1,get:id=>by(S.trans,id),
   rot:t=>'Nº '+t.numero+' · '+t.concepto,idc:t=>'Nº '+t.numero,
   omitir:t=>!!t.auto,msgOmitir:'El impuesto D/C se recalcula solo: modificá la transacción que lo origina.',
-  cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'concepto',l:'Concepto',t:'text',w:220},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:r=>tercOpts(r.tipo,r.terceroId)},{k:'ccId',l:'Centro de costo',t:'sel',o:r=>ccOpts(r.ccId)},{k:'total',l:'Total',t:'money',sy:r=>sym[r.moneda]},{k:'obs',l:'Observaciones',t:'text',w:180}],
-  ro:(t,c)=>(c.k==='terceroId'&&t.tipo==='interna')||(c.k==='total'&&!totalEditable(t)),
-  init:t=>({fecha:t.fecha,concepto:t.concepto,terceroId:t.terceroId||'',ccId:t.ccId,total:toIn(t.total),obs:t.obs||''}),
+  cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'concepto',l:'Concepto',t:'text',w:220},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:r=>tercOpts(r.tipo,r.terceroId)},{k:'ccId',l:'Centro de costo',t:'sel',o:r=>ccOpts(r.ccId)},{k:'total',l:'Total',t:'money',sy:r=>sym[r.moneda]},{k:'pmedio',l:'Forma de pago',t:'sel',o:(r,v)=>pagoEditable(r)?MEDIOS_EDIT(r.tipo).map(m=>[m,medioLbl(r.tipo,m)]):[[r.pagos.length>1?'':(r.pagos[0]?.medio||''),r.pagos.length>1?'Varias formas':(r.pagos[0]?medioLbl(r.tipo,r.pagos[0].medio):'—')]]},{k:'porigen',l:'Sale de',t:'sel',o:(r,v)=>cuentaOpts(r,'origen',v)},{k:'pdestino',l:'Entra a',t:'sel',o:(r,v)=>cuentaOpts(r,'destino',v)},{k:'obs',l:'Observaciones',t:'text',w:180}],
+  ro:(t,c,v)=>(c.k==='terceroId'&&t.tipo==='interna')||(c.k==='total'&&!totalEditable(t))||(c.k==='pmedio'&&!pagoEditable(t))||((c.k==='porigen'||c.k==='pdestino')&&(!pagoEditable(t)||!reglas(t.tipo,{medio:(v&&v.pmedio)||t.pagos[0].medio},t.moneda)[c.k==='porigen'?'origen':'destino'])),
+  init:t=>({fecha:t.fecha,concepto:t.concepto,terceroId:t.terceroId||'',ccId:t.ccId,total:toIn(t.total),pmedio:t.pagos.length===1?t.pagos[0].medio:'',porigen:t.pagos.length===1?(t.pagos[0].origen||''):'',pdestino:t.pagos.length===1?(t.pagos[0].destino||''):'',obs:t.obs||''}),
   valida:(t,v)=>{const e=[];
     if(!v.fecha)e.push('Falta la fecha.');if(!v.concepto.trim())e.push('Falta el concepto.');
     if(t.tipo!=='interna'&&!v.terceroId)e.push('Falta elegir '+(t.tipo==='entrada'?'el cliente':'el proveedor')+'.');
@@ -1577,13 +1591,23 @@ const EDIT={
       if(!(nt>0))e.push('El total tiene que ser mayor a cero.');
       else if(r2(nt)!==r2(t.total)){const rt=sum(t.rets,r=>r.importe);if(nt-rt<0)e.push('El total no puede ser menor que las retenciones ('+money(rt,t.moneda)+').');
         if(t.facts.length===1&&r2(t.facts[0].importe)===r2(t.total)){const fa=factura(t.facts[0].facturaId);if(fa&&imputado(fa.id)-t.facts[0].importe+nt>fa.total+0.005)e.push('La factura '+nroFact(fa)+' no alcanza para ese total.')}}}
+    if(pagoEditable(t)){const r=reglas(t.tipo,{medio:v.pmedio},t.moneda);
+      ['origen','destino'].forEach(k=>{const id=v['p'+k];if(!r[k])return;
+        if(!id)e.push(k==='origen'?'Indicá de qué cuenta sale el pago.':'Indicá a qué cuenta entra el pago.');
+        else if(!r[k](cuenta(id)||{}))e.push('La cuenta '+(cuenta(id)?.nombre||'')+' no corresponde: '+reglaTxt[v.pmedio]+'.')});
+      if(v.porigen&&v.porigen===v.pdestino)e.push('La cuenta de origen y la de destino no pueden ser la misma.')}
     return e},
-  extra:(t,v)=>totalEditable(t)&&r2(num(v.total))!==r2(t.total)&&S.trans.some(h=>h.padreId===t.id)?[{l:'Impuesto D/C',antes:'el actual',despues:'se recalcula con el nuevo total'}]:[],
+  extra:(t,v)=>{const nt=totalEditable(t)?r2(num(v.total)):t.total,cp=cambiaPagoTx(t,v);
+    if(!(cp||nt!==r2(t.total)))return [];
+    const nuevo=idcCalc(t.tipo,[{origen:cp?v.porigen:t.pagos[0].origen,destino:cp?v.pdestino:t.pagos[0].destino,importe:nt}],t.tc);
+    return S.trans.some(h=>h.padreId===t.id)||nuevo.length?[{l:'Impuesto D/C',antes:'el actual',despues:'se recalcula con los nuevos datos'}]:[]},
   aplica:(t,v)=>{
-    const nt=totalEditable(t)?r2(num(v.total)):t.total,cambia=nt!==r2(t.total);
+    const nt=totalEditable(t)?r2(num(v.total)):t.total,cp=cambiaPagoTx(t,v),cambia=nt!==r2(t.total);
+    if(cp){const p=t.pagos[0],r=reglas(t.tipo,{medio:v.pmedio},t.moneda);p.medio=v.pmedio;
+      if(r.origen)p.origen=v.porigen;else delete p.origen;if(r.destino)p.destino=v.pdestino;else delete p.destino}
     if(cambia){t.pagos[0].importe=r2(nt-sum(t.rets,r=>r.importe));if(t.facts.length===1&&r2(t.facts[0].importe)===r2(t.total))t.facts[0].importe=nt;t.total=nt}
     t.fecha=v.fecha;t.concepto=v.concepto.trim();if(t.tipo!=='interna')t.terceroId=v.terceroId;t.ccId=v.ccId;t.obs=v.obs.trim();
-    if(cambia){S.trans=S.trans.filter(h=>h.padreId!==t.id);crearIDC(t,nowStamp())}
+    if(cambia||cp){S.trans=S.trans.filter(h=>h.padreId!==t.id);crearIDC(t,nowStamp())}
     else S.trans.filter(h=>h.padreId===t.id).forEach(h=>{h.fecha=t.fecha;h.ccId=t.ccId});
   },
   noBorrar:()=>'',borrar:t=>borrarTx(t.id)},
@@ -1652,7 +1676,7 @@ const EDIT={
 };
 const norm=(c,x)=>c.t==='money'?String(r2(num(x))):c.up?String(x??'').trim().toUpperCase():String(x??'').trim();
 function txtVal(c,r,val){const s=val==null?'':val;
-  if(c.t==='sel'){if(s==='')return '—';const o=c.o(r,{}).find(([a])=>String(a)===String(s));return o?o[1]:s}
+  if(c.t==='sel'){if(s==='')return '—';const o=c.o(r,{}).find(([a])=>String(a)===String(s));return o?o[1]:(cuenta(s)?cuenta(s).nombre:s)}
   if(c.t==='money')return c.sy?c.sy(r)+' '+toIn(num(s)):money(num(s));
   if(c.t==='date')return fd(s)||'—';
   return String(s).trim()||'—'}
@@ -1924,7 +1948,7 @@ main.addEventListener('change',e=>{
   const el=e.target;
   if(el.id==='bancoF'){S.bancoF=el.value;render();return}
   if(el.dataset.cv&&el.dataset.cv!=='q'){S.cv[el.dataset.cv]=el.value;render();return}
-  if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;if(S.edit.k==='centros'&&el.dataset.e==='tipo')render();return}
+  if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;if(S.edit.k==='centros'&&el.dataset.e==='tipo')render();if(S.edit.k==='trans'&&el.dataset.e==='pmedio'){const t=by(S.trans,el.dataset.id);if(t&&pagoEditable(t)){ajustaPago(t,S.edit.v[t.id]);render()}}return}
   if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;return}
   if(el.dataset.cc&&S.ccForm){S.ccForm[el.dataset.cc]=el.type==='checkbox'?el.checked:el.value;S.ccForm.confirm=false;if(['tipo','clienteId','nuevoTipoObra'].includes(el.dataset.cc))render();return}
   if(el.dataset.grava&&!esDueno())return;
