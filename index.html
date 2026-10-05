@@ -444,7 +444,7 @@ const S={
   {id:'c2',nombre:'Caja Dólares',tipo:'caja',moneda:'USD'},
   {id:'c3',nombre:'Banco Patagonia',tipo:'banco',moneda:'ARS',gravaIdc:true},
   {id:'c4',nombre:'Banco Santiago del Estero',tipo:'banco',moneda:'ARS',gravaIdc:true},
-  {id:'c5',nombre:'Mercado Pago',tipo:'billetera_virtual',moneda:'ARS',gravaIdc:false},
+  {id:'c5',nombre:'Mercado Pago',tipo:'billetera_virtual',moneda:'ARS',gravaIdc:true},
   {id:'c6',nombre:'Cartera de Cheques',tipo:'cartera_cheques',moneda:'ARS'}],
  centros:[
   {id:'cc1',codigo:'ADM',nombre:'Administración general',tipo:'administracion'},
@@ -633,7 +633,7 @@ function vInicio(){
   const chq=S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).sort((a,b)=>a.fechaPago.localeCompare(b.fechaPago));
   const chqRows=chq.map(c=>{const d=daysTo(c.fechaPago);return `<tr><td>${c.tipo==='echeq'?'Echeq':'Cheque'} <span class="sub">${c.origen==='propio'?'propio':'de tercero'}</span><br><span class="sub">${esc(c.numero)} · ${esc(c.banco)}</span></td><td class="mono">${fd(c.fechaPago)}<br><span class="days ${d<=15?'soon':''}">${d>=0?'en '+d+' días':'vencido'}</span></td><td class="num">${money(c.importe)}</td><td><span class="pill ${estChq[c.estado][1]}">${estChq[c.estado][0]}</span></td></tr>`}).join('');
   const ccRows=S.centros.filter(c=>c.activo!==false).map(cc=>{const st=ccStats(cc.id);const k=ccContrato(cc);return `<tr><td><b>${esc(cc.codigo)}</b> ${esc(cc.nombre)}</td><td class="num">${money(st.i)}</td><td class="num">${money(st.e)}</td><td class="num" style="color:${st.i-st.e<0?'var(--bad)':'var(--ok)'}">${money(st.i-st.e)}</td><td class="num">${k?money(k.pendiente):'<span class="sub">—</span>'}</td></tr>`}).join('');
-  const last=ordenTx([...S.trans],true).slice(0,6);
+  const last=ordenTx(S.trans.filter(t=>!t.auto),true).slice(0,6);
   const NOMBRES={};S.usuarios.forEach(u=>NOMBRES[u.iniciales]=u.nombre);const hora=new Date().getHours();const saludo=hora<13?'Buen día':hora<20?'Buenas tardes':'Buenas noches';
   const fechaLarga=new Date(TODAY+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const obrasAct=S.centros.filter(c=>esTipoObra(c.tipo)&&c.activo!==false);const pend=sum(obrasAct,c=>ccContrato(c)?.pendiente||0);
@@ -665,6 +665,7 @@ function txList(){
   if(S.q){const q=S.q.toLowerCase();list=list.filter(t=>(t.concepto+' '+(tercero(t.terceroId)?.razon||'')+' '+centro(t.ccId).nombre+' '+centro(t.ccId).codigo+' '+t.numero).toLowerCase().includes(q))}
   if(ids){ordenTx(list,false);let run=0;list.forEach(t=>{t._mov=t.estado==='activa'?movCta(t,ids):0;run+=t._mov;t._run=run})}
   else ordenTx(list,true);
+  list=list.filter(t=>!t.auto); /* el impuesto D/C no se lista acá: se calcula igual y se ve en Resumen y en el resumen de cada cuenta */
   return {list,ids};
 }
 function ctaNombre(){if(S.ctaF==='todas')return '';if(S.ctaF==='bancos')return S.bancoF?cuenta(S.bancoF).nombre:'Todos los bancos';return {caja:'Caja General',cajausd:'Caja Dólares',cartera:'Cartera de Cheques'}[S.ctaF]}
@@ -1100,6 +1101,8 @@ function vResumen(){
   const medRows=Object.entries(R.med).map(([m,v])=>`<tr><td>${medioTxt[m]}</td><td class="num">${money(v.e)}</td><td class="num">${money(v.s)}</td><td class="num">${money(v.i)}</td></tr>`).join('');
   const terRows=Object.entries(R.ter).sort((a,b)=>(b[1].e+b[1].s)-(a[1].e+a[1].s)).map(([id,v])=>`<tr><td>${esc(tercero(id).razon)}</td><td class="mono">${v.n}</td><td class="num">${money(v.e)}</td><td class="num">${money(v.s)}</td></tr>`).join('');
   const ctaRows=R.ctas.map(x=>`<tr><td><button class="btn link" style="padding:0" data-cuenta="${x.c.id}">${esc(x.c.nombre)}</button></td><td class="num">${money(x.ini,x.c.moneda)}</td><td class="num">${money(x.ing,x.c.moneda)}</td><td class="num">${money(x.egr,x.c.moneda)}</td><td class="num"><b>${money(x.fin,x.c.moneda)}</b></td></tr>`).join('');
+  const idcCta={};R.idc.forEach(t=>{const c=t.pagos[0]&&t.pagos[0].origen;const x=idcCta[c]||(idcCta[c]={n:0,v:0});x.n++;x.v+=t.total});
+  const idcRows=S.cuentas.filter(c=>c.gravaIdc||idcCta[c.id]).map(c=>{const x=idcCta[c.id]||{n:0,v:0};return `<tr><td>${esc(c.nombre)}</td><td class="mono">${x.n}</td><td class="num">${money(x.v)}</td></tr>`}).join('');
   const retRows=Object.entries(R.rets).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${money(v)}</td></tr>`).join('');
   return head('Resumen','Se arma solo con las transacciones cargadas. Cambiá el período o el centro de costo y se recalcula.',xlsBtn('resumen'))+
   `<section class="panel"><div class="fields" style="padding-top:16px">
@@ -1115,6 +1118,7 @@ function vResumen(){
    <div class="grid2">
    <section class="panel"><h2>Por proveedor</h2><div class="tw"><table><thead><tr><th>Proveedor</th><th>Mov.</th><th class="num">Pagado</th></tr></thead><tbody>${provRows||'<tr><td colspan="3" class="sub">Sin pagos en el período.</td></tr>'}</tbody></table></div></section>
    <section class="panel"><h2>Por forma de pago</h2><div class="tw"><table><thead><tr><th>Medio</th><th class="num">Cobrado</th><th class="num">Pagado</th><th class="num">Interno</th></tr></thead><tbody>${medRows}</tbody></table></div></section>
+   <section class="panel"><h2>Impuesto a los débitos y créditos <small>${String(S.idcRate).replace('.',',')} % por cada débito y cada crédito</small></h2><div class="tw"><table><thead><tr><th>Cuenta</th><th>Movimientos</th><th class="num">Impuesto</th></tr></thead><tbody>${idcRows}<tr><td><b>Total del período</b></td><td class="mono">${R.idc.length}</td><td class="num"><b>${money(sum(R.idc,t=>t.total))}</b></td></tr></tbody></table></div><div class="legend">Se calcula sobre lo que entra y sale por transferencias, cheques y Echeqs de Banco Patagonia, Banco Santiago del Estero y Mercado Pago. No se lista en Transacciones, pero sí está en el detalle de abajo y en el resumen de cada cuenta.</div></section>
    <section class="panel"><h2>Retenciones y percepciones</h2><div class="tw"><table><tbody>${retRows||'<tr><td class="sub">No hay cargadas en el período.</td></tr>'}</tbody></table></div></section>
   </div>
   <section class="panel"><h2>Movimiento de cuentas <small>todas las obras · saldo inicial = antes del ${fd(S.rDesde)}</small></h2><div class="tw"><table><thead><tr><th>Cuenta</th><th class="num">Saldo inicial</th><th class="num">Ingresos</th><th class="num">Egresos</th><th class="num">Saldo final</th></tr></thead><tbody>${ctaRows}</tbody></table></div></section>
