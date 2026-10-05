@@ -18,7 +18,15 @@
 - Reglas al borrar: cheque en una transacción, factura con pagos, centro con movimientos y tercero en uso no se eliminan.
 - Total de una transacción editable solo si tiene un único pago sin cheque y hasta una factura; al cambiarlo se recalcula el impuesto D/C.
 
+## Guardado en tiempo real (hecho)
+- Con la página publicada (https) el programa entra por inicio de sesión (la sesión dura mientras la pestaña esté abierta) y **todo lo que se hace se guarda al instante en Supabase**: transacciones con pagos, retenciones e imputaciones, impuesto D/C, cheques (y sus estados), facturas, centros, tipos de centro, clientes/proveedores, alícuota y cuentas que pagan el impuesto.
+- Cómo funciona: `index.html` compara lo que hay en pantalla con lo último guardado y manda solo la diferencia (bloque "Guardado en Supabase"). Si la base rechaza algo, avisa el motivo y vuelve a lo guardado. Otros usuarios se ven solos (Realtime) y el botón verde "Guardado" actualiza a mano.
+- Abierto como archivo (file://) sigue el modo demo con datos de ejemplo.
+- `sql/04_guardado_tiempo_real.sql`: tipos_centro, centros_costo.tipo_id, tercero ARCA, función guardar_transaccion, Realtime. Ya aplicado en `codes-gestion`.
+- Celular: las tablas pasan a tarjetas (menos de 700 px).
+- Límites: modificar una transacción borra y vuelve a cargar sus líneas en dos pasos (si falla el segundo se restaura la versión anterior); la auditoría muestra las últimas 1.000 acciones.
+
 ## Pendiente
-1. **Lo principal:** que las pantallas guarden y lean de Supabase. Hoy usan datos de ejemplo en memoria y se pierden al recargar. Orden propuesto: centros de costo y terceros, transacciones con pagos e impuesto D/C, saldos; después cheques, facturas e IVA.
-2. Dominio codesconstrucciones.com.ar: listo.
-3. Cargar datos reales: clientes, proveedores, obras y saldos iniciales.
+1. Cargar datos reales: clientes, proveedores, obras, cheques y saldos iniciales (lo que se escribió en la versión de ejemplo no quedó guardado en ningún lado).
+2. Probar con usuarios reales (dueño y contador) desde el celular y ajustar lo que moleste.
+3. Opcional: totales al pie en Facturas, Cheques y Centros.

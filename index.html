@@ -300,6 +300,37 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
   .seg b{font-size:17px}.seg span{display:none}
   .search{width:100%}
 }
+/* Estado de guardado */
+.sync{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}.sync i.live{background:var(--ok)}
+.sync.s-guardando{background:var(--warn-soft);color:var(--warn)}.sync.s-error{background:var(--bad-soft);color:var(--bad)}
+.sync:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+/* Celular: las tablas pasan a tarjetas */
+@media (max-width:700px){
+  body{font-size:16px}
+  input,select,textarea{font-size:16px}
+  .btn{min-height:42px}.btn.small{min-height:38px}
+  .main{padding:14px 12px 40px;gap:16px}
+  .tw{overflow:visible}
+  table.cards,table.cards tbody,table.cards tfoot,table.cards tr,table.cards td{display:block;width:100%}
+  table.cards thead{display:none}
+  table.cards tr{padding:10px 14px;border-bottom:1px solid var(--line)}
+  table.cards tr.picked{background:var(--brand-soft)}
+  table.cards td{border:0;padding:3px 0;display:flex;justify-content:space-between;align-items:baseline;gap:14px;text-align:right}
+  table.cards td::before{content:attr(data-label);color:var(--ink-3);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;text-align:left;flex:none;max-width:42%}
+  table.cards td[data-label=""]::before,table.cards td:not([data-label])::before{display:none}
+  table.cards td .cv{min-width:0;overflow-wrap:anywhere}
+  table.cards td.num{white-space:normal}
+  table.cards tfoot tr{background:var(--surface-2)}
+  table.cards td[colspan]{display:block;text-align:left}
+  table.cards td[colspan]::before{display:none}
+  .head .right{width:100%}
+  .head .right .btn{flex:1 1 auto}
+  .fields{grid-template-columns:minmax(0,1fr)}
+  .fields .f{grid-column:1/-1!important}
+  .accounts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nav button{padding:10px 14px}
+}
 @media (prefers-reduced-motion:no-preference){.btn,.chip,.nav button{transition:background .12s,color .12s}}
 /* Totales al pie de las tablas */
 tfoot td{background:var(--surface-2)}
@@ -372,7 +403,8 @@ tr.picked td{background:var(--warn-soft)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (function(){
-const TODAY='2026-10-01';
+const REAL=!(window.claude&&window.claude.use)&&!!(window.supabase&&window.supabase.createClient)&&/^https?:$/.test(location.protocol);
+const TODAY=REAL?new Date().toLocaleDateString('en-CA',{timeZone:'America/Argentina/Cordoba'}):'2026-10-01';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sym={ARS:'$',USD:'US$',EUR:'€'};
 const money=(n,m='ARS')=>sym[m]+' '+(Math.abs(Number(n||0))<0.005?0:Number(n)).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -382,7 +414,7 @@ const num=v=>{if(v===''||v==null)return 0;if(typeof v==='number')return v;const 
 const toIn=n=>(Math.round(n*100)/100).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function fmtTyping(v){let s=v.replace(/[^\d,]/g,'');const i=s.indexOf(',');let ent=i<0?s:s.slice(0,i),dec=i<0?null:s.slice(i+1).replace(/,/g,'').slice(0,2);ent=ent.replace(/^0+(?=\d)/,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.');if(ent===''&&dec!==null)ent='0';return dec===null?ent:ent+','+dec}
 const r2=n=>Math.round(n*100)/100;
-let seq=1000;const nid=p=>p+(++seq);
+let seq=1000;const nid=p=>REAL?crypto.randomUUID():p+(++seq);
 const daysTo=d=>Math.round((new Date(d)-new Date(TODAY))/864e5);
 const nowStamp=()=>TODAY+' '+new Date().toTimeString().slice(0,5);
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -391,8 +423,8 @@ const mesTxt=ym=>{const [y,m]=ym.split('-');return MESES[+m-1]+' '+y};
 /* ---------- Datos de ejemplo ---------- */
 const S={
  user:'FY',view:'inicio',filtro:'todas',q:'',sel:null,confirm:null,errors:[],
- ctaF:'todas',bancoF:'',factF:'todas',nfFac:null,calMes:'2026-10',calF:'todos',chqFiltro:'vigentes',ivaMes:null,
- rDesde:'2026-09-01',rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
+ ctaF:'todas',bancoF:'',factF:'todas',nfFac:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
+ rDesde:(()=>{const [y,m]=TODAY.split('-').map(Number);const py=m===1?y-1:y,pm=m===1?12:m-1;return py+'-'+String(pm).padStart(2,'0')+'-01'})(),rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
   {id:'u2',nombre:'María',apellido:'López (ejemplo)',iniciales:'ML',email:'',rol:'contador',activo:true,alta:'2026-09-15'},
@@ -494,7 +526,7 @@ function idcExento(tipo,pagos){return tipo==='interna'&&pagos.some(p=>{const o=p
 function crearIDC(tx,stamp){
   if(tx.auto)return [];
   return idcCalc(tx.tipo,tx.pagos,tx.tc).map(l=>{const c=cuenta(l.cuenta);
-    const t={id:nid('x'),numero:nextNum++,tipo:'salida',auto:'idc',padreId:tx.id,fecha:tx.fecha,concepto:'Impuesto D/C · '+c.nombre+' · Nº '+tx.numero,terceroId:'tARCA',ccId:tx.ccId,moneda:'ARS',tc:1,total:l.importe,estado:'activa',user:tx.user,
+    const t={id:nid('x'),numero:nextNum++,tipo:'salida',auto:'idc',padreId:tx.id,fecha:tx.fecha,concepto:'Impuesto D/C · '+c.nombre+' · Nº '+tx.numero,terceroId:S.arcaId||'tARCA',ccId:tx.ccId,moneda:'ARS',tc:1,total:l.importe,estado:'activa',user:tx.user,
       obs:String(S.idcRate).replace('.',',')+' % sobre '+money(l.base)+' que '+(tx.tipo==='entrada'?'entró a':tx.tipo==='salida'?'salió de':'se movió en')+' '+c.nombre,rets:[],facts:[],pagos:[{medio:'debito',origen:c.id,importe:l.importe,ref:'Ley 25.413'}]};
     S.trans.push(t);S.audit.push({fecha:stamp||nowStamp(),ini:tx.user,accion:'Alta automática',detalle:'Impuesto D/C '+money(l.importe)+' · '+c.nombre+' · por Nº '+tx.numero,txId:t.id});return t});
 }
@@ -582,7 +614,7 @@ function renderNav(){
 }
 function go(v){S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
-function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}<span class="demo">Datos de ejemplo</span></div></div>`+editPanel()}
+function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
 
 /* ---------- Inicio ---------- */
@@ -595,7 +627,7 @@ function vInicio(){
   const NOMBRES={};S.usuarios.forEach(u=>NOMBRES[u.iniciales]=u.nombre);const hora=new Date().getHours();const saludo=hora<13?'Buen día':hora<20?'Buenas tardes':'Buenas noches';
   const fechaLarga=new Date(TODAY+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const obrasAct=S.centros.filter(c=>esTipoObra(c.tipo)&&c.activo!==false);const pend=sum(obrasAct,c=>ccContrato(c)?.pendiente||0);
-  return `<section class="hero"><div class="txt"><div><span class="eyebrow">CODES Construcciones · ${fechaLarga}</span><h1>${saludo}, ${NOMBRES[S.user]||S.user}</h1><p>Tocá una cuenta para ver su resumen. <span class="demo" style="margin-left:6px">Datos de ejemplo</span></p></div><div class="kpis"><div><span class="k">Obras activas</span><span class="v">${obrasAct.length}</span></div><div><span class="k">Pendiente de cobro</span><span class="v">${short(pend)}</span></div><div><span class="k">Cheques a vencer</span><span class="v">${S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length}</span></div></div></div><svg class="band" viewBox="0 0 1200 160" preserveAspectRatio="xMinYMax slice" aria-hidden="true"> <g fill="var(--mach-2)"><path d="M0 140V112l60-18 70 10 90-26 110 22 120-30 140 24 120-18 150 20 140-26 200 26v44z" opacity=".55"/></g> <g fill="#e8e6e1"><path d="M52 140l10-38h8l10 38z"/></g><g fill="#e31b1f"><rect x="56" y="112" width="20" height="6"/><rect x="54" y="126" width="24" height="6"/></g><rect x="44" y="138" width="44" height="4" fill="#e8e6e1"/> <g fill="#e31b1f"><rect x="130" y="118" width="160" height="22" rx="11"/><rect x="142" y="88" width="128" height="30" rx="3"/><path d="M152 88V52h40l16 36z"/><path d="M250 92l12-14 76-46 12 13-80 50z"/><path d="M338 34l16-3 32 66-15 6z"/><path d="M370 96l30 8-6 26c-15 5-26-3-34-17z"/></g> <g fill="var(--side)"><circle cx="146" cy="129" r="6"/><circle cx="174" cy="129" r="6"/><circle cx="202" cy="129" r="6"/><circle cx="230" cy="129" r="6"/><circle cx="258" cy="129" r="6"/><circle cx="282" cy="129" r="6"/><rect x="160" y="57" width="24" height="24" rx="1"/></g> <g fill="var(--mach)"><rect x="470" y="98" width="275" height="11" rx="2"/><rect x="640" y="60" width="52" height="40" rx="3"/><rect x="690" y="80" width="70" height="30" rx="3"/><rect x="552" y="116" width="84" height="8" rx="1" transform="rotate(-6 594 120)"/><path d="M590 108l-6 10M610 108l8 10" stroke="var(--mach)" stroke-width="4"/><circle cx="488" cy="124" r="17"/><circle cx="694" cy="124" r="17"/><circle cx="738" cy="124" r="17"/></g> <g fill="var(--side)"><circle cx="488" cy="124" r="7"/><circle cx="694" cy="124" r="7"/><circle cx="738" cy="124" r="7"/><rect x="648" y="66" width="36" height="20" rx="1"/></g> <g fill="var(--mach)"><circle cx="845" cy="116" r="25"/><rect x="858" y="90" width="118" height="28" rx="3"/><rect x="904" y="54" width="5" height="38"/><rect x="960" y="54" width="5" height="38"/><rect x="898" y="50" width="72" height="7" rx="2"/><circle cx="958" cy="124" r="17"/></g> <g fill="var(--side)"><circle cx="845" cy="116" r="9"/><circle cx="958" cy="124" r="7"/></g> <g fill="var(--mach)"><path d="M1020 78h110v40h-100z"/><rect x="1135" y="82" width="52" height="38" rx="4"/><rect x="1020" y="116" width="170" height="10" rx="2"/><circle cx="1048" cy="130" r="13"/><circle cx="1080" cy="130" r="13"/><circle cx="1166" cy="130" r="13"/></g> <g fill="var(--side)"><rect x="1150" y="88" width="28" height="16" rx="1"/><circle cx="1048" cy="130" r="5"/><circle cx="1080" cy="130" r="5"/><circle cx="1166" cy="130" r="5"/></g> <rect x="0" y="140" width="1200" height="20" fill="var(--road)"/> <path d="M0 150H1200" stroke="var(--road-line)" stroke-width="2" stroke-dasharray="28 22"/></svg></section>`+
+  return `<section class="hero"><div class="txt"><div><span class="eyebrow">CODES Construcciones · ${fechaLarga}</span><h1>${saludo}, ${NOMBRES[S.user]||S.user}</h1><p>Tocá una cuenta para ver su resumen.${AUTH?' '+syncChip():' <span class="demo" style="margin-left:6px">Datos de ejemplo</span>'}</p></div><div class="kpis"><div><span class="k">Obras activas</span><span class="v">${obrasAct.length}</span></div><div><span class="k">Pendiente de cobro</span><span class="v">${short(pend)}</span></div><div><span class="k">Cheques a vencer</span><span class="v">${S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length}</span></div></div></div><svg class="band" viewBox="0 0 1200 160" preserveAspectRatio="xMinYMax slice" aria-hidden="true"> <g fill="var(--mach-2)"><path d="M0 140V112l60-18 70 10 90-26 110 22 120-30 140 24 120-18 150 20 140-26 200 26v44z" opacity=".55"/></g> <g fill="#e8e6e1"><path d="M52 140l10-38h8l10 38z"/></g><g fill="#e31b1f"><rect x="56" y="112" width="20" height="6"/><rect x="54" y="126" width="24" height="6"/></g><rect x="44" y="138" width="44" height="4" fill="#e8e6e1"/> <g fill="#e31b1f"><rect x="130" y="118" width="160" height="22" rx="11"/><rect x="142" y="88" width="128" height="30" rx="3"/><path d="M152 88V52h40l16 36z"/><path d="M250 92l12-14 76-46 12 13-80 50z"/><path d="M338 34l16-3 32 66-15 6z"/><path d="M370 96l30 8-6 26c-15 5-26-3-34-17z"/></g> <g fill="var(--side)"><circle cx="146" cy="129" r="6"/><circle cx="174" cy="129" r="6"/><circle cx="202" cy="129" r="6"/><circle cx="230" cy="129" r="6"/><circle cx="258" cy="129" r="6"/><circle cx="282" cy="129" r="6"/><rect x="160" y="57" width="24" height="24" rx="1"/></g> <g fill="var(--mach)"><rect x="470" y="98" width="275" height="11" rx="2"/><rect x="640" y="60" width="52" height="40" rx="3"/><rect x="690" y="80" width="70" height="30" rx="3"/><rect x="552" y="116" width="84" height="8" rx="1" transform="rotate(-6 594 120)"/><path d="M590 108l-6 10M610 108l8 10" stroke="var(--mach)" stroke-width="4"/><circle cx="488" cy="124" r="17"/><circle cx="694" cy="124" r="17"/><circle cx="738" cy="124" r="17"/></g> <g fill="var(--side)"><circle cx="488" cy="124" r="7"/><circle cx="694" cy="124" r="7"/><circle cx="738" cy="124" r="7"/><rect x="648" y="66" width="36" height="20" rx="1"/></g> <g fill="var(--mach)"><circle cx="845" cy="116" r="25"/><rect x="858" y="90" width="118" height="28" rx="3"/><rect x="904" y="54" width="5" height="38"/><rect x="960" y="54" width="5" height="38"/><rect x="898" y="50" width="72" height="7" rx="2"/><circle cx="958" cy="124" r="17"/></g> <g fill="var(--side)"><circle cx="845" cy="116" r="9"/><circle cx="958" cy="124" r="7"/></g> <g fill="var(--mach)"><path d="M1020 78h110v40h-100z"/><rect x="1135" y="82" width="52" height="38" rx="4"/><rect x="1020" y="116" width="170" height="10" rx="2"/><circle cx="1048" cy="130" r="13"/><circle cx="1080" cy="130" r="13"/><circle cx="1166" cy="130" r="13"/></g> <g fill="var(--side)"><rect x="1150" y="88" width="28" height="16" rx="1"/><circle cx="1048" cy="130" r="5"/><circle cx="1080" cy="130" r="5"/><circle cx="1166" cy="130" r="5"/></g> <rect x="0" y="140" width="1200" height="20" fill="var(--road)"/> <path d="M0 150H1200" stroke="var(--road-line)" stroke-width="2" stroke-dasharray="28 22"/></svg></section>`+
   `<div class="accounts">${accs}</div>
   <div class="grid2">
    <section class="panel"><h2>Cheques y Echeqs vigentes <button class="btn link" data-view="cheques">Ver almanaque</button></h2><div class="tw"><table><thead><tr><th>Cheque</th><th>Pago</th><th class="num">Importe</th><th>Estado</th></tr></thead><tbody>${chqRows||'<tr><td colspan="4" class="sub">No hay cheques vigentes.</td></tr>'}</tbody></table></div></section>
@@ -1115,8 +1147,8 @@ function vCuenta(){
 /* ---------- Autenticación real (Supabase) ----------
    Dentro de Claude (vista previa) se usa el modo demostración; en la web publicada, Supabase. */
 const SUPA_URL='https://ljnhikarhvwgbktkkzug.supabase.co',SUPA_KEY='sb_publishable_Z9m0sBKs8SdP9Dq8TlVpOQ_t-iwQhv7';
-const AUTH=!(window.claude&&window.claude.use)&&!!(window.supabase&&window.supabase.createClient)&&/^https?:$/.test(location.protocol);
-const sb=AUTH?window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const AUTH=REAL;
+const sb=AUTH?window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.sessionStorage}}):null;
 const URL_APP=location.origin+location.pathname;
 const passOK=p=>p.length>=8&&/[A-Za-z]/.test(p)&&/\d/.test(p);
 function errAuth(e){const m=(e&&e.message||'').toLowerCase();
@@ -1126,6 +1158,151 @@ function errAuth(e){const m=(e&&e.message||'').toLowerCase();
   if(m.includes('rate limit')||m.includes('too many'))return 'Hubo demasiados intentos. Esperá unos minutos y probá de nuevo.';
   if(m.includes('password'))return 'La contraseña no cumple los requisitos.';
   return 'No se pudo completar: '+(e&&e.message||'error desconocido')+'.'}
+/* ---------- Guardado en Supabase (tiempo real) ----------
+   Cada cambio que se hace en pantalla se compara contra lo último guardado y se manda a la base al instante.
+   Si la base lo rechaza, se vuelve a cargar lo que hay guardado y se avisa el motivo. */
+const ARCA_CUIT='33-69345023-9',TZ='America/Argentina/Cordoba';
+const SY={sh:null,corriendo:false,again:false,estado:'ok',err:'',ultimo:null,ch:null,rt:false,cargando:false,t:null,tRe:null};
+if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.usuarios=[]}
+const iniDe=id=>{const u=S.usuarios.find(x=>x.id===id);return u?u.iniciales:'—'};
+const hhmm=d=>d?new Date(d).toLocaleTimeString('es-AR',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):'';
+/* base → pantalla */
+const fromCuenta=r=>({id:r.id,nombre:r.nombre,tipo:r.tipo,moneda:r.moneda,gravaIdc:!!r.grava_idc});
+const fromTercero=r=>({id:r.id,razon:r.razon_social,cuit:r.cuit||'',tipo:r.tipo,sistema:r.cuit===ARCA_CUIT});
+const fromCentro=r=>({id:r.id,codigo:r.codigo,nombre:r.nombre,tipo:r.tipo_id,clienteId:r.cliente_id||'',contrato:r.valor_contrato==null?0:+r.valor_contrato,activo:r.activo});
+const fromCheque=r=>({id:r.id,tipo:r.tipo,origen:r.origen,numero:r.numero,banco:r.banco||'',librador:r.librador||'',fechaPago:r.fecha_pago,importe:+r.importe,estado:r.estado});
+const fromFactura=r=>({id:r.id,terceroId:r.tercero_id,lado:r.lado,tipo:r.tipo,pv:r.punto_venta,nro:r.numero,fecha:r.fecha,neto:+r.neto_gravado,iva:+r.iva,otros:r2(+r.otros_tributos+ +r.no_gravado),total:+r.total,user:iniDe(r.created_by),creada:(r.created_at||'').slice(0,10)});
+const fromTx=r=>({id:r.id,numero:+r.numero,tipo:r.tipo,fecha:r.fecha,concepto:r.concepto,terceroId:r.tercero_id||'',ccId:r.centro_costo_id,moneda:r.moneda,tc:+r.tipo_cambio,total:+r.total,estado:r.estado,user:iniDe(r.created_by),obs:r.observaciones||'',
+  auto:r.auto_tipo==='impuesto_dc'?'idc':undefined,padreId:r.padre_id||undefined,
+  pagos:(r.transaccion_pagos||[]).map(p=>({medio:p.medio,origen:p.cuenta_origen_id||undefined,destino:p.cuenta_destino_id||undefined,chequeId:p.cheque_id||undefined,importe:+p.importe,ref:p.referencia||''})),
+  rets:(r.transaccion_retenciones||[]).map(x=>({clase:x.clase,impuesto:x.impuesto,jur:x.jurisdiccion||'',cert:x.numero_certificado||'',importe:+x.importe})),
+  facts:(r.transaccion_facturas||[]).map(x=>({facturaId:x.factura_id,importe:+x.importe_imputado}))});
+/* pantalla → base */
+const toTipo=x=>x;
+const toTercero=t=>({id:t.id,razon_social:t.razon,cuit:t.cuit||null,tipo:t.tipo});
+const toCentro=c=>({id:c.id,codigo:c.codigo,nombre:c.nombre,tipo_id:c.tipo,cliente_id:c.clienteId||null,valor_contrato:num(c.contrato)>0?num(c.contrato):null,activo:c.activo!==false});
+const toCheque=c=>({id:c.id,tipo:c.tipo,origen:c.origen,numero:c.numero,banco:c.banco||null,librador:c.librador||null,fecha_pago:c.fechaPago,importe:num(c.importe),estado:c.estado});
+const toFactura=f=>({id:f.id,tercero_id:f.terceroId,lado:f.lado,tipo:f.tipo,punto_venta:f.pv,numero:f.nro,fecha:f.fecha,neto_gravado:num(f.neto),iva:num(f.iva),otros_tributos:num(f.otros),no_gravado:0,total:num(f.total)});
+const srt=a=>a.map(x=>[JSON.stringify(x),x]).sort((p,q)=>p[0]<q[0]?-1:p[0]>q[0]?1:0).map(p=>p[1]);
+const toTx=t=>({id:t.id,tipo:t.tipo,fecha:t.fecha,concepto:t.concepto,tercero_id:t.terceroId||null,centro_costo_id:t.ccId,moneda:t.moneda||'ARS',tipo_cambio:+t.tc||1,total:num(t.total),observaciones:t.obs||null,estado:t.estado,auto_tipo:t.auto==='idc'?'impuesto_dc':null,padre_id:t.padreId||null,
+  pagos:srt(t.pagos.map(p=>({medio:p.medio,cuenta_origen_id:p.origen||null,cuenta_destino_id:p.destino||null,cheque_id:p.chequeId||null,importe:num(p.importe),referencia:p.ref||null}))),
+  rets:srt(t.rets.map(r=>({clase:r.clase,impuesto:r.impuesto,jurisdiccion:r.jur||null,numero_certificado:r.cert||null,importe:num(r.importe)}))),
+  facts:srt(t.facts.map(f=>({factura_id:f.facturaId,importe:num(f.importe)})))});
+const COLS=[
+ {k:'tipos',tabla:'tipos_centro',arr:()=>Object.keys(CC_TIPOS).map(id=>({id,nombre:CC_TIPOS[id],lleva_contrato:CC_OBRA.has(id)})),to:toTipo,noDel:true},
+ {k:'terceros',tabla:'terceros',arr:()=>S.terceros.filter(t=>!t.sistema),to:toTercero},
+ {k:'centros',tabla:'centros_costo',arr:()=>S.centros,to:toCentro},
+ {k:'facturas',tabla:'facturas',arr:()=>S.facturas,to:toFactura},
+ {k:'cheques',tabla:'cheques',arr:()=>S.cheques,to:toCheque},
+ {k:'trans',tabla:'transacciones',arr:()=>S.trans,to:toTx},
+ {k:'cuentas',tabla:'cuentas',arr:()=>S.cuentas,to:c=>({id:c.id,grava_idc:!!c.gravaIdc}),fijo:true},
+ {k:'params',tabla:'parametros',arr:()=>[{id:'idc',valor:+S.idcRate}],to:x=>x,fijo:true}];
+const snap=()=>{const o={};COLS.forEach(c=>{o[c.k]=snap1(c)});return o};
+function diff(){
+  const out={add:[],mod:[],del:[]};if(!SY.sh)return out;
+  COLS.forEach(c=>{const cur=snap1(c),sh=SY.sh[c.k];
+    cur.forEach((v,id)=>{const a=sh.get(id);if(!a)out.add.push({c,id,p:v.p,j:v.j});else if(a.j!==v.j)out.mod.push({c,id,p:v.p,j:v.j,antes:a.p})});
+    if(!c.fijo&&!c.noDel)sh.forEach((a,id)=>{if(!cur.has(id))out.del.push({c,id,antes:a.p})})});
+  return out}
+const snap1=c=>new Map(c.arr().map(x=>{const p=c.to(x);return[x.id,{p,j:JSON.stringify(p)}]}));
+const hayCambios=()=>{const d=diff();return d.add.length+d.mod.length+d.del.length>0};
+function msgErr(e){const m=(e&&e.message)||String(e),c=e&&e.code;
+  if(m==='SIN_PERMISO'||c==='42501'||/row-level security|permission denied/i.test(m))return 'Solo el dueño puede modificar o eliminar. Se volvió a lo que estaba guardado.';
+  if(c==='23505')return 'Ya existe un registro igual (CUIT, código o número repetido).';
+  if(c==='23503')return 'Ese dato se usa en otros registros y no se puede borrar.';
+  return m}
+const must=r=>{if(r.error)throw r.error;return r};
+const unaFila=r=>{must(r);if(!r.data||!r.data.length){const e=new Error('SIN_PERMISO');throw e}};
+async function aplicar(d){
+  let hubo=false;
+  const orden=['tipos','terceros','centros','facturas','cheques','cuentas','params'];
+  for(const k of orden){
+    for(const o of d.add.filter(x=>x.c.k===k&&!x.c.fijo)){must(await sb.from(o.c.tabla).insert(o.p));SY.sh[k].set(o.id,{p:o.p,j:o.j})}
+    for(const o of d.mod.filter(x=>x.c.k===k)){
+      if(k==='cheques'&&JSON.stringify({...o.p,estado:0})===JSON.stringify({...o.antes,estado:0})){must(await sb.rpc('cambiar_estado_cheque',{p_id:o.id,p_estado:o.p.estado}))}
+      else if(k==='tipos')continue;
+      else if(k==='params')must(await sb.from('parametros').update({valor:o.p.valor}).eq('clave','alicuota_impuesto_dc'));
+      else unaFila(await sb.from(o.c.tabla).update(o.p).eq('id',o.id).select('id'));
+      SY.sh[k].set(o.id,{p:o.p,j:o.j})}}
+  const T=COLS[5];
+  for(const o of d.add.filter(x=>x.c.k==='trans').sort((a,b)=>(a.p.padre_id?1:0)-(b.p.padre_id?1:0))){must(await sb.rpc('guardar_transaccion',{p:o.p}));SY.sh.trans.set(o.id,{p:o.p,j:o.j});hubo=true}
+  for(const o of d.mod.filter(x=>x.c.k==='trans')){
+    if(JSON.stringify({...o.p,estado:0})===JSON.stringify({...o.antes,estado:0}))unaFila(await sb.from('transacciones').update({estado:o.p.estado}).eq('id',o.id).select('id'));
+    else{
+      for(const t of ['transaccion_pagos','transaccion_retenciones','transaccion_facturas'])must(await sb.from(t).delete().eq('transaccion_id',o.id));
+      const r=await sb.rpc('guardar_transaccion',{p:o.p});
+      if(r.error){await sb.rpc('guardar_transaccion',{p:o.antes});throw r.error}}
+    SY.sh.trans.set(o.id,{p:o.p,j:o.j})}
+  for(const o of d.del.filter(x=>x.c.k==='trans').sort((a,b)=>(b.antes.padre_id?1:0)-(a.antes.padre_id?1:0))){unaFila(await sb.from('transacciones').delete().eq('id',o.id).select('id'));SY.sh.trans.delete(o.id)}
+  for(const k of ['cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
+  return hubo}
+function progSync(){if(!AUTH||!S.sesion||SY.cargando||!SY.sh)return;clearTimeout(SY.t);SY.t=setTimeout(correrSync,200)}
+async function correrSync(){
+  if(SY.corriendo){SY.again=true;return}
+  const d=diff();if(d.add.length+d.mod.length+d.del.length===0)return;
+  SY.corriendo=true;SY.estado='guardando';pintaChip();let hubo=false,ok=false;
+  try{hubo=await aplicar(d);ok=true;SY.estado='ok';SY.err='';SY.ultimo=new Date()}
+  catch(e){SY.estado='error';SY.err=msgErr(e);toast('No se pudo guardar: '+SY.err);console.error(e)}
+  SY.corriendo=false;
+  if(!ok){try{await cargarDatos()}catch(e){}render();return}
+  if(SY.again||hayCambios()){SY.again=false;return correrSync()}
+  if(hubo){try{await cargarDatos()}catch(e){}render()}else pintaChip();
+}
+async function traer(tabla,sel,ord){let out=[],desde=0;for(;;){let q=sb.from(tabla).select(sel);(ord||[]).forEach(([c,a])=>q=q.order(c,{ascending:a}));const {data,error}=await q.range(desde,desde+999);if(error)throw error;out=out.concat(data);if(data.length<1000)return out;desde+=1000}}
+const TL={transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro'};
+function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||{};
+  let acc={INSERT:'Alta',UPDATE:'Modificación',DELETE:'Eliminación'}[a.accion]||a.accion,det='';
+  switch(a.tabla){
+   case 'transacciones':det=d.auto_tipo?'Impuesto D/C · '+d.concepto:'Transacción Nº '+d.numero+' · '+d.concepto;
+     if(d.auto_tipo&&a.accion==='INSERT')acc='Alta automática';
+     if(a.accion==='UPDATE'&&ant.estado==='activa'&&d.estado==='anulada'){acc=d.auto_tipo?'Anulación automática':'Anulación';det='Transacción Nº '+d.numero+' anulada'}
+     break;
+   case 'cheques':det=(d.tipo==='echeq'?'Echeq ':'Cheque ')+d.numero;
+     if(a.accion==='UPDATE'&&ant.estado!==d.estado){acc='Cambio de estado';det+=' → '+(estChq[d.estado]?estChq[d.estado][0]:d.estado)}break;
+   case 'facturas':det='Factura '+(d.tipo||'')+' '+String(d.punto_venta||0).padStart(4,'0')+'-'+String(d.numero||0).padStart(8,'0');break;
+   case 'centros_costo':det=d.codigo+' · '+d.nombre;break;
+   case 'terceros':det=d.razon_social+(d.cuit?' · CUIT '+d.cuit:'');break;
+   case 'cuentas':det=d.nombre;break;
+   case 'tipos_centro':det=d.nombre;break;
+   case 'perfiles':det=(d.nombre||'')+' '+(d.apellido||'')+' · '+d.iniciales;acc='Modificación de usuario';break;
+   default:return null}
+  return {fecha:new Date(a.fecha).toLocaleString('sv-SE',{timeZone:TZ}).slice(0,16),ini:a.iniciales||'—',accion:acc,detalle:(TL[a.tabla]||a.tabla)+' · '+det,txId:a.tabla==='transacciones'?a.registro_id:null}}
+async function cargarDatos(){
+  SY.cargando=true;
+  try{
+    const [cu,ti,te,ce,ch,fa,tx,au,pa]=await Promise.all([
+      traer('cuentas','*',[['created_at',true],['id',true]]),traer('tipos_centro','*',[['created_at',true],['id',true]]),
+      traer('terceros','*',[['created_at',true],['id',true]]),traer('centros_costo','*',[['created_at',true],['id',true]]),
+      traer('cheques','*',[['created_at',true],['id',true]]),traer('facturas','*',[['created_at',true],['id',true]]),
+      traer('transacciones','*, transaccion_pagos(*), transaccion_retenciones(*), transaccion_facturas(*)',[['numero',true]]),
+      sb.from('auditoria').select('*').order('fecha',{ascending:false}).order('id',{ascending:false}).limit(1000).then(must).then(r=>r.data),
+      sb.from('parametros').select('*').eq('clave','alicuota_impuesto_dc').then(must).then(r=>r.data)]);
+    await cargarPerfiles();
+    Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
+    S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(fromCentro);
+    S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
+    S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
+    if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
+    S.audit=au.map(audDe).filter(Boolean);
+    nextNum=S.trans.reduce((m,t)=>Math.max(m,t.numero),0)+1;
+    SY.sh=snap();SY.estado='ok';SY.err='';SY.ultimo=new Date();
+  }finally{SY.cargando=false}
+}
+function syncChip(){
+  const e=SY.estado,txt=e==='guardando'?'Guardando…':e==='error'?'No se guardó · tocá para reintentar':SY.cargando?'Actualizando…':'Guardado'+(SY.ultimo?' · '+hhmm(SY.ultimo):'');
+  return `<button class="sync s-${e}" data-act="sync-refresh" title="${SY.rt?'Conectado: los cambios de otros usuarios aparecen solos':'Tocá para actualizar los datos'}"><i class="${SY.rt?'live':''}"></i>${esc(txt)}</button>`}
+function pintaChip(){document.querySelectorAll('.sync').forEach(el=>{el.outerHTML=syncChip()})}
+async function refrescar(){if(SY.corriendo)return;try{await cargarDatos();render();toast('Datos actualizados')}catch(e){toast('No se pudo actualizar: '+msgErr(e))}}
+function recargaRemota(){clearTimeout(SY.tRe);SY.tRe=setTimeout(async function intento(){
+  if(!S.sesion||!SY.sh)return;
+  const ae=document.activeElement,escribiendo=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)&&!!ae.closest('#main');
+  if(SY.corriendo||SY.cargando||hayCambios()||escribiendo){SY.tRe=setTimeout(intento,1500);return}
+  try{await cargarDatos();render()}catch(e){console.error(e)}},700)}
+function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
+  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
+  SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
+function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[]}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -1137,7 +1314,7 @@ async function alIniciarSesion(session){
   await cargarPerfiles();
   const yo=S.usuarios.find(u=>u.id===data.id)||perfilAUsuario(data);
   if(!S.usuarios.some(u=>u.id===yo.id))S.usuarios.push(yo);
-  if(S.sesion!==yo.id){S.sesion=yo.id;S.user=yo.iniciales;S.view='inicio';S.auth={modo:'login'};render();window.scrollTo(0,0);toast('Hola, '+yo.nombre)}
+  if(S.sesion!==yo.id){try{await cargarDatos()}catch(e){S.auth={modo:'login',err:'No se pudieron cargar los datos: '+msgErr(e)};render();return}iniciarRealtime();S.sesion=yo.id;S.user=yo.iniciales;S.view='inicio';S.auth={modo:'login'};render();window.scrollTo(0,0);toast('Hola, '+yo.nombre)}
 }
 function vLoginAuth(){
   const A=S.auth;const msg=A.msg?`<div class="ok-box" role="status">${A.msg}</div>`:'';const err=A.err?`<div class="alerta" role="alert" style="margin:0"><b>${esc(A.err)}</b></div>`:'';
@@ -1579,8 +1756,15 @@ function render(){
   if(S.view==='usuarios'&&!esAdmin())S.view='inicio';
   renderNav();
   const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros}[S.view];
-  document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();
+  document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();tarjetas();if(AUTH)progSync();
 }
+const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
+function tarjetas(){
+  document.querySelectorAll('#main .tw table').forEach(t=>t.classList.remove('cards'));
+  if(!MQ.matches)return;
+  document.querySelectorAll('#main .tw table').forEach(t=>{const th=[...t.querySelectorAll('thead th')].map(x=>x.textContent.trim());if(!th.length)return;t.classList.add('cards');
+    t.querySelectorAll('tbody tr, tfoot tr').forEach(tr=>{let i=0;[...tr.children].forEach(td=>{if(td.tagName!=='TD')return;const span=td.colSpan||1;if(span===1)td.setAttribute('data-label',th[i]||'');i+=span;td.innerHTML='<span class="cv">'+td.innerHTML+'</span>'})})})}
+if(MQ.addEventListener)MQ.addEventListener('change',()=>{if(S.sesion)render()});
 const main=document.getElementById('main');
 document.addEventListener('click',e=>{
   if(pkClick(e))return;
@@ -1615,7 +1799,8 @@ document.addEventListener('click',e=>{
   else if(act==='anular'){if(esDueno()){S.confirm=S.sel;render()}}
   else if(act==='anular-no'){S.confirm=null;render()}
   else if(act==='anular-ok'){anular(S.sel)}
-  else if(act==='logout'){if(AUTH){sb.auth.signOut();S.auth={modo:'login',f:{}}}S.sesion=null;S.reg=null;S.uForm=null;render();window.scrollTo(0,0)}
+  else if(act==='sync-refresh'){if(SY.estado==='error'&&hayCambios())correrSync();else refrescar()}
+  else if(act==='logout'){if(AUTH){limpiarDatos();sb.auth.signOut();S.auth={modo:'login',f:{}}}S.sesion=null;S.reg=null;S.uForm=null;render();window.scrollTo(0,0)}
   else if(act.startsWith('ra-')){accionAuth(act)}
   else if(act==='reg-open'){S.reg={nombre:'',apellido:'',email:'',iniciales:'',err:''};render()}
   else if(act==='reg-cancel'){S.reg=null;render()}
@@ -1706,7 +1891,7 @@ main.addEventListener('focusout',e=>{const el=e.target;if(el.closest&&el.closest
 function updCuadre(){const c=document.getElementById('cuadre');if(c)c.innerHTML=cuadreHTML()}
 
 if(AUTH){
-  sb.auth.onAuthStateChange((ev,session)=>{if(ev==='PASSWORD_RECOVERY'){S.auth={modo:'nueva',f:{pass:'',pass2:''}};S.sesion=null;render();return}if(ev==='SIGNED_OUT'){S.sesion=null;if(S.auth.modo!=='enviado')S.auth={modo:'login',f:{}};render();return}if(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')setTimeout(()=>alIniciarSesion(session),0)});
+  sb.auth.onAuthStateChange((ev,session)=>{if(ev==='PASSWORD_RECOVERY'){S.auth={modo:'nueva',f:{pass:'',pass2:''}};S.sesion=null;render();return}if(ev==='SIGNED_OUT'){limpiarDatos();S.sesion=null;if(S.auth.modo!=='enviado')S.auth={modo:'login',f:{}};render();return}if(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')setTimeout(()=>alIniciarSesion(session),0)});
 }else{S.auth={modo:'login',f:{}}}
 render();
 })();
