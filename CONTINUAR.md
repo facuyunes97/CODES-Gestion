@@ -34,3 +34,7 @@
 1. Cargar datos reales: clientes, proveedores, obras, cheques y saldos iniciales (lo que se escribió en la versión de ejemplo no quedó guardado en ningún lado).
 2. Probar con usuarios reales (dueño y contador) desde el celular y ajustar lo que moleste.
 3. Opcional: totales al pie en Facturas, Cheques y Centros.
+
+## Existencia inicial
+- Transacciones → botón «+ Existencia inicial»: una pantalla con una fila por caja/banco/billetera. Crea una transacción tipo `inicial` por moneda (sin tercero, sin impuesto D/C, no cuenta como ingreso en el Resumen; en el Resumen entra como saldo inicial de la cuenta).
+- Una existencia por cuenta y por año: si ya hay una activa, avisa. Para corregirla se usa Modificar/Anular en Transacciones.

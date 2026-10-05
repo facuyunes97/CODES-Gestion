@@ -512,11 +512,11 @@ const isNC=f=>f.tipo.startsWith('NC');
 const saldoFact=f=>isNC(f)?0:f.total-imputado(f.id);
 function tipoFTxt(t){return t.replace('_',' ')}
 function nroFact(f){return tipoFTxt(f.tipo)+' '+String(f.pv).padStart(4,'0')+'-'+String(f.nro).padStart(8,'0')}
-const TIPO_LBL={entrada:'Ingreso',salida:'Egreso',interna:'Interno'};
-const tipoPill=t=>({entrada:'<span class="pill p-in">Ingreso</span>',salida:'<span class="pill p-out">Egreso</span>',interna:'<span class="pill p-int">Interno</span>'})[t];
+const TIPO_LBL={entrada:'Ingreso',salida:'Egreso',interna:'Interno',inicial:'Existencia inicial'};
+const tipoPill=t=>({entrada:'<span class="pill p-in">Ingreso</span>',salida:'<span class="pill p-out">Egreso</span>',interna:'<span class="pill p-int">Interno</span>',inicial:'<span class="pill p-ok">Exist. inicial</span>'})[t];
 const medioTxt={debito:'Débito bancario',efectivo:'Efectivo',transferencia:'Transferencia',deposito:'Depósito',extraccion:'Extracción',cheque:'Cheque',echeq:'Echeq',tarjeta:'Tarjeta',otro:'Otro'};
 const MEDIOS={entrada:['transferencia','efectivo','deposito','cheque','echeq','tarjeta','otro'],salida:['transferencia','efectivo','cheque','echeq','tarjeta','otro'],interna:['transferencia','extraccion','deposito','efectivo','cheque','echeq','otro']};
-const medioLbl=(tipo,m)=>tipo==='interna'?({transferencia:'Transferencia entre bancos',extraccion:'Extracción (banco → caja)',deposito:'Depósito de efectivo (caja → banco)',efectivo:'Efectivo entre cajas',cheque:'Depósito de cheque',echeq:'Depósito de Echeq',otro:'Otro'})[m]:medioTxt[m];
+const medioLbl=(tipo,m)=>tipo==='inicial'?'Existencia inicial':tipo==='interna'?({transferencia:'Transferencia entre bancos',extraccion:'Extracción (banco → caja)',deposito:'Depósito de efectivo (caja → banco)',efectivo:'Efectivo entre cajas',cheque:'Depósito de cheque',echeq:'Depósito de Echeq',otro:'Otro'})[m]:medioTxt[m];
 const estChq={en_cartera:['En cartera','p-ok'],depositado:['Depositado','p-mute'],endosado:['Endosado','p-mute'],cobrado:['Cobrado','p-mute'],emitido:['Emitido','p-warn'],debitado:['Debitado','p-mute'],rechazado:['Rechazado','p-bad'],anulado:['Anulado','p-mute']};
 const impTxt={iva:'IVA',ganancias:'Ganancias',iibb:'IIBB',suss:'SUSS',otro:'Otro'};
 const esSufrida=(t,r)=>(t.tipo==='entrada'&&r.clase==='retencion')||(t.tipo==='salida'&&r.clase==='percepcion');
@@ -524,7 +524,7 @@ const esSufrida=(t,r)=>(t.tipo==='entrada'&&r.clase==='retencion')||(t.tipo==='s
 /* Impuesto a los débitos y créditos bancarios (Ley 25.413).
    Cada peso que entra o sale de una cuenta que grava paga la alícuota. Exento: movimiento interno entre cuentas bancarias propias. */
 function idcCalc(tipo,pagos,tc){
-  const res={};
+  const res={};if(tipo==='inicial')return []; /* la existencia inicial es plata ya ahorrada: no paga impuesto */
   pagos.forEach(p=>{const o=p.origen&&cuenta(p.origen),d=p.destino&&cuenta(p.destino);const imp=num(p.importe)*(tc||1);
     if(!(imp>0))return;
     if(tipo==='interna'&&o&&d&&(o.tipo==='banco'||o.tipo==='billetera_virtual')&&(d.tipo==='banco'||d.tipo==='billetera_virtual'))return;
@@ -544,6 +544,7 @@ function crearIDC(tx,stamp){
 /* Qué cuentas puede usar cada forma de pago */
 const CAJA=c=>c.tipo==='caja', BANCO=c=>c.tipo==='banco'||c.tipo==='billetera_virtual', CARTERA=c=>c.tipo==='cartera_cheques', ANY=()=>true;
 function reglas(tipo,p,moneda){
+  if(tipo==='inicial')return{destino:c=>(CAJA(c)||BANCO(c))&&c.moneda===moneda};
   const m=p.medio,chq=m==='cheque'||m==='echeq';
   const cajaMon=c=>CAJA(c)&&(c.moneda===moneda||!S.cuentas.some(x=>CAJA(x)&&x.moneda===moneda));
   if(m==='debito')return{origen:BANCO};
@@ -620,7 +621,7 @@ const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
   const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span></span><button data-act="logout">Salir</button>`:'';
-  document.getElementById('nav').innerHTML=NAV.filter(([v])=>(v!=='usuarios'||esAdmin())&&(v!=='nueva'||puedeCargar())).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
+  document.getElementById('nav').innerHTML=NAV.filter(([v])=>(v!=='usuarios'||esAdmin())&&(v!=='nueva'||puedeCargar())).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
 }
 function go(v){S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
@@ -672,7 +673,7 @@ function ctaNombre(){if(S.ctaF==='todas')return '';if(S.ctaF==='bancos')return S
 /* Totales de lo que se ve en pantalla (respetan los filtros y la búsqueda; las anuladas no suman) */
 function txTotales(list){const act=list.filter(t=>t.estado==='activa');const f=k=>sum(act.filter(t=>t.tipo===k),t=>t.total*t.tc);
   const ing=f('entrada'),egr=f('salida'),int=f('interna');return {cant:list.length,anul:list.length-act.length,ing,egr,int,res:ing-egr}}
-function txFiltroTxt(){const p=[];if(S.filtro!=='todas')p.push({entrada:'ingresos',salida:'egresos',interna:'internos'}[S.filtro]);if(S.ctaF!=='todas')p.push(ctaNombre());if(S.q)p.push('búsqueda «'+S.q+'»');return p.join(' · ')}
+function txFiltroTxt(){const p=[];if(S.filtro!=='todas')p.push({entrada:'ingresos',salida:'egresos',interna:'internos',inicial:'existencia inicial'}[S.filtro]);if(S.ctaF!=='todas')p.push(ctaNombre());if(S.q)p.push('búsqueda «'+S.q+'»');return p.join(' · ')}
 function txFoot(list,ids){
   if(!list.length)return '';
   const T=txTotales(list),pre=pkCols(8),post=ids?3:2,mon=S.ctaF==='cajausd'?'USD':'ARS',flt=txFiltroTxt();
@@ -686,17 +687,17 @@ function txTable(list,ids){
   const mon=S.ctaF==='cajausd'?'USD':'ARS';
   return `<div class="tw"><table><thead><tr>${pkHead('trans',list.map(t=>t.id))}<th>Nº</th><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Cliente / Proveedor</th><th>Centro</th><th>Forma de pago</th><th>Factura</th><th class="num">Total</th>${ids?'<th class="num">Mov. en cuenta</th><th class="num">Saldo</th>':'<th>Cuadre</th>'}<th>Usr</th></tr></thead><tbody>${
    list.map(t=>{const d=cuadreTx(t);const tr=tercero(t.terceroId);const medios=[...new Set(t.pagos.map(p=>medioTxt[p.medio]))].join(', ');
-   const fac=t.facts.length?t.facts.map(f=>nroFact(factura(f.facturaId))).join('<br>'):(t.tipo==='interna'||t.auto?'<span class="sub">—</span>':'<span class="sub">Sin factura</span>');
+   const fac=t.facts.length?t.facts.map(f=>nroFact(factura(f.facturaId))).join('<br>'):(t.tipo==='interna'||t.tipo==='inicial'||t.auto?'<span class="sub">—</span>':'<span class="sub">Sin factura</span>');
    return `<tr class="click ${S.sel===t.id?'sel':''} ${t.estado==='anulada'?'void':''} ${isPicked('trans',t.id)?'picked':''}" data-tx="${t.id}" tabindex="0">${pkCell('trans',t.id)}<td class="mono">${t.numero}</td><td class="mono">${fd(t.fecha)}</td><td>${t.estado==='anulada'?'<span class="pill p-mute">Anulada</span>':tipoPill(t.tipo)}${t.auto==='idc'?'<br><span class="pill p-warn" style="margin-top:4px">Imp. D/C</span>':''}</td><td>${esc(t.concepto)}</td><td>${tr?esc(tr.razon):'<span class="sub">Movimiento interno</span>'}</td><td><b>${esc(centro(t.ccId).codigo)}</b></td><td>${medios}${t.rets.length?'<br><span class="sub">+ '+t.rets.length+' ret./perc.</span>':''}</td><td class="mono">${fac}</td><td class="num">${money(t.total,t.moneda)}</td>${ids?`<td class="num" style="color:${t._mov<0?'var(--bad)':'var(--ok)'}">${money(t._mov,mon)}</td><td class="num">${money(t._run,mon)}</td>`:`<td>${Math.abs(d)<0.005?'<span class="pill p-ok">OK</span>':'<span class="pill p-warn">Dif. '+money(d,t.moneda)+'</span>'}</td>`}<td class="mono">${t.user}</td></tr>`}).join('')}</tbody>${txFoot(list,ids)}</table></div>`;
 }
 function vTrans(){
   const {list,ids}=txList();
   const TT=txTotales(list);const tot=k=>({entrada:TT.ing,salida:TT.egr,interna:TT.int})[k];
-  const chips=[['todas','Todas'],['entrada','Ingresos'],['salida','Egresos'],['interna','Internos']].map(([k,l])=>`<button class="chip" data-filtro="${k}" aria-pressed="${S.filtro===k}">${l}</button>`).join('');
+  const chips=[['todas','Todas'],['entrada','Ingresos'],['salida','Egresos'],['interna','Internos'],['inicial','Existencia inicial']].map(([k,l])=>`<button class="chip" data-filtro="${k}" aria-pressed="${S.filtro===k}">${l}</button>`).join('');
   const ctas=[['todas','Todas las cuentas'],['caja','Caja General'],['cajausd','Caja Dólares'],['bancos','Bancos'],['cartera','Cartera de cheques']].map(([k,l])=>`<button class="chip" data-cta="${k}" aria-pressed="${S.ctaF===k}">${l}</button>`).join('');
   const bancoSel=S.ctaF==='bancos'?`<select class="sel" id="bancoF" aria-label="Banco">${opt('','Todos los bancos',S.bancoF)}${S.cuentas.filter(BANCO).map(c=>opt(c.id,c.nombre,S.bancoF)).join('')}</select>`:'';
   const sel=S.sel&&by(S.trans,S.sel);
-  return head('Transacciones',`Ingresos ${money(tot('entrada'))} · Egresos ${money(tot('salida'))} · Internos ${money(tot('interna'))}`,xlsBtn('trans'))+
+  return head('Transacciones',`Ingresos ${money(tot('entrada'))} · Egresos ${money(tot('salida'))} · Internos ${money(tot('interna'))}`,(puedeCargar()?'<button class="btn small" data-act="ini-open">+ Existencia inicial</button>':'')+xlsBtn('trans'))+
    (sel?detail(sel):'')+
    `<section class="panel"><h2>${ids?'Libro de '+esc(ctaNombre()):'Registro'} <small>${ids?'Ordenado por fecha, con saldo acumulado':'Tocá una fila para ver el detalle'}</small></h2>
    <div class="toolbar"><div class="grp"><span class="lbl">Tipo</span><div class="chips">${chips}</div></div><input class="search" id="q" type="search" placeholder="Buscar concepto, tercero, obra o Nº" value="${esc(S.q)}" aria-label="Buscar"></div>
@@ -717,7 +718,7 @@ function detail(t){
    <div class="meta"><div><span class="k">${t.tipo==='entrada'?'Cliente':t.tipo==='salida'?'Proveedor':'Tercero'}</span>${tr?esc(tr.razon)+'<span class="sub">CUIT '+tr.cuit+'</span>':'<span class="sub">No corresponde</span>'}</div><div><span class="k">Centro de costo</span><span><b>${esc(cc.codigo)}</b> ${esc(cc.nombre)}</span></div><div><span class="k">Moneda</span>${t.moneda}${t.moneda!=='ARS'?' · TC '+t.tc:''}</div><div><span class="k">Total</span><span class="mono">${money(t.total,t.moneda)}</span></div><div><span class="k">Cuadre</span>${Math.abs(d)<0.005?'<span class="pill p-ok">Cuadra</span>':'<span class="pill p-warn">Diferencia '+money(d,t.moneda)+'</span>'}</div><div><span class="k">Cargó</span><span class="mono">${t.user}</span></div></div>
    <h4>Formas de pago</h4><div class="tw"><table><thead><tr><th>Medio</th><th>Sale de</th><th>Entra a</th><th>Referencia</th><th class="num">Importe</th></tr></thead><tbody>${pagos}</tbody></table></div>
    ${rets?`<h4>Retenciones y percepciones</h4><div class="tw"><table><thead><tr><th>Concepto</th><th>Certificado</th><th class="num">Importe</th></tr></thead><tbody>${rets}</tbody></table></div>`:''}
-   ${t.tipo!=='interna'?`<h4>Facturas vinculadas</h4>${facs?`<div class="tw"><table><thead><tr><th>Comprobante</th><th>Fecha</th><th class="num">Total factura</th><th class="num">Imputado acá</th><th class="num">Saldo factura</th></tr></thead><tbody>${facs}</tbody></table></div>`:'<div class="empty">Sin factura asociada.</div>'}`:''}
+   ${!['interna','inicial'].includes(t.tipo)?`<h4>Facturas vinculadas</h4>${facs?`<div class="tw"><table><thead><tr><th>Comprobante</th><th>Fecha</th><th class="num">Total factura</th><th class="num">Imputado acá</th><th class="num">Saldo factura</th></tr></thead><tbody>${facs}</tbody></table></div>`:'<div class="empty">Sin factura asociada.</div>'}`:''}
    ${t.auto==='idc'?`<h4>Origen</h4><div class="empty" style="color:var(--ink)">Generado automáticamente por la transacción <button class="btn link" data-tx-go="${t.padreId}">Nº ${by(S.trans,t.padreId)?.numero}</button>.</div>`:''}
    ${(()=>{const hs=S.trans.filter(h=>h.padreId===t.id);return hs.length?`<h4>Impuesto D/C generado</h4><div class="tw"><table><tbody>${hs.map(h=>`<tr class="click ${h.estado==='anulada'?'void':''}" data-tx="${h.id}"><td class="mono">Nº ${h.numero}</td><td>${esc(h.concepto)}</td><td class="num">${money(h.total)}</td></tr>`).join('')}</tbody></table></div>`:(t.tipo==='interna'&&idcExento(t.tipo,t.pagos)?'<h4>Impuesto D/C</h4><div class="empty">Exento: movimiento entre cuentas bancarias propias.</div>':'')})()}
    ${t.obs?`<h4>Observaciones</h4><div class="empty" style="color:var(--ink)">${esc(t.obs)}</div>`:''}
@@ -914,6 +915,48 @@ function save(){
   const idc=crearIDC(tx,now);
   const t=D.tipo;resetDraft(t);S.sel=id;S.filtro='todas';S.ctaF='todas';S.q='';go('trans');toast('Transacción Nº '+numero+' guardada'+(idc.length?' + impuesto D/C '+money(sum(idc,x=>x.total)):''));
 }
+/* ---------- Existencia inicial ---------- */
+const cuentasIni=()=>S.cuentas.filter(c=>CAJA(c)||BANCO(c));
+function newIni(){const adm=S.centros.find(c=>c.activo!==false&&(c.tipo==='administracion'||/admin/i.test(c.nombre)))||S.centros.find(c=>c.activo!==false);
+  return {fecha:TODAY.slice(0,4)+'-01-01',ccId:adm?adm.id:'',obs:'',m:{},tc:{},err:[]}}
+function totIni(I){const g={};cuentasIni().forEach(c=>{const v=num(I.m[c.id]);if(v>0)g[c.moneda]=(g[c.moneda]||0)+v});return g}
+function updIni(){const el=document.getElementById('ini-total');if(!el||!S.ini)return;const g=totIni(S.ini);const k=Object.keys(g);
+  el.innerHTML=k.length?k.map(m=>'<b class="mono">'+money(g[m],m)+'</b>').join(' · '):'<span class="sub">Todavía no cargaste ningún importe</span>'}
+function vExistencia(){
+  if(!S.ini)S.ini=newIni();const I=S.ini;
+  const fila=c=>`<div class="line"><div class="f"><label for="ini-${c.id}">${esc(c.nombre)}${c.moneda!=='ARS'?' <span class="sub">('+c.moneda+')</span>':''}</label><div class="money"><span aria-hidden="true">${sym[c.moneda]||'$'}</span><input class="num" id="ini-${c.id}" inputmode="decimal" data-inic="${c.id}" value="${esc(I.m[c.id]||'')}" placeholder="0,00"></div></div>${c.moneda!=='ARS'?`<div class="f"><label for="initc-${c.id}">Tipo de cambio</label><div class="money"><span aria-hidden="true">$</span><input class="num" id="initc-${c.id}" inputmode="decimal" data-initc="${c.moneda}" value="${esc(I.tc[c.moneda]||'')}"></div><span class="hint">Pesos por 1 ${c.moneda}</span></div>`:''}</div>`;
+  return head('Existencia inicial','Lo que ya hay en caja y en los bancos al empezar el ejercicio. No paga impuesto D/C ni cuenta como ingreso.')+
+  `<form class="form" id="form-ini" novalidate onsubmit="return false">
+   ${I.err.length?`<div class="errors" role="alert"><b>Revisá estos datos antes de guardar:</b><ul>${I.err.map(e=>'<li>'+esc(e)+'</li>').join('')}</ul></div>`:''}
+   <section class="panel"><h2>Datos</h2><div class="fields">
+    <div class="f"><label for="ini-fecha">Fecha de la existencia inicial <em>*</em></label><input type="date" id="ini-fecha" data-ini="fecha" value="${esc(I.fecha)}"><span class="hint">Normalmente el 1 de enero: el saldo con el que arranca el ejercicio.</span></div>
+    <div class="f"><label for="ini-ccId">Centro de costo <em>*</em></label><select id="ini-ccId" data-ini="ccId">${opt('','Elegir…',I.ccId)}${S.centros.filter(c=>c.activo!==false||c.id===I.ccId).map(c=>opt(c.id,c.codigo+' · '+c.nombre,I.ccId)).join('')}</select></div>
+   </div></section>
+   <section class="panel"><h2>Cajas <small>Efectivo disponible</small></h2><div class="lines">${cuentasIni().filter(CAJA).map(fila).join('')}</div></section>
+   <section class="panel"><h2>Bancos y billeteras <small>Dejá en blanco las cuentas sin saldo</small></h2><div class="lines">${cuentasIni().filter(BANCO).map(fila).join('')}</div></section>
+   <section class="panel"><h2>Observaciones</h2><div class="fields"><div class="f wide"><label for="ini-obs" class="sub">Nota interna</label><textarea id="ini-obs" data-ini="obs" rows="2">${esc(I.obs)}</textarea></div></div><div class="cuadre"><div><span class="k">Total a cargar</span><span id="ini-total"></span></div></div></section>
+   <div class="actions"><button type="button" class="btn" data-act="ini-cancel">Cancelar</button><button type="button" class="btn primary" data-act="ini-save">Guardar existencia inicial</button></div>
+  </form>`;
+}
+function guardarInicial(){
+  if(!puedeCargar()||!S.ini)return;const I=S.ini,err=[];
+  if(!I.fecha)err.push('Falta la fecha.');if(!I.ccId)err.push('Elegí un centro de costo: es obligatorio en todas las transacciones.');
+  const ls=cuentasIni().map(c=>({c,imp:r2(num(I.m[c.id]))})).filter(x=>x.imp>0);
+  if(!ls.length)err.push('Cargá el importe de al menos una cuenta.');
+  const y=(I.fecha||'').slice(0,4);
+  ls.forEach(({c})=>{const d=S.trans.find(t=>t.tipo==='inicial'&&t.estado==='activa'&&t.fecha.slice(0,4)===y&&t.pagos.some(p=>p.destino===c.id));
+    if(d)err.push('Ya hay una existencia inicial de '+c.nombre+' para '+y+' (Nº '+d.numero+'). Si te equivocaste, modificala o anulala desde Transacciones.');
+    if(c.moneda!=='ARS'&&!(num(I.tc[c.moneda])>0))err.push('Cargá el tipo de cambio de '+c.nombre+'.')});
+  I.err=err;if(err.length){render();window.scrollTo(0,0);return}
+  const now=nowStamp(),monedas=[...new Set(ls.map(x=>x.c.moneda))],nums=[];let last=null;
+  monedas.forEach(m=>{const mine=ls.filter(x=>x.c.moneda===m);const id=nid('x'),numero=nextNum++;
+    const tx={id,numero,tipo:'inicial',fecha:I.fecha,concepto:'Existencia inicial '+y+(m!=='ARS'?' · '+m:''),terceroId:'',ccId:I.ccId,moneda:m,tc:m==='ARS'?1:num(I.tc[m]),total:r2(sum(mine,x=>x.imp)),estado:'activa',user:S.user,obs:(I.obs||'').trim(),
+      rets:[],facts:[],pagos:mine.map(x=>({medio:'otro',destino:x.c.id,importe:x.imp,ref:''}))};
+    S.trans.push(tx);nums.push(numero);last=id;
+    S.audit.push({fecha:now,ini:S.user,accion:'Alta',detalle:'Existencia inicial Nº '+numero+' · '+mine.map(x=>x.c.nombre+' '+money(x.imp,m)).join(', '),txId:id})});
+  S.ini=null;S.sel=last;S.filtro='todas';S.ctaF='todas';S.q='';go('trans');
+  toast('Existencia inicial guardada (Nº '+nums.join(', ')+')');
+}
 function anular(id){
   if(!esDueno())return;
   const t=by(S.trans,id);t.estado='anulada';
@@ -1084,10 +1127,10 @@ function resumenData(){
   const cli={};S.centros.filter(c=>c.clienteId&&c.contrato>0&&(!S.rCc||c.id===S.rCc)).forEach(c=>{const k=ccContrato(c,S.rHasta);const x=cli[c.clienteId]||(cli[c.clienteId]={obras:[],contrato:0,cobTot:0,pend:0,cobPer:0});x.obras.push(c.codigo);x.contrato+=k.contrato;x.cobTot+=k.cobrado;x.pend+=k.pendiente});
   const obras=S.centros.filter(c=>c.clienteId&&c.contrato>0&&(!S.rCc||c.id===S.rCc)).map(c=>{const k=ccContrato(c,S.rHasta);return {c,cl:tercero(c.clienteId),contrato:k.contrato,cobTot:k.cobrado,pend:k.pendiente,cobPer:sum(ent.filter(t=>t.ccId===c.id),ars)}}).sort((a,b)=>a.cl.razon.localeCompare(b.cl.razon)||a.c.nombre.localeCompare(b.c.nombre));
   const idc=sal.filter(t=>t.auto==='idc');
-  const med={};ts.forEach(t=>t.pagos.forEach(p=>{const m=med[p.medio]||(med[p.medio]={e:0,s:0,i:0});m[t.tipo==='entrada'?'e':t.tipo==='salida'?'s':'i']+=p.importe*t.tc}));
+  const med={};ts.filter(t=>t.tipo!=='inicial').forEach(t=>t.pagos.forEach(p=>{const m=med[p.medio]||(med[p.medio]={e:0,s:0,i:0});m[t.tipo==='entrada'?'e':t.tipo==='salida'?'s':'i']+=p.importe*t.tc}));
   const ter={};[...ent,...sal].forEach(t=>{const x=ter[t.terceroId]||(ter[t.terceroId]={e:0,s:0,n:0});x[t.tipo==='entrada'?'e':'s']+=ars(t);x.n++});
   const movC=(cid,cond)=>{let s=0;activas().filter(cond).forEach(t=>t.pagos.forEach(p=>{if(p.destino===cid)s+=p.importe;if(p.origen===cid)s-=p.importe}));return s};
-  const ctas=S.cuentas.map(c=>{const ini=movC(c.id,t=>t.fecha<S.rDesde);let ing=0,egr=0;activas().filter(t=>t.fecha>=S.rDesde&&t.fecha<=S.rHasta).forEach(t=>t.pagos.forEach(p=>{if(p.destino===c.id)ing+=p.importe;if(p.origen===c.id)egr+=p.importe}));return {c,ini,ing,egr,fin:ini+ing-egr}});
+  const ctas=S.cuentas.map(c=>{const esIni=t=>t.tipo==='inicial'&&t.fecha<=S.rDesde;const ini=movC(c.id,t=>t.fecha<S.rDesde||esIni(t));let ing=0,egr=0;activas().filter(t=>t.fecha>=S.rDesde&&t.fecha<=S.rHasta&&!esIni(t)).forEach(t=>t.pagos.forEach(p=>{if(p.destino===c.id)ing+=p.importe;if(p.origen===c.id)egr+=p.importe}));return {c,ini,ing,egr,fin:ini+ing-egr}});
   const rets={};allR.forEach(({t,r,v})=>{const k=(esSufrida(t,r)?'Sufrida':'Practicada')+' · '+(r.clase==='retencion'?'Retención':'Percepción')+' '+impTxt[r.impuesto]+(r.jur?' ('+r.jur+')':'');rets[k]=(rets[k]||0)+v});
   return {ts,ent,sal,int,E:sum(ent,ars),Sa:sum(sal,ars),I:sum(int,ars),retS:sum(allR.filter(x=>esSufrida(x.t,x.r)),x=>x.v),retP:sum(allR.filter(x=>!esSufrida(x.t,x.r)),x=>x.v),sinFac:[...ent,...sal].filter(t=>!t.facts.length&&!t.auto),cc,cli,obras,idc,med,ter,ctas,rets};
 }
@@ -1553,7 +1596,7 @@ const tercOpts=(tipo,cur)=>[['','Elegir…']].concat(S.terceros.filter(t=>!t.sis
 const ccOpts=cur=>S.centros.filter(c=>c.activo!==false||c.id===cur).map(c=>[c.id,c.codigo+' · '+c.nombre]);
 const cliOpts=()=>[['','Elegir…']].concat(S.terceros.filter(t=>!t.sistema&&['cliente','ambos'].includes(t.tipo)).map(t=>[t.id,t.razon]));
 const totalEditable=t=>t.estado==='activa'&&!t.auto&&t.pagos.length===1&&!t.pagos[0].chequeId&&t.facts.length<=1;
-const pagoEditable=t=>t.estado==='activa'&&!t.auto&&t.pagos.length===1&&!t.pagos[0].chequeId&&t.pagos[0].medio!=='cheque'&&t.pagos[0].medio!=='echeq';
+const pagoEditable=t=>t.estado==='activa'&&!t.auto&&t.tipo!=='inicial'&&t.pagos.length===1&&!t.pagos[0].chequeId&&t.pagos[0].medio!=='cheque'&&t.pagos[0].medio!=='echeq';
 const cambiaPagoTx=(t,v)=>pagoEditable(t)&&((v.pmedio||'')!==(t.pagos[0].medio||'')||(v.porigen||'')!==(t.pagos[0].origen||'')||(v.pdestino||'')!==(t.pagos[0].destino||''));
 const MEDIOS_EDIT=tipo=>MEDIOS[tipo].filter(m=>m!=='cheque'&&m!=='echeq');
 function ajustaPago(t,v){
@@ -1581,11 +1624,11 @@ const EDIT={
   rot:t=>'Nº '+t.numero+' · '+t.concepto,idc:t=>'Nº '+t.numero,
   omitir:t=>!!t.auto,msgOmitir:'El impuesto D/C se recalcula solo: modificá la transacción que lo origina.',
   cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'concepto',l:'Concepto',t:'text',w:220},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:r=>tercOpts(r.tipo,r.terceroId)},{k:'ccId',l:'Centro de costo',t:'sel',o:r=>ccOpts(r.ccId)},{k:'total',l:'Total',t:'money',sy:r=>sym[r.moneda]},{k:'pmedio',l:'Forma de pago',t:'sel',o:(r,v)=>pagoEditable(r)?MEDIOS_EDIT(r.tipo).map(m=>[m,medioLbl(r.tipo,m)]):[[r.pagos.length>1?'':(r.pagos[0]?.medio||''),r.pagos.length>1?'Varias formas':(r.pagos[0]?medioLbl(r.tipo,r.pagos[0].medio):'—')]]},{k:'porigen',l:'Sale de',t:'sel',o:(r,v)=>cuentaOpts(r,'origen',v)},{k:'pdestino',l:'Entra a',t:'sel',o:(r,v)=>cuentaOpts(r,'destino',v)},{k:'obs',l:'Observaciones',t:'text',w:180}],
-  ro:(t,c,v)=>(c.k==='terceroId'&&t.tipo==='interna')||(c.k==='total'&&!totalEditable(t))||(c.k==='pmedio'&&!pagoEditable(t))||((c.k==='porigen'||c.k==='pdestino')&&(!pagoEditable(t)||!reglas(t.tipo,{medio:(v&&v.pmedio)||t.pagos[0].medio},t.moneda)[c.k==='porigen'?'origen':'destino'])),
+  ro:(t,c,v)=>(c.k==='terceroId'&&(t.tipo==='interna'||t.tipo==='inicial'))||(c.k==='total'&&!totalEditable(t))||(c.k==='pmedio'&&!pagoEditable(t))||((c.k==='porigen'||c.k==='pdestino')&&(!pagoEditable(t)||!reglas(t.tipo,{medio:(v&&v.pmedio)||t.pagos[0].medio},t.moneda)[c.k==='porigen'?'origen':'destino'])),
   init:t=>({fecha:t.fecha,concepto:t.concepto,terceroId:t.terceroId||'',ccId:t.ccId,total:toIn(t.total),pmedio:t.pagos.length===1?t.pagos[0].medio:'',porigen:t.pagos.length===1?(t.pagos[0].origen||''):'',pdestino:t.pagos.length===1?(t.pagos[0].destino||''):'',obs:t.obs||''}),
   valida:(t,v)=>{const e=[];
     if(!v.fecha)e.push('Falta la fecha.');if(!v.concepto.trim())e.push('Falta el concepto.');
-    if(t.tipo!=='interna'&&!v.terceroId)e.push('Falta elegir '+(t.tipo==='entrada'?'el cliente':'el proveedor')+'.');
+    if(t.tipo!=='interna'&&t.tipo!=='inicial'&&!v.terceroId)e.push('Falta elegir '+(t.tipo==='entrada'?'el cliente':'el proveedor')+'.');
     if(!v.ccId)e.push('Falta el centro de costo.');
     if(totalEditable(t)){const nt=num(v.total);
       if(!(nt>0))e.push('El total tiene que ser mayor a cero.');
@@ -1606,7 +1649,7 @@ const EDIT={
     if(cp){const p=t.pagos[0],r=reglas(t.tipo,{medio:v.pmedio},t.moneda);p.medio=v.pmedio;
       if(r.origen)p.origen=v.porigen;else delete p.origen;if(r.destino)p.destino=v.pdestino;else delete p.destino}
     if(cambia){t.pagos[0].importe=r2(nt-sum(t.rets,r=>r.importe));if(t.facts.length===1&&r2(t.facts[0].importe)===r2(t.total))t.facts[0].importe=nt;t.total=nt}
-    t.fecha=v.fecha;t.concepto=v.concepto.trim();if(t.tipo!=='interna')t.terceroId=v.terceroId;t.ccId=v.ccId;t.obs=v.obs.trim();
+    t.fecha=v.fecha;t.concepto=v.concepto.trim();if(t.tipo!=='interna'&&t.tipo!=='inicial')t.terceroId=v.terceroId;t.ccId=v.ccId;t.obs=v.obs.trim();
     if(cambia||cp){S.trans=S.trans.filter(h=>h.padreId!==t.id);crearIDC(t,nowStamp())}
     else S.trans.filter(h=>h.padreId===t.id).forEach(h=>{h.fecha=t.fecha;h.ccId=t.ccId});
   },
@@ -1777,6 +1820,9 @@ function accionPk(act,a,e){
    case 'md-bg':if(e.target===a){S.modal=null;renderModal()}return true;
    case 'md-save':confirmarEdicion();return true;
    case 'md-del':confirmarEliminar();return true;
+   case 'ini-open':if(!puedeCargar())return true;S.ini=newIni();go('exist');return true;
+   case 'ini-cancel':S.ini=null;go('trans');return true;
+   case 'ini-save':guardarInicial();return true;
    case 'tx-modificar':abrirEditar('trans',[S.sel]);return true;
    case 'eliminar':abrirEliminar('trans',[S.sel]);return true;
    case 'tf-new':S.tForm={razon:'',cuit:'',tipo:'cliente',err:''};render();return true;
@@ -1830,11 +1876,11 @@ function render(){
   if(!S.sesion){app.hidden=true;lg.hidden=false;lg.innerHTML=vLogin();renderModal();return}
   app.hidden=false;lg.hidden=true;lg.innerHTML='';
   if(S.view==='usuarios'&&!esAdmin())S.view='inicio';
-  if(S.view==='nueva'&&!puedeCargar())S.view='inicio';
+  if((S.view==='nueva'||S.view==='exist')&&!puedeCargar())S.view='inicio';
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros}[S.view];
-  document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros}[S.view];
+  document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
 function tarjetas(){
@@ -1928,6 +1974,9 @@ main.addEventListener('input',e=>{
     if(e.inputType==='insertText'&&e.data==='.'&&!raw.slice(0,pos-1).concat(raw.slice(pos)).includes(',')){raw=raw.slice(0,pos-1)+','+raw.slice(pos)}
     const keep=raw.slice(0,pos).replace(/[^\d,]/g,'').length;const out=fmtTyping(raw);
     if(out!==raw0){el.value=out;let c=0,np=0;while(np<out.length&&c<keep){if(/[\d,]/.test(out[np]))c++;np++}try{el.setSelectionRange(np,np)}catch(_){}}}
+  if(el.dataset.ini&&S.ini){S.ini[el.dataset.ini]=el.value;return}
+  if(el.dataset.inic&&S.ini){S.ini.m[el.dataset.inic]=el.value;updIni();return}
+  if(el.dataset.initc&&S.ini){S.ini.tc[el.dataset.initc]=el.value;return}
   if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;return}
   if(el.dataset.nt&&D.nt){D.nt[el.dataset.nt]=el.value;return}
   if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;return}
