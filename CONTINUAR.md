@@ -26,6 +26,9 @@
 - Celular: las tablas pasan a tarjetas (menos de 700 px).
 - Límites: modificar una transacción borra y vuelve a cargar sus líneas en dos pasos (si falla el segundo se restaura la versión anterior); la auditoría muestra las últimas 1.000 acciones.
 
+## Usuarios y roles (hecho)
+- Tres roles: Dueño (todo), Contador (carga y consulta) y Lector (solo mira). La pantalla Usuarios los explica, permite cambiar el rol, habilitar, desactivar y eliminar. Un usuario con movimientos no se elimina (se desactiva). El rol Lector está bloqueado también en la base (`sql/05_rol_lector_y_usuarios.sql`).
+
 ## Pendiente
 1. Cargar datos reales: clientes, proveedores, obras, cheques y saldos iniciales (lo que se escribió en la versión de ejemplo no quedó guardado en ningún lado).
 2. Probar con usuarios reales (dueño y contador) desde el celular y ajustar lo que moleste.

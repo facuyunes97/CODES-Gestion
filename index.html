@@ -300,6 +300,15 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
   .seg b{font-size:17px}.seg span{display:none}
   .search{width:100%}
 }
+/* Roles y solo lectura */
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;padding:4px 16px 16px}
+.rol{border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.rol .rt{display:flex;justify-content:space-between;align-items:center;gap:8px}.rol .rt b{font-family:var(--f-display);font-size:22px;font-weight:600}
+.rol p{margin:0;color:var(--ink-2)}.rol ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.rol li{padding-left:22px;position:relative}.rol li::before{position:absolute;left:0;font-weight:700}
+.rol li.si::before{content:"✓";color:var(--ok)}.rol li.no::before{content:"✕";color:var(--bad)}.rol li.no{color:var(--ink-2)}
+.rol-dueno{border-top:3px solid var(--brand)}.rolsel{padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface)}
+body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open]{display:none!important}
 /* Estado de guardado */
 .sync{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}.sync i.live{background:var(--ok)}
@@ -610,9 +619,9 @@ const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
   const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span></span><button data-act="logout">Salir</button>`:'';
-  document.getElementById('nav').innerHTML=NAV.filter(([v])=>v!=='usuarios'||esAdmin()).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
+  document.getElementById('nav').innerHTML=NAV.filter(([v])=>(v!=='usuarios'||esAdmin())&&(v!=='nueva'||puedeCargar())).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
 }
-function go(v){S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
+function go(v){S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
@@ -878,6 +887,7 @@ function validate(){
   return e;
 }
 function save(){
+  if(!puedeCargar())return;
   S.errors=validate();if(S.errors.length){render();window.scrollTo(0,0);return}
   const id=nid('x'),numero=nextNum++,now=nowStamp();
   const pagos=D.pagos.map(p=>{
@@ -1308,7 +1318,8 @@ async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').sel
 async function alIniciarSesion(session){
   if(!session){S.sesion=null;if(S.auth.modo!=='nueva'&&S.auth.modo!=='enviado')S.auth.modo='login';render();return}
   if(S.auth.modo==='nueva'){render();return}
-  const {data,error}=await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  let {data,error}=await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!error&&!data){await sb.rpc('solicitar_acceso');({data,error}=await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle())}
   if(error||!data){S.auth={modo:'login',err:'No se encontró tu perfil. Avisale al administrador.'};await sb.auth.signOut();return}
   if(!data.activo){S.sesion=null;S.auth={modo:'pendiente',email:data.email,nombre:data.nombre};render();return}
   await cargarPerfiles();
@@ -1373,7 +1384,12 @@ const LOGO_C='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAABoCAYAAACjQ3iQ
 function usuarioActual(){return S.usuarios.find(u=>u.id===S.sesion)}
 function esAdmin(){return usuarioActual()?.rol==='dueno'}
 const esDueno=esAdmin;
-const ROL_TXT=r=>r==='dueno'?'Dueño':'Contador';
+const ROLES={
+ dueno:{n:'Dueño',d:'Control total. Es el único que modifica, anula y elimina datos, cambia los parámetros y administra a los demás usuarios.',si:['Cargar y consultar todo','Modificar, anular y eliminar','Habilitar, desactivar y eliminar usuarios','Cambiar parámetros e impuestos'],no:[],uno:true},
+ contador:{n:'Contador',d:'Trabaja a diario con el sistema: carga movimientos y consulta todo, pero no puede cambiar ni borrar lo ya cargado.',si:['Cargar transacciones, facturas, cheques, clientes y obras','Consultar todo y descargar Excel'],no:['Modificar, anular o eliminar lo ya cargado','Administrar usuarios']},
+ lector:{n:'Lector',d:'Solo mira. Ve la información y descarga Excel, sin poder cargar ni cambiar nada. Pensado para socios, bancos o consultas externas.',si:['Consultar todo y descargar Excel'],no:['Cargar o modificar datos','Administrar usuarios']}};
+const ROL_TXT=r=>(ROLES[r]||ROLES.contador).n;
+const puedeCargar=()=>{const u=usuarioActual();return !!u&&u.rol!=='lector'};
 function sugerirIniciales(n,a){const L=(n.trim()[0]||'')+(a.trim().replace(/\(.*\)/,'').trim()[0]||'');let ini=L.toUpperCase();if(S.usuarios.some(u=>u.iniciales===ini)){const x=(a.trim()[1]||n.trim()[1]||'X').toUpperCase();ini=ini+x}return ini}
 function userFormHTML(F,ctx){
   return `${F.err?`<div class="alerta" role="alert" style="margin:0"><b>${esc(F.err)}</b></div>`:''}<div class="fields" style="padding:0">
@@ -1381,7 +1397,7 @@ function userFormHTML(F,ctx){
    <div class="f"><label for="uf-apellido">Apellido <em>*</em></label><input id="uf-apellido" data-uf="apellido" value="${esc(F.apellido)}" autocomplete="family-name"></div>
    <div class="f wide"><label for="uf-email">Email <em>*</em></label><input id="uf-email" type="email" data-uf="email" value="${esc(F.email)}" autocomplete="email" placeholder="nombre@estudio.com"></div>
    <div class="f"><label for="uf-iniciales">Iniciales <em>*</em></label><input id="uf-iniciales" data-uf="iniciales" value="${esc(F.iniciales)}" maxlength="3" style="text-transform:uppercase;font-family:var(--f-num)"><span class="hint">Aparecen en cada movimiento que cargue.</span></div>
-   
+   ${ctx==='admin'?`<div class="f wide"><label for="uf-rol">Rol</label><select id="uf-rol" data-uf="rol"><option value="contador" ${F.rol!=='lector'?'selected':''}>Contador · carga y consulta</option><option value="lector" ${F.rol==='lector'?'selected':''}>Lector · solo consulta</option></select></div>`:''}
   </div>`;
 }
 function crearUsuario(F,porAdmin){
@@ -1405,17 +1421,24 @@ function vLogin(){
 }
 function vUsuarios(){
   const yo=usuarioActual();const F=S.uForm;
+  const cuenta={dueno:0,contador:0,lector:0};S.usuarios.filter(u=>u.activo).forEach(u=>cuenta[u.rol]=(cuenta[u.rol]||0)+1);
+  const roles=`<section class="panel"><h2>Roles <small>qué puede hacer cada uno</small></h2><div class="roles">${Object.entries(ROLES).map(([k,r])=>`<div class="rol rol-${k}"><div class="rt"><b>${r.n}</b><span class="pill ${k==='dueno'?'p-ok':k==='contador'?'p-int':'p-mute'}">${cuenta[k]||0} activo${(cuenta[k]||0)===1?'':'s'}</span></div><p>${r.d}</p><ul>${r.si.map(x=>`<li class="si">${x}</li>`).join('')}${r.no.map(x=>`<li class="no">${x}</li>`).join('')}</ul></div>`).join('')}</div></section>`;
   const form=F?`<section class="panel"><h2>Nuevo usuario</h2><div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">${userFormHTML(F,'admin')}<div class="actions"><button class="btn" data-act="uf-cancel">Cancelar</button><button class="btn dark" data-act="uf-save">Crear usuario</button></div></div></section>`:'';
+  const ud=S.uDel&&S.usuarios.find(u=>u.id===S.uDel);
+  const movs=u=>S.trans.filter(t=>t.user===u.iniciales&&!t.auto).length;
+  const delBox=ud?`<section class="panel" style="padding:0"><div class="alerta" role="alertdialog" style="margin:0;border:0"><b>¿Eliminar a ${esc(ud.nombre+' '+ud.apellido)} (${esc(ud.iniciales)})?</b>${movs(ud)>0?`<span>Tiene ${movs(ud)} movimiento${movs(ud)===1?'':'s'} cargado${movs(ud)===1?'':'s'}, así que no se puede eliminar: desactivalo para que no ingrese más y sus iniciales quedan en el historial.</span><div class="actions"><button class="btn" data-act="u-del-no">Entendido</button></div>`:`<span>Se borra su usuario del sistema y deja de poder ingresar. Esto no se puede deshacer. Si más adelante vuelve a pedir acceso, tendrás que aprobarlo de nuevo.</span><div class="actions"><button class="btn" data-act="u-del-no">Cancelar</button><button class="btn danger" data-act="u-del-ok" data-id="${ud.id}">Sí, eliminar</button></div>`}</div></section>`:'';
   const lista=[...S.usuarios].sort((a,b)=>(a.activo-b.activo));
-  const rows=lista.map(u=>{const n=S.trans.filter(t=>t.user===u.iniciales&&!t.auto).length;const self=u.id===yo.id;
-    const accion=self?'':`<button class="btn small ${u.activo?'danger':'primary'}" data-act="u-toggle" data-id="${u.id}">${u.activo?'Desactivar':(AUTH?'Habilitar':'Activar')}</button>`;
-    return `<tr ${u.activo?'':'style="background:var(--warn-soft)"'}><td><div style="display:flex;gap:10px;align-items:flex-start"><span class="av ${u.rol==='dueno'?'':'gris'}">${esc(u.iniciales)}</span><span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span><b>${esc(u.nombre+' '+u.apellido)}</b>${self?' <span class="sub">(vos)</span>':''}<br><span class="sub">${esc(u.email||'sin email')}</span></span><span class="chips"><span class="pill ${u.activo?'p-ok':(AUTH?'p-warn':'p-mute')}">${u.activo?'Activo':(AUTH?'Pendiente':'Inactivo')}</span>${accion}</span></span></div></td>
-    <td>${ROL_TXT(u.rol)}</td>
-    <td class="mono">${n}</td><td class="mono">${fd(u.alta)}</td></tr>`}).join('');
+  const rows=lista.map(u=>{const self=u.id===yo.id,esD=u.rol==='dueno';
+    const acc=(self||esD)?'':`<button class="btn small ${u.activo?'':'primary'}" data-act="u-toggle" data-id="${u.id}">${u.activo?'Desactivar':'Habilitar'}</button><button class="btn small danger" data-act="u-del" data-id="${u.id}">Eliminar</button>`;
+    const rolCel=(self||esD)?`<b>${ROL_TXT(u.rol)}</b>`:`<select class="rolsel" data-urol="${u.id}" aria-label="Rol de ${esc(u.nombre)}"><option value="contador" ${u.rol==='contador'?'selected':''}>Contador</option><option value="lector" ${u.rol==='lector'?'selected':''}>Lector</option></select>`;
+    return `<tr ${u.activo?'':'style="background:var(--warn-soft)"'}><td><div style="display:flex;gap:10px;align-items:flex-start"><span class="av ${esD?'':'gris'}">${esc(u.iniciales)}</span><span style="min-width:0"><b>${esc(u.nombre+' '+u.apellido)}</b>${self?' <span class="sub">(vos)</span>':''}<br><span class="sub">${esc(u.email||'sin email')}</span></span></div></td>
+    <td>${rolCel}</td>
+    <td><span class="pill ${u.activo?'p-ok':'p-warn'}">${u.activo?'Activo':(AUTH?'Pendiente':'Inactivo')}</span></td>
+    <td class="mono">${movs(u)}</td><td class="mono">${fd(u.alta)}</td><td><div class="chips">${acc}</div></td></tr>`}).join('');
   const pend=S.usuarios.filter(u=>!u.activo).length;
-  return head('Usuarios',AUTH?'Cada persona crea su usuario con email y contraseña desde la pantalla de ingreso. Acá los habilitás.':'Quién puede entrar al sistema. Los contadores también pueden crear su propio usuario desde la pantalla de ingreso.',(F||AUTH)?(AUTH?'<button class="btn small" data-act="u-refrescar">Actualizar lista</button>':''):'<button class="btn small primary" data-act="uf-open">+ Nuevo usuario</button>')+form+(AUTH&&pend?`<div class="alerta" role="status" style="margin:0"><b>${pend} usuario${pend===1?'':'s'} esperando tu aprobación.</b><span>Revisá que sean personas de CODES antes de habilitarlos.</span></div>`:'')+
-  `<section class="panel"><div class="tw"><table><thead><tr><th>Usuario</th><th>Rol</th><th>Movimientos</th><th>Alta</th></tr></thead><tbody>${rows}</tbody></table></div>
-  <div class="legend"><b>Dueño</b> (uno solo): todo, incluido modificar, anular y eliminar datos, cambiar parámetros y administrar usuarios. <b>Contador</b>: carga y consulta libremente y descarga Excel, pero no modifica ni borra nada ya cargado. Un usuario desactivado no puede ingresar, pero sus movimientos y sus iniciales quedan.</div></section>`;
+  return head('Usuarios',AUTH?'Cada persona crea su usuario con email y contraseña desde la pantalla de ingreso. Acá elegís su rol y lo habilitás.':'Quién puede entrar al sistema y qué puede hacer cada uno.',(AUTH?'<button class="btn small" data-act="u-refrescar">Actualizar lista</button>':(F?'':'<button class="btn small primary" data-act="uf-open">+ Nuevo usuario</button>')))+form+(AUTH&&pend?`<div class="alerta" role="status" style="margin:0"><b>${pend} usuario${pend===1?'':'s'} esperando tu aprobación.</b><span>Elegí el rol y tocá Habilitar. Revisá que sean personas de CODES.</span></div>`:'')+delBox+
+  `<section class="panel"><div class="tw"><table><thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Movimientos</th><th>Alta</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="legend">Un usuario desactivado no puede ingresar, pero sus movimientos y sus iniciales quedan. Solo se puede eliminar a quien no cargó nada. El dueño no se puede desactivar ni eliminar.</div></section>`+roles;
 }
 
 /* ---------- Auditoría ---------- */
@@ -1754,6 +1777,8 @@ function render(){
   if(!S.sesion){app.hidden=true;lg.hidden=false;lg.innerHTML=vLogin();renderModal();return}
   app.hidden=false;lg.hidden=true;lg.innerHTML='';
   if(S.view==='usuarios'&&!esAdmin())S.view='inicio';
+  if(S.view==='nueva'&&!puedeCargar())S.view='inicio';
+  document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
   const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros}[S.view];
   document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();tarjetas();if(AUTH)progSync();
@@ -1809,6 +1834,11 @@ document.addEventListener('click',e=>{
   else if(act==='uf-open'){S.uForm={nombre:'',apellido:'',email:'',iniciales:'',rol:'contador',err:''};render()}
   else if(act==='uf-cancel'){S.uForm=null;render()}
   else if(act==='uf-save'){const u=crearUsuario(S.uForm,true);if(u){S.uForm=null;toast('Usuario '+u.iniciales+' creado')}render()}
+  else if(act==='u-del'){S.uDel=a.dataset.id;render();window.scrollTo(0,0)}
+  else if(act==='u-del-no'){S.uDel=null;render()}
+  else if(act==='u-del-ok'){const u=S.usuarios.find(x=>x.id===a.dataset.id);S.uDel=null;if(!u)return render();
+    if(AUTH){sb.from('perfiles').delete().eq('id',u.id).select('id').then(async({data,error})=>{if(error||!data||!data.length){toast(error&&error.code==='23503'?'Tiene movimientos cargados: no se puede eliminar, desactivalo.':'No se pudo eliminar'+(error?': '+error.message:'.'));await cargarPerfiles();render();return}await cargarPerfiles();render();toast('Usuario '+u.iniciales+' eliminado')})}
+    else{S.usuarios=S.usuarios.filter(x=>x.id!==u.id);S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Eliminación de usuario',detalle:u.nombre+' '+u.apellido+' · '+u.iniciales,txId:null});render();toast('Usuario '+u.iniciales+' eliminado')}}
   else if(act==='u-toggle'&&AUTH){const u=S.usuarios.find(x=>x.id===a.dataset.id);sb.from('perfiles').update({activo:!u.activo}).eq('id',u.id).then(async({error})=>{if(error){toast('No se pudo: '+error.message);return}await cargarPerfiles();render();toast(u.iniciales+(!u.activo?' habilitado':' desactivado'))})}
   else if(act==='u-toggle'){const u=S.usuarios.find(x=>x.id===a.dataset.id);u.activo=!u.activo;S.audit.push({fecha:nowStamp(),ini:S.user,accion:u.activo?'Activación de usuario':'Desactivación de usuario',detalle:u.nombre+' '+u.apellido+' · '+u.iniciales,txId:null});render();toast(u.iniciales+(u.activo?' activado':' desactivado'))}
   else if(act==='cc-new'){S.ccWarn=null;S.ccForm={id:null,codigo:'',nombre:'',tipo:'obra',clienteId:'',contrato:'',err:'',nuevoTipo:'',nuevoTipoObra:false,nuevoCliRazon:'',nuevoCliCuit:''};render();window.scrollTo(0,0)}
@@ -1885,7 +1915,7 @@ main.addEventListener('change',e=>{
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();accionAuth({login:'ra-entrar',registro:'ra-crear',olvido:'ra-olvido',nueva:'ra-nueva'}[f.dataset.form])});
 document.addEventListener('input',e=>{const el=e.target;if(!el.dataset||!el.dataset.uf)return;const F=S.reg||S.uForm;if(!F)return;F[el.dataset.uf]=el.value;if((el.dataset.uf==='nombre'||el.dataset.uf==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre,F.apellido);const i=document.getElementById('uf-iniciales');if(i)i.value=F.iniciales}if(el.dataset.uf==='iniciales')F._iniManual=true});
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.uf==='rol'&&S.uForm){S.uForm.rol=el.value}if(el.dataset&&el.dataset.urol&&AUTH){const u=S.usuarios.find(x=>x.id===el.dataset.urol);sb.from('perfiles').update({rol:el.value}).eq('id',u.id).then(async({error})=>{if(error){toast('No se pudo: '+error.message);return}await cargarPerfiles();render();toast(u.iniciales+' ahora es '+(el.value==='admin'?'Administrador':'Contador'))});return}
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.uf==='rol'&&S.uForm){S.uForm.rol=el.value}if(el.dataset&&el.dataset.urol&&AUTH){const u=S.usuarios.find(x=>x.id===el.dataset.urol);sb.from('perfiles').update({rol:el.value}).eq('id',u.id).then(async({error})=>{if(error){toast('No se pudo: '+error.message);return}await cargarPerfiles();render();toast(u.iniciales+' ahora es '+ROL_TXT(el.value))});return}
 if(el.dataset&&el.dataset.urol){const u=S.usuarios.find(x=>x.id===el.dataset.urol);u.rol=el.value;S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Cambio de rol',detalle:u.nombre+' '+u.apellido+' → '+ROL_TXT(u.rol),txId:null});toast(u.iniciales+' ahora es '+ROL_TXT(u.rol))}});
 main.addEventListener('focusout',e=>{const el=e.target;if(el.closest&&el.closest('.money')&&!el.readOnly&&el.value.trim()!==''){const f=toIn(num(el.value));if(f!==el.value){el.value=f;el.dispatchEvent(new Event('input',{bubbles:true}))}}});
 function updCuadre(){const c=document.getElementById('cuadre');if(c)c.innerHTML=cuadreHTML()}
