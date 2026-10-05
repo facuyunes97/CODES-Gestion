@@ -300,6 +300,10 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
   .seg b{font-size:17px}.seg span{display:none}
   .search{width:100%}
 }
+/* Columna de acciones siempre visible a la derecha */
+.tw td.colacc,.tw th.colacc{position:sticky;right:0;background:var(--surface);white-space:nowrap;box-shadow:-8px 0 8px -8px rgba(0,0,0,.35)}
+.tw th.colacc{background:var(--surface)}
+@media (max-width:700px){table.cards td.colacc{position:static;box-shadow:none;justify-content:flex-end;flex-wrap:wrap}}
 /* Roles y solo lectura */
 .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;padding:4px 16px 16px}
 .rol{border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
@@ -1026,9 +1030,9 @@ function vCentros(){
   const ord=[...S.centros].sort((a,b)=>(a.activo===false)-(b.activo===false)||a.codigo.localeCompare(b.codigo));
   const rows=ord.map(c=>{const st=ccStats(c.id);const act=c.activo!==false;const k=ccContrato(c);const cl=c.clienteId&&tercero(c.clienteId);
     const ic=esTipoObra(c.tipo)?'cono':({maquina:'excavadora',administracion:'oficina'}[c.tipo]||'casco');
-    return `<tr class="${isPicked('centros',c.id)?'picked':''}" ${act?'':'style="opacity:.6"'}>${pkCell('centros',c.id)}<td class="mono"><b>${esc(c.codigo)}</b></td><td>${esc(c.nombre)}${cl?`<br><span class="sub">${esc(cl.razon)}</span>`:''}</td><td style="white-space:nowrap">${icon(ic,'tipo-ic')}${esc(CC_TIPOS[c.tipo]||c.tipo)}</td><td><span class="pill ${act?'p-ok':'p-mute'}">${act?'Activo':'Inactivo'}</span></td><td class="mono">${st.n}</td><td class="num">${k?money(k.contrato):'<span class="sub">—</span>'}</td><td class="num">${money(st.i)}</td><td class="num">${money(st.e)}</td><td class="num" style="color:${st.i-st.e<0?'var(--bad)':'var(--ok)'}">${money(st.i-st.e)}</td><td class="num">${k?`<b style="color:${k.pendiente>0.005?'var(--warn)':'var(--ok)'}">${money(k.pendiente)}</b>`:'<span class="sub">—</span>'}</td><td style="white-space:nowrap">${esDueno()?`<button class="btn small" data-act="cc-edit" data-id="${c.id}">Editar</button> <button class="btn small ${act?'danger':''}" data-act="cc-toggle" data-id="${c.id}">${act?'Desactivar':'Activar'}</button>`:''}</td></tr>`}).join('');
+    return `<tr class="${isPicked('centros',c.id)?'picked':''}" ${act?'':'style="opacity:.6"'}>${pkCell('centros',c.id)}<td class="mono"><b>${esc(c.codigo)}</b></td><td>${esc(c.nombre)}${cl?`<br><span class="sub">${esc(cl.razon)}</span>`:''}</td><td style="white-space:nowrap">${icon(ic,'tipo-ic')}${esc(CC_TIPOS[c.tipo]||c.tipo)}</td><td><span class="pill ${act?'p-ok':'p-mute'}">${act?'Activo':'Inactivo'}</span></td><td class="mono">${st.n}</td><td class="num">${k?money(k.contrato):'<span class="sub">—</span>'}</td><td class="num">${money(st.i)}</td><td class="num">${money(st.e)}</td><td class="num" style="color:${st.i-st.e<0?'var(--bad)':'var(--ok)'}">${money(st.i-st.e)}</td><td class="num">${k?`<b style="color:${k.pendiente>0.005?'var(--warn)':'var(--ok)'}">${money(k.pendiente)}</b>`:'<span class="sub">—</span>'}</td><td class="colacc">${esDueno()?`<button class="btn small" data-act="cc-edit" data-id="${c.id}">Modificar</button> <button class="btn small" data-act="cc-toggle" data-id="${c.id}">${act?'Desactivar':'Activar'}</button> <button class="btn small danger" data-act="cc-del" data-id="${c.id}">Eliminar</button>`:''}</td></tr>`}).join('');
   return head('Centros de costo','La base de obras, máquinas y áreas a las que se imputa cada transacción.',`${F?'':'<button class="btn small primary" data-act="cc-new">+ Nuevo centro de costo</button>'}${xlsBtn('centros')}`)+form+warn+
-  `<section class="panel"><div class="tw"><table><thead><tr>${pkHead('centros',ord.map(c=>c.id))}<th>Código</th><th>Nombre</th><th>Tipo</th><th>Estado</th><th>Mov.</th><th class="num">Contrato</th><th class="num">Ingresos</th><th class="num">Egresos</th><th class="num">Resultado</th><th class="num">Saldo pendiente</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+  `<section class="panel"><div class="tw"><table><thead><tr>${pkHead('centros',ord.map(c=>c.id))}<th>Código</th><th>Nombre</th><th>Tipo</th><th>Estado</th><th>Mov.</th><th class="num">Contrato</th><th class="num">Ingresos</th><th class="num">Egresos</th><th class="num">Resultado</th><th class="num">Saldo pendiente</th><th class="colacc">Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>
   <div class="legend">Saldo pendiente = valor de contrato − lo cobrado al cliente en esa obra.${esDueno()?' Marcá uno o varios centros para modificarlos o eliminarlos. Un centro con movimientos no se puede eliminar: se desactiva y conserva su historial.':''}</div></section>`;
 }
 const slug=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'tipo';
@@ -1843,6 +1847,7 @@ document.addEventListener('click',e=>{
   else if(act==='u-toggle'){const u=S.usuarios.find(x=>x.id===a.dataset.id);u.activo=!u.activo;S.audit.push({fecha:nowStamp(),ini:S.user,accion:u.activo?'Activación de usuario':'Desactivación de usuario',detalle:u.nombre+' '+u.apellido+' · '+u.iniciales,txId:null});render();toast(u.iniciales+(u.activo?' activado':' desactivado'))}
   else if(act==='cc-new'){S.ccWarn=null;S.ccForm={id:null,codigo:'',nombre:'',tipo:'obra',clienteId:'',contrato:'',err:'',nuevoTipo:'',nuevoTipoObra:false,nuevoCliRazon:'',nuevoCliCuit:''};render();window.scrollTo(0,0)}
   else if(act==='cc-edit'&&!esDueno()){}
+  else if(act==='cc-del'){if(esDueno())abrirEliminar('centros',[a.dataset.id])}
   else if(act==='cc-edit'){const c=centro(a.dataset.id);S.ccWarn=null;S.ccForm={id:c.id,codigo:c.codigo,nombre:c.nombre,tipo:c.tipo,clienteId:c.clienteId||'',contrato:c.contrato?toIn(c.contrato):'',err:'',nuevoTipo:'',nuevoTipoObra:false,nuevoCliRazon:'',nuevoCliCuit:''};render();window.scrollTo(0,0)}
   else if(act==='cc-cancel'){S.ccForm=null;render()}
   else if(act==='cc-save'){ccSave(false)}
