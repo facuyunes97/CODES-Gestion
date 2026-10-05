@@ -301,6 +301,10 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
   .search{width:100%}
 }
 @media (prefers-reduced-motion:no-preference){.btn,.chip,.nav button{transition:background .12s,color .12s}}
+/* Totales al pie de las tablas */
+tfoot td{background:var(--surface-2)}
+tfoot tr.ft td{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);border-top:2px solid var(--line-2)}
+tfoot td.num{font-size:15px}
 /* Selección múltiple, edición y confirmaciones */
 .pk{width:38px;text-align:center;padding-right:0!important;cursor:pointer}
 .pk input{width:18px;height:18px;accent-color:var(--brand);cursor:pointer;vertical-align:middle}
@@ -622,17 +626,29 @@ function txList(){
   return {list,ids};
 }
 function ctaNombre(){if(S.ctaF==='todas')return '';if(S.ctaF==='bancos')return S.bancoF?cuenta(S.bancoF).nombre:'Todos los bancos';return {caja:'Caja General',cajausd:'Caja Dólares',cartera:'Cartera de Cheques'}[S.ctaF]}
+/* Totales de lo que se ve en pantalla (respetan los filtros y la búsqueda; las anuladas no suman) */
+function txTotales(list){const act=list.filter(t=>t.estado==='activa');const f=k=>sum(act.filter(t=>t.tipo===k),t=>t.total*t.tc);
+  const ing=f('entrada'),egr=f('salida'),int=f('interna');return {cant:list.length,anul:list.length-act.length,ing,egr,int,res:ing-egr}}
+function txFiltroTxt(){const p=[];if(S.filtro!=='todas')p.push({entrada:'ingresos',salida:'egresos',interna:'internos'}[S.filtro]);if(S.ctaF!=='todas')p.push(ctaNombre());if(S.q)p.push('búsqueda «'+S.q+'»');return p.join(' · ')}
+function txFoot(list,ids){
+  if(!list.length)return '';
+  const T=txTotales(list),pre=pkCols(8),post=ids?3:2,mon=S.ctaF==='cajausd'?'USD':'ARS',flt=txFiltroTxt();
+  const fila=(l,v,col)=>`<tr><td colspan="${pre}" style="text-align:right">${l}</td><td class="num" ${col?`style="color:${col}"`:''}>${money(v)}</td><td colspan="${post}"></td></tr>`;
+  return `<tfoot><tr class="ft"><td colspan="${pre+1+post}">Totales · ${T.cant} transacci${T.cant===1?'ón':'ones'}${T.anul?' ('+T.anul+' anulada'+(T.anul===1?'':'s')+', no suma'+(T.anul===1?'':'n')+')':''}${flt?' · '+esc(flt):''}</td></tr>`+
+   fila('Total ingresos',T.ing,'var(--ok)')+fila('Total egresos',T.egr,'var(--brand)')+fila('Resultado (ingresos − egresos)',T.res,T.res<0?'var(--bad)':'var(--ok)')+fila('Movimientos internos',T.int)+
+   (ids?`<tr><td colspan="${pre+1}" style="text-align:right">Movimiento neto en la cuenta · saldo final</td><td class="num">${money(sum(list,t=>t._mov||0),mon)}</td><td class="num">${money(list[list.length-1]._run||0,mon)}</td><td></td></tr>`:'')+`</tfoot>`;
+}
 function txTable(list,ids){
   if(!list.length)return '<div class="empty">No hay transacciones con ese filtro.</div>';
   const mon=S.ctaF==='cajausd'?'USD':'ARS';
   return `<div class="tw"><table><thead><tr>${pkHead('trans',list.map(t=>t.id))}<th>Nº</th><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Cliente / Proveedor</th><th>Centro</th><th>Forma de pago</th><th>Factura</th><th class="num">Total</th>${ids?'<th class="num">Mov. en cuenta</th><th class="num">Saldo</th>':'<th>Cuadre</th>'}<th>Usr</th></tr></thead><tbody>${
    list.map(t=>{const d=cuadreTx(t);const tr=tercero(t.terceroId);const medios=[...new Set(t.pagos.map(p=>medioTxt[p.medio]))].join(', ');
    const fac=t.facts.length?t.facts.map(f=>nroFact(factura(f.facturaId))).join('<br>'):(t.tipo==='interna'||t.auto?'<span class="sub">—</span>':'<span class="sub">Sin factura</span>');
-   return `<tr class="click ${S.sel===t.id?'sel':''} ${t.estado==='anulada'?'void':''} ${isPicked('trans',t.id)?'picked':''}" data-tx="${t.id}" tabindex="0">${pkCell('trans',t.id)}<td class="mono">${t.numero}</td><td class="mono">${fd(t.fecha)}</td><td>${t.estado==='anulada'?'<span class="pill p-mute">Anulada</span>':tipoPill(t.tipo)}${t.auto==='idc'?'<br><span class="pill p-warn" style="margin-top:4px">Imp. D/C</span>':''}</td><td>${esc(t.concepto)}</td><td>${tr?esc(tr.razon):'<span class="sub">Movimiento interno</span>'}</td><td><b>${esc(centro(t.ccId).codigo)}</b></td><td>${medios}${t.rets.length?'<br><span class="sub">+ '+t.rets.length+' ret./perc.</span>':''}</td><td class="mono">${fac}</td><td class="num">${money(t.total,t.moneda)}</td>${ids?`<td class="num" style="color:${t._mov<0?'var(--bad)':'var(--ok)'}">${money(t._mov,mon)}</td><td class="num">${money(t._run,mon)}</td>`:`<td>${Math.abs(d)<0.005?'<span class="pill p-ok">OK</span>':'<span class="pill p-warn">Dif. '+money(d,t.moneda)+'</span>'}</td>`}<td class="mono">${t.user}</td></tr>`}).join('')}</tbody></table></div>`;
+   return `<tr class="click ${S.sel===t.id?'sel':''} ${t.estado==='anulada'?'void':''} ${isPicked('trans',t.id)?'picked':''}" data-tx="${t.id}" tabindex="0">${pkCell('trans',t.id)}<td class="mono">${t.numero}</td><td class="mono">${fd(t.fecha)}</td><td>${t.estado==='anulada'?'<span class="pill p-mute">Anulada</span>':tipoPill(t.tipo)}${t.auto==='idc'?'<br><span class="pill p-warn" style="margin-top:4px">Imp. D/C</span>':''}</td><td>${esc(t.concepto)}</td><td>${tr?esc(tr.razon):'<span class="sub">Movimiento interno</span>'}</td><td><b>${esc(centro(t.ccId).codigo)}</b></td><td>${medios}${t.rets.length?'<br><span class="sub">+ '+t.rets.length+' ret./perc.</span>':''}</td><td class="mono">${fac}</td><td class="num">${money(t.total,t.moneda)}</td>${ids?`<td class="num" style="color:${t._mov<0?'var(--bad)':'var(--ok)'}">${money(t._mov,mon)}</td><td class="num">${money(t._run,mon)}</td>`:`<td>${Math.abs(d)<0.005?'<span class="pill p-ok">OK</span>':'<span class="pill p-warn">Dif. '+money(d,t.moneda)+'</span>'}</td>`}<td class="mono">${t.user}</td></tr>`}).join('')}</tbody>${txFoot(list,ids)}</table></div>`;
 }
 function vTrans(){
   const {list,ids}=txList();
-  const tot=k=>sum(activas().filter(t=>t.tipo===k),t=>t.total*t.tc);
+  const TT=txTotales(list);const tot=k=>({entrada:TT.ing,salida:TT.egr,interna:TT.int})[k];
   const chips=[['todas','Todas'],['entrada','Ingresos'],['salida','Egresos'],['interna','Internos']].map(([k,l])=>`<button class="chip" data-filtro="${k}" aria-pressed="${S.filtro===k}">${l}</button>`).join('');
   const ctas=[['todas','Todas las cuentas'],['caja','Caja General'],['cajausd','Caja Dólares'],['bancos','Bancos'],['cartera','Cartera de cheques']].map(([k,l])=>`<button class="chip" data-cta="${k}" aria-pressed="${S.ctaF===k}">${l}</button>`).join('');
   const bancoSel=S.ctaF==='bancos'?`<select class="sel" id="bancoF" aria-label="Banco">${opt('','Todos los bancos',S.bancoF)}${S.cuentas.filter(BANCO).map(c=>opt(c.id,c.nombre,S.bancoF)).join('')}</select>`:'';
@@ -1525,6 +1541,9 @@ function accionPk(act,a,e){
 const EXPORTS={
   trans(){const {list,ids}=txList();const cols=['Nº','Fecha','Tipo','Estado','Concepto','Cliente / Proveedor','CUIT','Centro de costo','Moneda','Tipo de cambio','Total','Formas de pago','Sale de','Entra a','Ret./perc.','Facturas','Usuario'];if(ids)cols.push('Movimiento en cuenta','Saldo');
     const rows=[cols].concat(list.map(t=>{const tr=tercero(t.terceroId);const r=[t.numero,fd(t.fecha),TIPO_LBL[t.tipo],t.estado==='activa'?'Activa':'Anulada',t.concepto,tr?tr.razon:'Movimiento interno',tr?tr.cuit:'',centro(t.ccId).codigo+' · '+centro(t.ccId).nombre,t.moneda,t.tc,t.total,t.pagos.map(p=>medioLbl(t.tipo,p.medio)+' '+p.importe).join(' | '),t.pagos.map(p=>p.origen?cuenta(p.origen).nombre:'').filter(Boolean).join(' | '),t.pagos.map(p=>p.destino?cuenta(p.destino).nombre:'').filter(Boolean).join(' | '),sum(t.rets,x=>x.importe),t.facts.map(f=>nroFact(factura(f.facturaId))).join(' | '),t.user];if(ids)r.push(t._mov,t._run);return r}));
+    const T=txTotales(list),flt=txFiltroTxt(),fila=(l,v)=>{const r=new Array(11).fill('');r[4]=l;r[10]=v;return r};
+    rows.push([],fila('TOTALES · '+T.cant+' transacciones'+(flt?' · '+flt:''),''),fila('Total ingresos',T.ing),fila('Total egresos',T.egr),fila('Resultado (ingresos − egresos)',T.res),fila('Movimientos internos',T.int));
+    if(ids&&list.length){const r=new Array(19).fill('');r[4]='Movimiento neto en la cuenta · saldo final';r[17]=sum(list,t=>t._mov||0);r[18]=list[list.length-1]._run||0;rows.push(r)}
     return {name:ids?'Libro '+ctaNombre():'Transacciones',sheets:[{name:ids?ctaNombre():'Transacciones',rows}]}},
   centros(){return {name:'Centros de costo',sheets:[{name:'Centros de costo',rows:[['Código','Nombre','Tipo','Cliente','Estado','Movimientos','Valor de contrato','Ingresos','Egresos','Resultado','Saldo pendiente']].concat(S.centros.map(c=>{const st=ccStats(c.id);const k=ccContrato(c);return [c.codigo,c.nombre,CC_TIPOS[c.tipo]||c.tipo,c.clienteId?tercero(c.clienteId).razon:'',c.activo===false?'Inactivo':'Activo',st.n,k?k.contrato:'',st.i,st.e,st.i-st.e,k?k.pendiente:'']}))}]}},
   facturas(){const rows=[['Mes','Emitida/Recibida','Fiscal','Comprobante','Fecha','Cliente / Proveedor','CUIT','Neto','IVA','No gravado/otros','Total','Imputado','Saldo','Estado','Usuario']].concat(factList().map(f=>{const t=tercero(f.terceroId);return [mesTxt(f.fecha.slice(0,7)).replace(/^./,c=>c.toUpperCase()),f.lado==='debito'?'Emitida':'Recibida',f.lado==='debito'?'Débito fiscal':'Crédito fiscal',nroFact(f),fd(f.fecha),t.razon,t.cuit,f.neto,f.iva,f.otros,f.total,isNC(f)?0:imputado(f.id),saldoFact(f),factEstado(f)[0],f.user]}));

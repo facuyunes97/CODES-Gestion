@@ -6,6 +6,7 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 
 ## Qué hace
 
+- **Totales al pie**: la lista de transacciones termina con ingresos, egresos, resultado e internos de lo que se ve en pantalla; se actualizan al filtrar o buscar y también salen en el Excel.
 - **Transacciones**: ingresos, egresos y movimientos internos, con una o varias formas de pago (efectivo, transferencia, cheque, Echeq, depósito, extracción, tarjeta) en pesos, dólares o euros.
 - **Reglas de cuentas**: el efectivo solo pasa por Caja General o Caja Dólares; transferencias, cheques propios y tarjetas, por Banco Patagonia, Banco Santiago del Estero o Mercado Pago.
 - **Impuesto a los débitos y créditos (Ley 25.413)**: se genera solo, al 0,6 %, debajo del asiento que lo origina. Exento entre cuentas bancarias propias.
