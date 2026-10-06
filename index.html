@@ -620,7 +620,7 @@ const NAV=[['nueva','Nueva transacción','mas'],['inicio','Inicio','casco'],['re
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
-  const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span><span style="font-size:10px;opacity:.55">versión 5-oct 18:10</span></span><button data-act="logout">Salir</button>`:'';
+  const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span><span style="font-size:10px;opacity:.55">versión ${BUILD}</span></span><button data-act="logout">Salir</button>`:'';
   document.getElementById('nav').innerHTML=NAV.filter(([v])=>(v!=='usuarios'||esAdmin())&&(v!=='nueva'||puedeCargar())).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
 }
 function go(v){S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
@@ -2027,6 +2027,18 @@ main.addEventListener('change',e=>{
   if(el.dataset.fact){const fid=el.dataset.fact,f=factura(fid);if(el.checked){const rest=Math.max(0,num(D.total)-sum(Object.values(D.facts),num));D.facts[fid]=toIn(Math.min(saldoFact(f),rest||saldoFact(f)))}else delete D.facts[fid];render();return}
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
+/* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
+const BUILD='6-oct 11:05';
+async function buscarVersion(){
+  if(!REAL||document.getElementById('nuevaver'))return;
+  try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
+    if(m&&m[1]!==BUILD){const d=document.createElement('div');d.id='nuevaver';d.setAttribute('role','alert');
+      d.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;background:#e5484d;color:#fff;padding:12px 16px;border-radius:10px;font:600 14px system-ui;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px #0008';
+      d.innerHTML='Hay una versión nueva del sistema <button style="background:#fff;color:#111;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer">Actualizar ahora</button>';
+      d.querySelector('button').onclick=()=>{location.href=location.pathname+'?v='+Date.now()};document.body.appendChild(d)}}catch(_){}
+}
+setTimeout(buscarVersion,3000);setInterval(buscarVersion,300000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscarVersion()});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();accionAuth({login:'ra-entrar',registro:'ra-crear',olvido:'ra-olvido',nueva:'ra-nueva'}[f.dataset.form])});
 document.addEventListener('input',e=>{const el=e.target;if(!el.dataset||!el.dataset.uf)return;const F=S.reg||S.uForm;if(!F)return;F[el.dataset.uf]=el.value;if((el.dataset.uf==='nombre'||el.dataset.uf==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre,F.apellido);const i=document.getElementById('uf-iniciales');if(i)i.value=F.iniciales}if(el.dataset.uf==='iniciales')F._iniManual=true});
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.uf==='rol'&&S.uForm){S.uForm.rol=el.value}if(el.dataset&&el.dataset.urol&&AUTH){const u=S.usuarios.find(x=>x.id===el.dataset.urol);sb.from('perfiles').update({rol:el.value}).eq('id',u.id).then(async({error})=>{if(error){toast('No se pudo: '+error.message);return}await cargarPerfiles();render();toast(u.iniciales+' ahora es '+ROL_TXT(el.value))});return}
