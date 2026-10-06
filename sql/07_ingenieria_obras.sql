@@ -173,3 +173,12 @@ $$ select c.id, coalesce(sum(t.total * t.tipo_cambio), 0), count(t.id)::integer
    where public.ve_ingenieria() group by c.id $$;
 revoke all on function pagos_contratistas() from public, anon;
 grant execute on function pagos_contratistas() to authenticated;
+
+-- v3: adjuntos en certificaciones (foto/PDF por avance) -----------------------
+alter table public.certificaciones add column if not exists adjuntos jsonb not null default '[]'::jsonb;
+insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
+values ('adjuntos-obra','adjuntos-obra',false,10485760,array['application/pdf','image/jpeg','image/png','image/webp','image/heic'])
+on conflict (id) do nothing;
+create policy adjuntos_obra_select on storage.objects for select to authenticated using (bucket_id='adjuntos-obra' and public.ve_ingenieria());
+create policy adjuntos_obra_insert on storage.objects for insert to authenticated with check (bucket_id='adjuntos-obra' and public.maneja_ingenieria());
+create policy adjuntos_obra_delete on storage.objects for delete to authenticated using (bucket_id='adjuntos-obra' and public.maneja_ingenieria());

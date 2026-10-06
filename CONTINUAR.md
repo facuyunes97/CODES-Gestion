@@ -47,3 +47,8 @@
 ## Existencia inicial
 - Transacciones → botón «+ Existencia inicial»: una pantalla con una fila por caja/banco/billetera. Crea una transacción tipo `inicial` por moneda (sin tercero, sin impuesto D/C, no cuenta como ingreso en el Resumen; en el Resumen entra como saldo inicial de la cuenta).
 - Una existencia por cuenta y por año: si ya hay una activa, avisa. Para corregirla se usa Modificar/Anular en Transacciones.
+
+## v3 (6-oct 20:00)
+- Menú: grupo **Administración**, grupo **Ingeniería / Obras** (obras, contratistas, certificación, resumen de gasto), grupo **Operario** (maquinaria, arreglos, combustible; único que ve el operario) y **Resumen de control** suelto abajo (solo administración).
+- Certificación agrupada por obra → contratista; cada avance admite adjuntos (foto/PDF ≤10 MB) en el bucket privado `adjuntos-obra` (metadatos en `certificaciones.adjuntos`).
+- Nueva vista `gasto` (Resumen de gasto): presupuesto, certificado, cobrado, avance, falta certificar y falta cobrar por contratista y obra.

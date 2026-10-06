@@ -62,6 +62,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nav button[aria-current="page"]{background:var(--side-2);color:var(--side-ink);box-shadow:inset 3px 0 0 var(--brand)}
 .nav button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .nav .count{font-family:var(--f-num);font-size:11px;color:var(--side-ink-2)}
+.nav .navbot{margin-top:18px;padding-top:12px;border-top:1px solid var(--side-2)}
+.flist{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.adj{display:inline-flex;gap:2px;margin:0 4px 4px 0}.adjnew{cursor:pointer}
+.ctblk{border-top:1px solid var(--line,#e5e5e5);padding:10px 0}.ctblk:first-of-type{border-top:0}
+.cthead{padding:0 16px 6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ctsum{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 16px 8px;font-size:13px;align-items:center}.ctsum .ctbar{min-width:140px}
 .nav .navsec{margin-top:12px;padding:6px 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
 .nav .navsec .car{transition:transform .15s;font-size:12px}.nav .navsec[aria-expanded="false"] .car{transform:rotate(-90deg)}
 .nav .navgrp{display:flex;flex-direction:column;gap:2px}.nav .navgrp[hidden]{display:none!important}
@@ -651,7 +657,8 @@ window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
 const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
-const NAV_ING=[['ingres','Resumen','plano'],['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor']];
+const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
+const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
@@ -659,9 +666,9 @@ function renderNav(){
   const act=v=>S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist');
   const btn=([v,l,ic])=>`<button data-view="${v}" ${act(v)?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`;
   const sec=(k,t,items)=>{const ab=!S.navCerr[k];return `<button class="navsec" data-sec="${k}" aria-expanded="${ab}" aria-controls="grp-${k}"><span>${t}</span><span class="car" aria-hidden="true">▾</span></button><div class="navgrp" id="grp-${k}" ${ab?'':'hidden'}>${items.filter(([v])=>vistaPermitida(v)).map(btn).join('')}</div>`};
-  document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()||soloMaq()?sec('ing','Ingeniería / Obras',NAV_ING):'');
+  document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()?sec('ing','Ingeniería / Obras',NAV_ING):'')+(veIng()||soloMaq()?sec('ope','Operario',NAV_OPE):'')+(veAdm()?`<div class="navbot">${btn(['ingres','Resumen de control','plano'])}</div>`:'');
 }
-function go(v){S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
+function go(v){KF_FILES=[];S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
@@ -1282,10 +1289,10 @@ const fromTercero=r=>({id:r.id,razon:r.razon_social,cuit:r.cuit||'',tipo:r.tipo,
 const fromCentro=r=>({id:r.id,codigo:r.codigo,nombre:r.nombre,tipo:r.tipo_id,clienteId:r.cliente_id||'',contrato:r.valor_contrato==null?0:+r.valor_contrato,activo:r.activo,marca:r.marca||'',modelo:r.modelo||'',anio:r.anio||0,patente:r.patente||'',notas:r.notas||''});
 const fromContrat=r=>({id:r.id,nombre:r.nombre,cuit:r.cuit||'',tel:r.telefono||'',obraId:r.obra_id,terceroId:r.tercero_id||'',trabajo:r.trabajo||'',dias:r.tiempo_estimado_dias||0,monto:+r.monto,estado:r.estado,obs:r.observaciones||'',ini:r.iniciales||''});
 const toContrat=c=>({id:c.id,nombre:c.nombre,cuit:c.cuit||null,telefono:c.tel||null,obra_id:c.obraId,tercero_id:c.terceroId||null,trabajo:c.trabajo||null,tiempo_estimado_dias:c.dias>0?c.dias:null,monto:num(c.monto),estado:c.estado,observaciones:c.obs||null});
-const fromCertif=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,pct:+r.avance_pct,monto:+r.monto,desc:+r.descuento_anticipo||0,obs:r.observaciones||'',ini:r.iniciales||''});
+const fromCertif=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,pct:+r.avance_pct,monto:+r.monto,desc:+r.descuento_anticipo||0,obs:r.observaciones||'',ini:r.iniciales||'',adj:Array.isArray(r.adjuntos)?r.adjuntos:[]});
 const fromAntic=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,monto:+r.monto,obs:r.observaciones||'',ini:r.iniciales||''});
 const toAntic=a=>({id:a.id,contratista_id:a.contratistaId,fecha:a.fecha,monto:num(a.monto),observaciones:a.obs||null});
-const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),descuento_anticipo:num(k.desc),observaciones:k.obs||null});
+const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),descuento_anticipo:num(k.desc),observaciones:k.obs||null,adjuntos:k.adj||[]});
 const fromComb=r=>({id:r.id,maqId:r.maquina_id,obraId:r.obra_id||'',tipo:r.tipo_combustible||'',fh:r.fecha_hora,litros:+r.litros,precio:+r.precio_litro||0,ini:r.iniciales||''});
 const toComb=x=>({id:x.id,maquina_id:x.maqId,obra_id:x.obraId||null,tipo_combustible:x.tipo||null,fecha_hora:x.fh,litros:num(x.litros)});
 const fromArreglo=r=>({id:r.id,maqId:r.maquina_id,fh:r.fecha_hora,desc:r.descripcion,costo:r.costo==null?0:+r.costo,ini:r.iniciales||''});
@@ -1521,8 +1528,8 @@ const esDueno=esAdmin;
 const ROLES={
  dueno:{n:'Dueño',d:'Control total. Es el único que modifica, anula y elimina datos, cambia los parámetros y administra a los demás usuarios.',si:['Cargar y consultar todo','Modificar, anular y eliminar','Habilitar, desactivar y eliminar usuarios','Cambiar parámetros e impuestos'],no:[],uno:true},
  contador:{n:'Contador',d:'Trabaja a diario con el sistema: carga movimientos y consulta todo, pero no puede cambiar ni borrar lo ya cargado.',si:['Cargar transacciones, facturas, cheques, clientes y obras','Consultar todo, incluida Ingeniería/Obras, y descargar Excel'],no:['Modificar, anular o eliminar lo ya cargado','Administrar usuarios']},
- ingeniero:{n:'Ingeniero',d:'Maneja toda la sección Ingeniería/Obras: obras, contratistas, certificaciones, anticipos, maquinaria, arreglos y combustible. No ve Administración ni el valor de contrato de las obras.',si:['Cargar, modificar y eliminar obras, contratistas, certificaciones, anticipos, maquinaria, arreglos y combustible','Ver el resumen de combustible y arreglos'],no:['Ver Administración (transacciones, cheques, facturas, auditoría)','Ver el valor de contrato de las obras','Cambiar los precios del combustible','Administrar usuarios']},
- operario:{n:'Operario',d:'Personal de campo. Solo carga combustible y arreglos de maquinaria, con pantallas simples y botones grandes.',si:['Cargar combustible: máquina, obra, tipo, fecha y hora, y litros','Cargar arreglos de maquinaria','Ver los datos de las máquinas'],no:['Ver obras, contratistas ni Administración','Modificar o eliminar lo ya cargado']},
+ ingeniero:{n:'Ingeniero',d:'Maneja el grupo Ingeniería/Obras (obras, contratistas, certificaciones con adjuntos, anticipos y resumen de gasto) y el grupo Operario (maquinaria, arreglos y combustible). No ve Administración, el Resumen de control ni el valor de contrato.',si:['Cargar, modificar y eliminar obras, contratistas, certificaciones, anticipos, maquinaria, arreglos y combustible','Adjuntar fotos y PDF a cada avance de certificación'],no:['Ver Administración (transacciones, cheques, facturas, auditoría)','Ver el valor de contrato de las obras','Cambiar los precios del combustible','Administrar usuarios']},
+ operario:{n:'Operario',d:'Personal de campo. Solo ve y maneja el grupo Operario: maquinaria, arreglos y combustible, con pantallas simples y botones grandes.',si:['Cargar combustible: máquina, obra, tipo, fecha y hora, y litros','Cargar arreglos de maquinaria','Ver los datos de las máquinas'],no:['Ver obras, contratistas ni Administración','Modificar o eliminar lo ya cargado']},
  lector:{n:'Lector',d:'Solo mira. Ve la información y descarga Excel, sin poder cargar ni cambiar nada. Pensado para socios, bancos o consultas externas.',si:['Consultar todo y descargar Excel'],no:['Cargar o modificar datos','Administrar usuarios']}};
 const ROL_TXT=r=>(ROLES[r]||ROLES.contador).n;
 const puedeCargar=()=>{const u=usuarioActual();return !!u&&['dueno','contador'].includes(u.rol)};
@@ -1987,10 +1994,10 @@ const manejaIng=()=>['dueno','ingeniero'].includes(rolDe());
 const veIng=()=>veAdm()||rolDe()==='ingeniero';
 const soloMaq=()=>rolDe()==='operario';
 const cargaMaq=()=>['dueno','ingeniero','operario'].includes(rolDe());
-const ING_VIEWS=['ingres','obras','contrat','certif','maq','arreglos','comb'];
+const ING_VIEWS=['obras','contrat','certif','gasto'],OPE_VIEWS=['maq','arreglos','comb'];
 const COMB_T={nafta:'Nafta',diesel_500:'Diésel 500',diesel_premium:'Diésel Premium'};
 const veContrato=()=>!['ingeniero','operario'].includes(rolDe());
-const vistaPermitida=v=>ING_VIEWS.includes(v)?(soloMaq()?(v==='maq'||v==='arreglos'||v==='comb'):veIng()):(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
+const vistaPermitida=v=>v==='ingres'?veAdm():OPE_VIEWS.includes(v)?(veIng()||soloMaq()):ING_VIEWS.includes(v)?veIng():(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
 const vistaInicial=r=>{r=r||rolDe();return ['dueno','contador','lector'].includes(r)?'inicio':r==='operario'?'comb':'obras'};
 S.navCerr=(()=>{try{return JSON.parse(localStorage.getItem('navCerr'))||{}}catch(e){return {}}})();
 S.cf=null;S.kf=null;S.af=null;S.bf=null;S.anf=null;S.pf=null;S.igDel=null;S.obraF='';S.maqF='';S.irPer='todo';
@@ -2038,6 +2045,7 @@ function igDelBox(k){
   let msg,ok=true;
   if(k==='contrat'){const n=certDe(D.id).length+S.anticipos.filter(y=>y.contratistaId===D.id).length;if(n){ok=false;msg=`Tiene ${n} certificación o anticipo cargado. Eliminalos primero, o marcá al contratista como finalizado.`}else msg='Se elimina el contratista y su monto deja de contar en la obra.'}
   else if(k==='antic'){const x=by(S.anticipos,D.id);if(x&&antTot(x.contratistaId)-x.monto<antDesc(x.contratistaId)-0.005){ok=false;msg='Ese anticipo ya se descontó en certificaciones. Eliminá primero esas certificaciones.'}else msg='Esto no se puede deshacer.'}
+  else if(k==='adj')msg='Se quita el archivo adjunto de esta certificación.';
   else msg='Esto no se puede deshacer.';
   return `<section class="panel" style="padding:0"><div class="alerta" role="alertdialog" style="margin:0;border:0"><b>¿Eliminar este registro?</b><span>${msg}</span><div class="actions"><button class="btn" data-act="ig-del-no">${ok?'Cancelar':'Entendido'}</button>${ok?`<button class="btn danger" data-act="ig-del-ok">Sí, eliminar</button>`:''}</div></div></section>`}
 
@@ -2123,27 +2131,60 @@ function vCertif(){
    ${c&&pend>0.005?fld('kf-desc','Descontar anticipo',mny('kf-desc','kf.desc',F.desc),`Elegí cuánto del anticipo se resta de este cobro (máximo ${money(pend)}). <button type="button" class="btn small" data-act="ce-desc-max">Descontar lo máximo</button>`):''}
    ${c&&num(F.monto)>0?`<div class="f"><label>Neto a pagar</label><div class="ok-box" style="margin:0"><b>${money(num(F.monto)-num(F.desc))}</b></div></div>`:''}
    ${fld('kf-obs','Observaciones',txt('kf-obs','kf.obs',F.obs),'',3)}
-  </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="ce-cancel">Cancelar</button><button type="button" class="btn dark" data-act="ce-save">Guardar certificación</button></div></section>`:'';
+   ${fld('kf-files','Adjuntar foto o PDF del avance',`<input id="kf-files" type="file" multiple accept="image/*,application/pdf" data-kfiles="1">${KF_FILES.length?`<ul class="flist">${KF_FILES.map((f,i)=>`<li>${esc(f.name)} <span class="sub">${(f.size/1048576).toFixed(1)} MB</span> <button type="button" class="btn small" data-act="kf-file-rm" data-i="${i}">Quitar</button></li>`).join('')}</ul>`:''}`,'Opcional. Fotos o PDF, hasta 10 MB cada uno.',3)}
+  </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="ce-cancel">Cancelar</button><button type="button" class="btn dark" data-act="ce-save" ${F.busy?'disabled':''}>${F.busy?'Subiendo…':'Guardar certificación'}</button></div></section>`:'';
   const aform=A?`<section class="panel"><h2>Nuevo anticipo de obra</h2>${errBox(A)}<div class="fields">
    ${fld('an-contratistaId','Contratista <em>*</em>',`<select id="an-contratistaId" data-ig="anf.contratistaId">${opt('','Elegir contratista…',A.contratistaId)}${S.contratistas.map(x=>opt(x.id,x.nombre+' · '+((centro(x.obraId)||{}).codigo||''),A.contratistaId)).join('')}</select>`,'',2)}
    ${fld('an-fecha','Fecha <em>*</em>',`<input id="an-fecha" type="date" data-ig="anf.fecha" value="${esc(A.fecha)}">`)}
    ${fld('an-monto','Monto del anticipo <em>*</em>',mny('an-monto','anf.monto',A.monto),'Se resta de las certificaciones en el monto que elijas.')}
    ${fld('an-obs','Observaciones',txt('an-obs','anf.obs',A.obs),'',2)}
   </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="an-cancel">Cancelar</button><button type="button" class="btn dark" data-act="an-save">Guardar anticipo</button></div></section>`:'';
-  const ls=[...S.certifs].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  const rows=ls.map(k=>{const ct=by(S.contratistas,k.contratistaId),o=ct&&centro(ct.obraId);
-    return `<tr><td class="mono">${fd(k.fecha)}</td><td><b>${ct?esc(ct.nombre):'—'}</b>${k.obs?`<br><span class="sub">${esc(k.obs)}</span>`:''}</td><td>${o?esc(o.codigo+' · '+o.nombre):'—'}</td><td class="mono">${k.pct.toFixed(1).replace('.',',')} %</td><td class="num">${money(k.monto)}</td><td class="num">${k.desc?'− '+money(k.desc):'—'}</td><td class="num"><b>${money(k.monto-(k.desc||0))}</b></td><td class="mono">${esc(k.ini||'—')}</td><td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="certif" data-id="${k.id}">Eliminar</button>`:''}</td></tr>`}).join('');
-  const resumen=S.contratistas.map(x=>{const cm=certMonto(x.id),p=x.monto>0?cm/x.monto*100:0,o=centro(x.obraId),at=antTot(x.id),ad=antDesc(x.id);
-    return `<tr><td><b>${esc(x.nombre)}</b></td><td>${o?esc(o.codigo):'—'}</td><td class="num">${money(x.monto)}</td><td class="num">${money(cm)}</td><td style="min-width:120px">${barra(p)}</td><td class="num">${money(at)}</td><td class="num">${money(ad)}</td><td class="num"><b>${money(cm-ad)}</b></td><td class="num">${money(x.monto-cm)}</td></tr>`}).join('');
   const as=[...S.anticipos].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const arows=as.map(a=>{const ct=by(S.contratistas,a.contratistaId),o=ct&&centro(ct.obraId);
     return `<tr><td class="mono">${fd(a.fecha)}</td><td><b>${ct?esc(ct.nombre):'—'}</b>${a.obs?`<br><span class="sub">${esc(a.obs)}</span>`:''}</td><td>${o?esc(o.codigo):'—'}</td><td class="num"><b>${money(a.monto)}</b></td><td class="num">${ct?money(antPend(ct.id)):'—'}</td><td class="mono">${esc(a.ini||'—')}</td><td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="antic" data-id="${a.id}">Eliminar</button>`:''}</td></tr>`}).join('');
-  return head('Certificación','El avance de cada contratista y lo que corresponde cobrar. Afecta al contratista y a la obra.',`${F||A||!manejaIng()?'':'<button class="btn small primary" data-act="ce-new">+ Nueva certificación</button><button class="btn small" data-act="an-new">+ Anticipo de obra</button>'}${xlsBtn('certif')}`)+form+aform+igDelBox('certif')+igDelBox('antic')+
-  (S.contratistas.length?`<section class="panel"><h2>Avance por contratista</h2><div class="tw"><table><thead><tr><th>Contratista</th><th>Obra</th><th class="num">Acordado</th><th class="num">Certificado</th><th>Avance</th><th class="num">Anticipos</th><th class="num">Descontado</th><th class="num">Neto cobrado</th><th class="num">Resta certificar</th></tr></thead><tbody>${resumen}</tbody></table></div><div class="legend">Neto cobrado = certificado − anticipos descontados. El anticipo que no se descontó queda pendiente para próximas certificaciones.</div></section>`:'')+
-  `<section class="panel"><h2>Certificaciones cargadas</h2>${ls.length?`<div class="tw"><table><thead><tr><th>Fecha</th><th>Contratista</th><th>Obra</th><th>Avance acum.</th><th class="num">Monto</th><th class="num">Anticipo</th><th class="num">Neto</th><th>Cargó</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">Todavía no hay certificaciones cargadas.</div>'}</section>
-  <section class="panel"><h2>Anticipos de obra</h2>${as.length?`<div class="tw"><table><thead><tr><th>Fecha</th><th>Contratista</th><th>Obra</th><th class="num">Monto</th><th class="num">Por descontar</th><th>Cargó</th><th></th></tr></thead><tbody>${arows}</tbody></table></div>`:'<div class="empty">Todavía no hay anticipos cargados.</div>'}</section>`}
-function ceSave(){
-  const F=S.kf;F.err='';const fail=m=>{F.err=m;render()};
+  const certRows=k=>`<tr><td class="mono">${fd(k.fecha)}</td><td class="mono">${k.pct.toFixed(1).replace('.',',')} %</td><td class="num">${money(k.monto)}</td><td class="num">${k.desc?'− '+money(k.desc):'—'}</td><td class="num"><b>${money(k.monto-(k.desc||0))}</b></td><td>${(k.adj||[]).map((x,i)=>`<span class="adj"><button type="button" class="btn small" data-act="adj-ver" data-id="${k.id}" data-i="${i}" title="${esc(x.n)}">${esc(x.n.length>22?x.n.slice(0,20)+'…':x.n)}</button>${manejaIng()?`<button type="button" class="btn small danger" data-act="ig-del" data-k="adj" data-id="${k.id}" data-i="${i}" aria-label="Quitar ${esc(x.n)}">×</button>`:''}</span>`).join(' ')}${manejaIng()?` <label class="btn small adjnew">+ Adjuntar<input type="file" hidden accept="image/*,application/pdf" data-adjcert="${k.id}"></label>`:''}${!manejaIng()&&!(k.adj||[]).length?'—':''}${k.obs?`<br><span class="sub">${esc(k.obs)}</span>`:''}</td><td class="mono">${esc(k.ini||'—')}</td><td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="certif" data-id="${k.id}">Eliminar</button>`:''}</td></tr>`;
+  const ctBloque=x=>{const ks=certDe(x.id).sort((a,b)=>b.fecha.localeCompare(a.fecha)),cm=certMonto(x.id),p=x.monto>0?cm/x.monto*100:0,at=antTot(x.id),ad=antDesc(x.id);
+    return `<div class="ctblk"><div class="cthead"><b>${esc(x.nombre)}</b>${x.estado==='finalizado'?' <span class="pill p-mute">Finalizado</span>':''}${x.trabajo?` <span class="sub">${esc(x.trabajo)}</span>`:''}${manejaIng()&&x.estado!=='finalizado'?` <button class="btn small" data-act="ce-new" data-ct="${x.id}">Certificar</button>`:''}</div>
+    <div class="ctsum"><span>Acordado <b>${money(x.monto)}</b></span><span>Certificado <b>${money(cm)}</b></span><span class="ctbar">${barra(p)}</span><span>Anticipos <b>${money(at)}</b></span><span>Descontado <b>${money(ad)}</b></span><span>Neto cobrado <b>${money(cm-ad)}</b></span><span>Resta certificar <b>${money(x.monto-cm)}</b></span></div>
+    ${ks.length?`<div class="tw"><table><thead><tr><th>Fecha</th><th>Avance acum.</th><th class="num">Monto</th><th class="num">Anticipo</th><th class="num">Neto</th><th>Adjuntos</th><th>Cargó</th><th></th></tr></thead><tbody>${ks.map(certRows).join('')}</tbody></table></div>`:'<div class="empty" style="padding:10px 16px">Sin certificaciones todavía.</div>'}</div>`};
+  const porObra=[...obras()].sort((a,b)=>a.codigo.localeCompare(b.codigo)).map(o=>{const cts=ctDe(o.id).sort((a,b)=>a.nombre.localeCompare(b.nombre));if(!cts.length)return '';
+    const con=sum(cts,x=>x.monto),cer=sum(cts,x=>certMonto(x.id)),p=con>0?cer/con*100:0;
+    return `<section class="panel"><h2>${esc(o.codigo+' · '+o.nombre)} <small>acordado ${money(con)} · certificado ${money(cer)} (${p.toFixed(0)}%) · ${cts.length} contratista${cts.length===1?'':'s'}</small></h2>${cts.map(ctBloque).join('')}</section>`}).join('');
+  return head('Certificación','Cada obra con sus contratistas: el avance, lo que corresponde cobrar y los documentos de cada avance.',`${F||A||!manejaIng()?'':'<button class="btn small primary" data-act="ce-new">+ Nueva certificación</button><button class="btn small" data-act="an-new">+ Anticipo de obra</button>'}${xlsBtn('certif')}`)+form+aform+igDelBox('certif')+igDelBox('antic')+igDelBox('adj')+
+  (porObra||'<section class="panel"><div class="empty">Todavía no hay contratistas cargados. Cargalos en Contratistas.</div></section>')+
+  `<section class="panel"><h2>Anticipos de obra</h2>${as.length?`<div class="tw"><table><thead><tr><th>Fecha</th><th>Contratista</th><th>Obra</th><th class="num">Monto</th><th class="num">Por descontar</th><th>Cargó</th><th></th></tr></thead><tbody>${arows}</tbody></table></div>`:'<div class="empty">Todavía no hay anticipos cargados.</div>'}<div class="legend">Neto cobrado = certificado − anticipos descontados.</div></section>`}
+/* adjuntos */
+let KF_FILES=[];
+const ADJ_OK=f=>/^(image\/|application\/pdf)/.test(f.type)||/\.(pdf|jpe?g|png|webp|heic)$/i.test(f.name);
+async function subirAdj(file,certId){
+  if(!ADJ_OK(file))throw new Error('Solo se aceptan fotos o PDF.');
+  if(file.size>10485760)throw new Error('"'+file.name+'" pesa más de 10 MB.');
+  const it={n:file.name,t:file.type||'',s:file.size};
+  if(REAL){const path=certId+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'-'+file.name.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w.\-]+/g,'_');
+    const {error}=await sb.storage.from('adjuntos-obra').upload(path,file,{contentType:file.type||undefined});if(error)throw new Error('No se pudo subir "'+file.name+'".');it.p=path}
+  else it.u=URL.createObjectURL(file);
+  return it}
+async function verAdj(a){
+  let url=a.u;
+  if(REAL){const {data,error}=await sb.storage.from('adjuntos-obra').createSignedUrl(a.p,120);if(error||!data){toast('No se pudo abrir el archivo');return}url=data.signedUrl}
+  if(!url)return;const l=document.createElement('a');l.href=url;l.target='_blank';l.rel='noopener';document.body.appendChild(l);l.click();l.remove()}
+/* --- Resumen de gasto por obra y contratista --- */
+function vGasto(){
+  const os=obras().filter(o=>!S.obraF||o.id===S.obraF).sort((a,b)=>a.codigo.localeCompare(b.codigo)).filter(o=>ctDe(o.id).length);
+  const todos=os.flatMap(o=>ctDe(o.id));
+  const T={pres:sum(todos,x=>x.monto),cer:sum(todos,x=>certMonto(x.id)),cob:sum(todos,pagadoCt)};
+  const secs=os.map(o=>{const cts=ctDe(o.id).sort((a,b)=>a.nombre.localeCompare(b.nombre)),pr=sum(cts,x=>x.monto),ce=sum(cts,x=>certMonto(x.id)),co=sum(cts,pagadoCt),cb=sum(S.comb.filter(x=>x.obraId===o.id),cbCosto);
+    const rows=cts.map(x=>{const cm=certMonto(x.id),pg=pagadoCt(x),p=x.monto>0?cm/x.monto*100:0;
+      return `<tr><td><b>${esc(x.nombre)}</b>${x.estado==='finalizado'?' <span class="pill p-mute">Finalizado</span>':''}</td><td class="num">${money(x.monto)}</td><td class="num">${money(cm)}</td><td class="num">${money(pg)}</td><td style="min-width:120px">${barra(p)}</td><td class="num">${money(x.monto-cm)}</td><td class="num"><b>${money(x.monto-pg)}</b></td></tr>`}).join('');
+    return `<section class="panel"><h2>${esc(o.codigo+' · '+o.nombre)} <small>combustible de la obra ${money(cb)}</small></h2><div class="tw"><table><thead><tr><th>Contratista</th><th class="num">Presupuesto</th><th class="num">Certificado</th><th class="num">Cobrado</th><th>Avance</th><th class="num">Falta certificar</th><th class="num">Falta cobrar</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td><b>Total de la obra</b></td><td class="num"><b>${money(pr)}</b></td><td class="num"><b>${money(ce)}</b></td><td class="num"><b>${money(co)}</b></td><td>${barra(pr>0?ce/pr*100:0)}</td><td class="num"><b>${money(pr-ce)}</b></td><td class="num"><b>${money(pr-co)}</b></td></tr></tfoot></table></div></section>`}).join('');
+  const sel=`<select id="igObraF" aria-label="Filtrar por obra" class="rolsel"><option value="">Todas las obras</option>${obras().map(o=>opt(o.id,o.codigo+' · '+o.nombre,S.obraF)).join('')}</select>`;
+  return head('Resumen de gasto','Por obra y por contratista: presupuesto, lo certificado, lo que fueron cobrando, el avance y lo que falta.',xlsBtn('gasto'))+
+  `<section class="panel"><div class="toolbar">${sel}</div></section>
+  <div class="kpis"><div class="kpi"><small>Presupuesto total</small><b>${money(T.pres)}</b></div><div class="kpi"><small>Cobrado</small><b>${money(T.cob)}</b></div><div class="kpi"><small>Falta cobrar</small><b>${money(T.pres-T.cob)}</b></div><div class="kpi"><small>Avance global</small><b>${(T.pres>0?T.cer/T.pres*100:0).toFixed(0)}%</b></div></div>`+
+  (secs||'<section class="panel"><div class="empty">Todavía no hay contratistas cargados.</div></section>')+
+  `<div class="legend" style="margin:0 0 16px">Presupuesto = monto acordado con el contratista. Cobrado = pagos hechos al contratista. Falta cobrar = presupuesto − cobrado. Falta certificar = presupuesto − certificado.</div>`}
+async function ceSave(){
+  const F=S.kf;if(F.busy)return;F.err='';const fail=m=>{F.err=m;render()};
   const c=by(S.contratistas,F.contratistaId);
   if(!c)return fail('Elegí el contratista.');
   if(!F.fecha)return fail('Cargá la fecha.');
@@ -2156,8 +2197,10 @@ function ceSave(){
   if(certMonto(c.id)+monto>c.monto+0.01)return fail('Con esta certificación se supera lo acordado con el contratista ('+money(c.monto)+').');
   if(desc>monto+0.005)return fail('El anticipo a descontar no puede ser mayor al monto de la certificación.');
   if(desc>antPend(c.id)+0.005)return fail('El anticipo a descontar supera lo que queda pendiente ('+money(antPend(c.id))+').');
-  S.certifs.push({id:nid('ce'),contratistaId:c.id,fecha:F.fecha,pct,monto,desc:desc>0?desc:0,obs:F.obs.trim(),ini:S.user});
-  aud('Alta','Certificación · '+c.nombre+' · avance '+pct+'% · '+money(monto)+(desc>0?' · anticipo descontado '+money(desc):''));
+  const id=nid('ce'),adj=[];
+  if(KF_FILES.length){F.busy=true;render();try{for(const f of KF_FILES)adj.push(await subirAdj(f,id))}catch(e){F.busy=false;return fail(e.message||'No se pudieron subir los archivos.')}F.busy=false}
+  S.certifs.push({id,contratistaId:c.id,fecha:F.fecha,pct,monto,desc:desc>0?desc:0,obs:F.obs.trim(),ini:S.user,adj});KF_FILES=[];
+  aud('Alta','Certificación · '+c.nombre+' · avance '+pct+'% · '+money(monto)+(desc>0?' · anticipo descontado '+money(desc):'')+(adj.length?' · '+adj.length+' adjunto'+(adj.length===1?'':'s'):''));
   S.kf=null;render();toast('Certificación guardada')}
 function anSave(){
   const A=S.anf;A.err='';const fail=m=>{A.err=m;render()};
@@ -2279,8 +2322,10 @@ function igAct(act,a){
    case 'ct-pagos':S.ctPagos=S.ctPagos===a.dataset.id?null:a.dataset.id;render();return true;
    case 'ct-save':ctSave();return true;
    case 'ct-fin':{if(!manejaIng())return true;const c=by(S.contratistas,a.dataset.id);c.estado=c.estado==='finalizado'?'activo':'finalizado';aud('Modificación','Contratista '+c.nombre+' · '+(c.estado==='finalizado'?'finalizado':'reabierto'));render();return true}
-   case 'ce-new':{if(!manejaIng())return true;const nuevo=()=>({contratistaId:a.dataset.ct||'',fecha:TODAY,pct:'',monto:'',desc:'',obs:'',err:''});if(S.view!=='certif'){go('certif')}S.kf=nuevo();render();window.scrollTo(0,0);return true}
-   case 'ce-cancel':S.kf=null;render();return true;
+   case 'ce-new':{if(!manejaIng())return true;KF_FILES=[];const nuevo=()=>({contratistaId:a.dataset.ct||'',fecha:TODAY,pct:'',monto:'',desc:'',obs:'',err:''});if(S.view!=='certif'){go('certif')}S.kf=nuevo();render();window.scrollTo(0,0);return true}
+   case 'ce-cancel':S.kf=null;KF_FILES=[];render();return true;
+   case 'kf-file-rm':KF_FILES.splice(+a.dataset.i,1);render();return true;
+   case 'adj-ver':{const k=by(S.certifs,a.dataset.id),x=k&&(k.adj||[])[+a.dataset.i];if(x)verAdj(x);return true}
    case 'ce-save':ceSave();return true;
    case 'ce-desc-max':{const F=S.kf,c=F&&by(S.contratistas,F.contratistaId);if(c){const m=num(F.monto),p=antPend(c.id);F.desc=toIn(Math.max(0,Math.min(p,m>0?m:p)));render()}return true}
    case 'an-new':if(!manejaIng())return true;S.anf={contratistaId:'',fecha:TODAY,monto:'',obs:'',err:''};render();window.scrollTo(0,0);return true;
@@ -2291,9 +2336,10 @@ function igAct(act,a){
    case 'ar-cancel':S.af=null;render();return true;
    case 'ar-save':if(!cargaMaq())return true;arSave();return true;
    case 'cb-save':if(!cargaMaq())return true;cbSave();return true;
-   case 'ig-del':if(!manejaIng())return true;S.igDel={k:a.dataset.k,id:a.dataset.id};render();window.scrollTo(0,0);return true;
+   case 'ig-del':if(!manejaIng())return true;S.igDel={k:a.dataset.k,id:a.dataset.id,i:a.dataset.i};render();window.scrollTo(0,0);return true;
    case 'ig-del-no':S.igDel=null;render();return true;
-   case 'ig-del-ok':{if(!manejaIng()||!S.igDel)return true;const {k,id}=S.igDel;S.igDel=null;
+   case 'ig-del-ok':{if(!manejaIng()||!S.igDel)return true;const {k,id,i}=S.igDel;S.igDel=null;
+     if(k==='adj'){const c=by(S.certifs,id),x=c&&(c.adj||[])[+i];if(x){c.adj=c.adj.filter((_,j)=>j!==+i);if(REAL&&x.p)sb.storage.from('adjuntos-obra').remove([x.p]).catch(()=>{});aud('Eliminación','Adjunto '+x.n+' de certificación');toast('Adjunto quitado')}render();return true}
      const T={contrat:['contratistas',x=>'Contratista '+x.nombre],certif:['certifs',x=>'Certificación '+money(x.monto)],antic:['anticipos',x=>'Anticipo de obra '+money(x.monto)],comb:['comb',x=>'Combustible '+lts(x.litros)],arreglo:['arreglos',x=>'Arreglo '+x.desc]}[k];
      if(!T)return true;const x=by(S[T[0]],id);if(!x)return render(),true;
      if(k==='contrat'&&(certDe(id).length||S.anticipos.some(y=>y.contratistaId===id)))return render(),true;
@@ -2304,11 +2350,12 @@ function igAct(act,a){
 Object.assign(EXPORTS,{
   obras(){const vc=veContrato();return {name:'Obras',sheets:[{name:'Obras',rows:[['Código','Obra'].concat(vc?['Cliente','Contrato']:[],['Contratistas','Contratado','Certificado','Avance %','Por certificar'])].concat(obras().map(c=>{const cts=ctDe(c.id),con=sum(cts,x=>x.monto),cer=sum(cts,x=>certMonto(x.id)),cl=c.clienteId&&tercero(c.clienteId);return [c.codigo,c.nombre].concat(vc?[cl?cl.razon:'',c.contrato||0]:[],[cts.length,con,cer,con>0?Math.round(cer/con*1000)/10:0,con-cer])}))}]}},
   contrat(){return {name:'Contratistas',sheets:[{name:'Contratistas',rows:[['Contratista','CUIT','Teléfono','Obra','Trabajo','Tiempo (días)','Monto','Certificado','Avance %','Anticipos','Por cobrar','Pagado','Saldo a pagar','Estado']].concat(S.contratistas.map(c=>{const cer=certMonto(c.id),o=centro(c.obraId);return [c.nombre,c.cuit||'',c.tel||'',o?o.codigo+' · '+o.nombre:'',c.trabajo||'',c.dias||'',c.monto,cer,c.monto>0?Math.round(cer/c.monto*1000)/10:0,antTot(c.id),c.monto-cer,pagadoCt(c),cer-pagadoCt(c),c.estado==='finalizado'?'Finalizado':'Activo']}))}]}},
-  certif(){return {name:'Certificaciones',sheets:[{name:'Certificaciones',rows:[['Fecha','Contratista','Obra','Avance acumulado %','Monto','Anticipo descontado','Neto','Observaciones','Cargó']].concat([...S.certifs].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(k=>{const c=by(S.contratistas,k.contratistaId),o=c&&centro(c.obraId);return [fd(k.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',k.pct,k.monto,k.desc||0,k.monto-(k.desc||0),k.obs||'',k.ini||'']}))},
+  certif(){return {name:'Certificaciones',sheets:[{name:'Certificaciones',rows:[['Fecha','Contratista','Obra','Avance acumulado %','Monto','Anticipo descontado','Neto','Observaciones','Adjuntos','Cargó']].concat([...S.certifs].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(k=>{const c=by(S.contratistas,k.contratistaId),o=c&&centro(c.obraId);return [fd(k.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',k.pct,k.monto,k.desc||0,k.monto-(k.desc||0),k.obs||'',(k.adj||[]).map(x=>x.n).join(', '),k.ini||'']}))},
     {name:'Anticipos',rows:[['Fecha','Contratista','Obra','Monto','Observaciones','Cargó']].concat([...S.anticipos].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(a=>{const c=by(S.contratistas,a.contratistaId),o=c&&centro(c.obraId);return [fd(a.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',a.monto,a.obs||'',a.ini||'']}))}]}},
   maq(){return {name:'Maquinaria',sheets:[{name:'Máquinas',rows:[['Código','Máquina','Marca','Modelo','Año','Patente / serie','Otros datos']].concat(maquinas().map(m=>[m.codigo,m.nombre,m.marca||'',m.modelo||'',m.anio||'',m.patente||'',m.notas||'']))}]}},
   arreglos(){return {name:'Arreglos de maquinaria',sheets:[{name:'Arreglos',rows:[['Fecha','Hora','Máquina','Qué se arregló','Costo','Cargó']].concat([...S.arreglos].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[fd(fhDia(x.fh)),fhHora(x.fh),maqNom(x.maqId),x.desc,x.costo||'',x.ini||'']))}]}},
   comb(){return {name:'Combustible',sheets:[{name:'Combustible',rows:[['Máquina','Fecha','Hora','Litros','Combustible','Obra','Precio por litro','Total','Cargó']].concat([...S.comb].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,COMB_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),x.ini||'']))}]}},
+  gasto(){const os=obras().filter(o=>!S.obraF||o.id===S.obraF);return {name:'Resumen de gasto',sheets:[{name:'Gasto por contratista',rows:[['Obra','Contratista','Presupuesto','Certificado','Cobrado','Avance %','Falta certificar','Falta cobrar']].concat(os.flatMap(o=>ctDe(o.id).map(x=>{const cm=certMonto(x.id),pg=pagadoCt(x);return [o.codigo+' · '+o.nombre,x.nombre,x.monto,cm,pg,x.monto>0?Math.round(cm/x.monto*1000)/10:0,x.monto-cm,x.monto-pg]})))}]}},
   ingres(){const R=irDatos();return {name:'Resumen de ingeniería',sheets:[
     {name:'Por obra',rows:[['Obra','Litros','Total']].concat([...R.po].map(([id,o])=>[id?obraNom(id):'Sin obra',o.l,o.c]))},
     {name:'Por máquina',rows:[['Máquina','Litros','Total combustible','Arreglos','Costo arreglos']].concat(maquinas().map(m=>{const o=R.pm.get(m.id)||{l:0,c:0},ar=R.ar.filter(x=>x.maqId===m.id);return [m.codigo+' · '+m.nombre,o.l,o.c,ar.length,sum(ar,x=>x.costo)]}))},
@@ -2323,7 +2370,7 @@ function render(){
   if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -2448,6 +2495,8 @@ main.addEventListener('change',e=>{
   const el=e.target;
   if(el.id==='igObraF'){S.obraF=el.value;render();return}
   if(el.id==='igMaqF'){S.maqF=el.value;render();return}
+  if(el.dataset.kfiles){KF_FILES=KF_FILES.concat([...el.files].filter(f=>{if(!ADJ_OK(f)||f.size>10485760){toast('"'+f.name+'": solo fotos o PDF de hasta 10 MB');return false}return true}));render();return}
+  if(el.dataset.adjcert){const k=by(S.certifs,el.dataset.adjcert),fs=[...el.files];if(!k||!fs.length||!manejaIng())return;toast('Subiendo…');(async()=>{try{for(const f of fs)k.adj=(k.adj||[]).concat([await subirAdj(f,k.id)]);aud('Modificación','Adjunto agregado a certificación · '+fs.map(f=>f.name).join(', '));toast('Adjunto guardado')}catch(e){toast(e.message||'No se pudo subir')}render()})();return}
   if(el.dataset.ig){const [f,k]=el.dataset.ig.split('.');const F=S[f];if(F){F[k]=el.value;if(f==='kf'&&k==='contratistaId'){F.pct='';F.monto='';render()}else if(f==='kf'&&(k==='pct'||k==='monto')){kfCalc(F,k);render()}}return}
   if(el.id==='bancoF'){S.bancoF=el.value;render();return}
   if(el.id==='ccTipoF'){S.ccTipo=el.value;if(S.ccF&&S.ccTipo&&centro(S.ccF)?.tipo!==S.ccTipo)S.ccF='';render();return}
@@ -2475,7 +2524,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='6-oct 17:00';
+const BUILD='6-oct 20:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
