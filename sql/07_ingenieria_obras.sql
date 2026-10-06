@@ -98,3 +98,56 @@ alter table centros_costo add column if not exists marca text, add column if not
 create policy ing_edita_centros on centros_costo for update
   using (rol_actual() = 'ingeniero' and tipo_id in ('obra','maquina'))
   with check (rol_actual() = 'ingeniero' and tipo_id in ('obra','maquina'));
+
+-- 5) Segunda tanda (migraciones ingenieria_v2_tablas, ingenieria_v2_reglas e ingenieria_v2_quita_check_obra)
+alter table combustible_cargas
+  add column if not exists tipo_combustible text check (tipo_combustible in ('nafta','diesel_500','diesel_premium')),
+  add column if not exists obra_id uuid references centros_costo(id),
+  add column if not exists precio_litro numeric check (precio_litro is null or precio_litro >= 0);
+create table precios_combustible (id text primary key check (id in ('nafta','diesel_500','diesel_premium')),
+  precio numeric not null default 0 check (precio >= 0), updated_at timestamptz not null default now());
+insert into precios_combustible (id) values ('nafta'),('diesel_500'),('diesel_premium');
+alter table precios_combustible enable row level security;
+create policy ver on precios_combustible for select using (usuario_activo());          -- todos los activos (el operario ve el total)
+create policy cargar on precios_combustible for insert with check (puede_cargar());    -- solo dueño y contador
+create policy editar on precios_combustible for update using (puede_cargar()) with check (puede_cargar());
+create trigger trg_audit_precios after insert or update or delete on precios_combustible for each row execute function registrar_auditoria();
+create table anticipos_obra (
+  id uuid primary key default gen_random_uuid(),
+  contratista_id uuid not null references contratistas(id),
+  fecha date not null, monto numeric not null check (monto > 0), observaciones text,
+  created_by uuid references perfiles(id), iniciales varchar, created_at timestamptz not null default now());
+alter table anticipos_obra enable row level security;
+create policy ver on anticipos_obra for select using (ve_ingenieria());
+create policy cargar on anticipos_obra for insert with check (maneja_ingenieria());
+create policy editar on anticipos_obra for update using (maneja_ingenieria()) with check (maneja_ingenieria());
+create policy borrar on anticipos_obra for delete using (maneja_ingenieria());
+create trigger trg_autor_anticipos before insert on anticipos_obra for each row execute function poner_autor();
+create trigger trg_audit_anticipos after insert or update or delete on anticipos_obra for each row execute function registrar_auditoria();
+alter publication supabase_realtime add table anticipos_obra, precios_combustible;
+alter table certificaciones add column if not exists descuento_anticipo numeric not null default 0 check (descuento_anticipo >= 0);
+-- el precio por litro lo fija el servidor al cargar (el operario no puede alterarlo)
+create function fijar_precio_combustible() returns trigger language plpgsql security definer set search_path = public as
+$$ begin new.precio_litro := coalesce((select precio from precios_combustible where id = new.tipo_combustible), 0); return new; end $$;
+create trigger trg_precio_combustible before insert on combustible_cargas for each row execute function fijar_precio_combustible();
+-- el Ingeniero no ve ni cambia el valor de contrato: crea obras sin contrato y no puede modificarlo
+alter table centros_costo drop constraint chk_obra_contrato;   -- lo reemplaza el trigger validar_centro_costo()
+create or replace function validar_centro_costo() returns trigger language plpgsql set search_path = public as
+$$ declare v_obra boolean; v_ing boolean;
+begin
+  v_ing := coalesce(public.rol_actual() = 'ingeniero', false);
+  if new.tipo_id is null then new.tipo_id := new.tipo::text; end if;
+  select lleva_contrato into v_obra from tipos_centro where id = new.tipo_id;
+  if v_obra is null then raise exception 'Tipo de centro inexistente'; end if;
+  if v_ing then
+    if tg_op = 'INSERT' then new.valor_contrato := null; else new.valor_contrato := old.valor_contrato; new.cliente_id := old.cliente_id; end if;
+  elsif v_obra and (new.cliente_id is null or coalesce(new.valor_contrato,0) <= 0) then
+    raise exception 'Este tipo de centro lleva cliente y valor de contrato';
+  end if;
+  new.tipo := case when new.tipo_id in ('obra','maquina','administracion','otro') then new.tipo_id::tipo_centro_costo else 'otro'::tipo_centro_costo end;
+  return new;
+end $$;
+-- el Operario ve máquinas y obras (código y nombre; la pantalla no muestra el contrato)
+alter policy operario_ve_maquinas on centros_costo using (rol_actual() = 'operario' and tipo_id in ('maquina','obra'));
+alter policy limite_por_rol on centros_costo using (es_admin_lectura()
+  or (rol_actual() = 'ingeniero' and tipo_id in ('obra','maquina')) or (rol_actual() = 'operario' and tipo_id in ('maquina','obra')));
