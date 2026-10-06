@@ -45,6 +45,7 @@ Sistema de gestión de **CODES Construcciones (CODES SRL)**: registra cada ingre
 | `sql/03_roles_dueno_contador.sql` | Roles Dueño y Contador: solo el dueño modifica o elimina |
 | `sql/05_rol_lector_y_usuarios.sql` | Rol Lector (solo consulta) y eliminación de usuarios |
 | `sql/06_existencia_inicial.sql` | Tipo de transacción «Existencia inicial» |
+| `sql/07_ingenieria_obras.sql` | Sección Ingeniería/Obras: roles Ingeniero y Operario, contratistas, certificaciones, combustible y arreglos de maquinaria |
 | `sql/04_guardado_tiempo_real.sql` | Guardado completo de transacciones, tipos de centro, tercero ARCA y Realtime |
 | `CNAME` | Dominio propio de GitHub Pages (codesconstrucciones.com.ar) |
 | `manifest.webmanifest` | Para instalarlo como app en el celular |

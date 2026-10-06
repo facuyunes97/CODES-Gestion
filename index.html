@@ -49,7 +49,9 @@ html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
 button,input,select,textarea{font:inherit;color:inherit}
 .app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
-.side{background:var(--side);color:var(--side-ink);padding-block:20px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
+.side{background:var(--side);color:var(--side-ink);padding-block:20px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:thin}
+.side>*{flex-shrink:0}
+@media (min-width:701px) and (max-height:980px){.side .machine{display:none}.side{gap:14px}}
 .brand{padding-inline:20px;display:flex;flex-direction:column;gap:2px}
 .brand .mark{font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:.06em;line-height:1;display:flex;align-items:center;gap:8px}
 .brand .mark i{width:10px;height:26px;background:var(--brand);display:inline-block}
@@ -60,6 +62,21 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nav button[aria-current="page"]{background:var(--side-2);color:var(--side-ink);box-shadow:inset 3px 0 0 var(--brand)}
 .nav button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .nav .count{font-family:var(--f-num);font-size:11px;color:var(--side-ink-2)}
+.nav .navsec{margin-top:12px;padding:6px 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.nav .navsec .car{transition:transform .15s;font-size:12px}.nav .navsec[aria-expanded="false"] .car{transform:rotate(-90deg)}
+.nav .navgrp{display:flex;flex-direction:column;gap:2px}.nav .navgrp[hidden]{display:none!important}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:70px}.bar i{display:block;height:100%;background:var(--brand)}
+.opform{display:flex;flex-direction:column;gap:16px;padding:0 16px 16px}.opform label{font-weight:700}
+.opform input{width:100%;box-sizing:border-box}
+.opform.xl{gap:22px;padding:6px 18px 22px}.opform.xl label{font-size:20px}.opform.xl input{font-size:26px;padding:14px;border:2px solid var(--line-2);border-radius:10px}
+.opform.xl .ok-box{font-size:20px}
+.maqbtns{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:6px}
+.maqbtn{all:unset;box-sizing:border-box;cursor:pointer;border:2px solid var(--line-2);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;background:var(--surface);color:var(--ink)}
+.maqbtn .ic{width:34px;height:34px}.maqbtn span{font-size:13px;opacity:.7}
+.maqbtn[aria-pressed="true"]{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+.maqbtn:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.opform.xl .maqbtn{font-size:20px;padding:20px 10px}.opform.xl .maqbtn .ic{width:48px;height:48px}
+.btn.big{font-size:24px;padding:20px 24px;width:100%;justify-content:center}
 .nav .new{background:var(--brand);color:var(--brand-ink);justify-content:center;margin-bottom:10px}
 .nav .new:hover{background:var(--brand-hover);color:var(--brand-ink)}
 .nav .new[aria-current="page"]{background:var(--brand-hover);color:var(--brand-ink);box-shadow:none}
@@ -285,6 +302,7 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
   .nav{flex-direction:row;overflow-x:auto;padding:0 12px 10px;gap:4px}
   .nav button{white-space:nowrap;padding:8px 12px}
   .nav .new{margin-bottom:0}
+  .nav .navgrp{flex-direction:row;gap:4px}.nav .navsec{margin-top:0;white-space:nowrap}
   .nav button[aria-current="page"]{box-shadow:inset 0 -3px 0 var(--brand)}
   .side .machine{display:none}
   .side .who{position:absolute;right:12px;top:16px;margin:0;padding:0;gap:6px}
@@ -394,6 +412,7 @@ tr.picked td{background:var(--warn-soft)}
   <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
   <symbol id="i-excavadora" viewBox="0 0 24 24"><rect x="2" y="16" width="12" height="4.5" rx="2.25"/><path d="M3.5 16v-4.5h5l2 4.5"/><path d="M9.5 11.5l4.5-6.5 5 3.5"/><path d="M19 8.5l1.5 5h-3.5"/></symbol>
   <symbol id="i-oficina" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/><path d="M10.5 21v-3h3v3"/></symbol>
+  <symbol id="i-surtidor" viewBox="0 0 24 24"><rect x="5" y="3" width="9" height="18" rx="1.5"/><path d="M8 7h3"/><path d="M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V9l-2.5-2.5"/><path d="M3.5 21h12"/></symbol>
   <symbol id="i-libreta" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 3v18"/><path d="M12.5 8h3.5"/><path d="M12.5 12h3.5"/></symbol>
 </svg>
 <div class="app">
@@ -438,7 +457,9 @@ const S={
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
   {id:'u2',nombre:'María',apellido:'López (ejemplo)',iniciales:'ML',email:'',rol:'contador',activo:true,alta:'2026-09-15'},
-  {id:'u3',nombre:'Carlos',apellido:'Pérez (ejemplo)',iniciales:'CP',email:'',rol:'contador',activo:true,alta:'2026-09-15'}],
+  {id:'u3',nombre:'Carlos',apellido:'Pérez (ejemplo)',iniciales:'CP',email:'',rol:'contador',activo:true,alta:'2026-09-15'},
+  {id:'u4',nombre:'Laura',apellido:'Gómez (ejemplo)',iniciales:'LG',email:'',rol:'ingeniero',activo:true,alta:'2026-09-20'},
+  {id:'u5',nombre:'Mario',apellido:'Díaz (ejemplo)',iniciales:'MD',email:'',rol:'operario',activo:true,alta:'2026-09-20'}],
  cuentas:[
   {id:'c1',nombre:'Caja General',tipo:'caja',moneda:'ARS'},
   {id:'c2',nombre:'Caja Dólares',tipo:'caja',moneda:'USD'},
@@ -458,7 +479,13 @@ const S={
   {id:'t4',razon:'Consorcio Belgrano 450 (ejemplo)',cuit:'30-44444444-4',tipo:'cliente'},
   {id:'t5',razon:'Estación de Servicio Ruta 9 (ejemplo)',cuit:'30-55555555-5',tipo:'proveedor'},
   {id:'tARCA',razon:'ARCA · Impuesto débitos y créditos',cuit:'33-69345023-9',tipo:'proveedor',sistema:true}],
- facturas:[],cheques:[],trans:[],audit:[]
+ facturas:[],cheques:[],trans:[],audit:[],
+ contratistas:[
+  {id:'ct1',nombre:'Hormigones Pérez (ejemplo)',cuit:'',tel:'',obraId:'cc2',trabajo:'Estructura de hormigón',dias:45,monto:1200000,estado:'activo',obs:'',ini:'LG'},
+  {id:'ct2',nombre:'Electricidad Ruiz (ejemplo)',cuit:'',tel:'',obraId:'cc3',trabajo:'Instalación eléctrica',dias:20,monto:800000,estado:'activo',obs:'',ini:'LG'}],
+ certifs:[{id:'ce1',contratistaId:'ct1',fecha:'2026-09-28',pct:40,monto:480000,obs:'',ini:'LG'}],
+ comb:[{id:'cb1',maqId:'cc4',fh:'2026-09-29T08:15:00-03:00',litros:80,ini:'MD'},{id:'cb2',maqId:'cc4',fh:'2026-09-30T07:50:00-03:00',litros:65,ini:'MD'}],
+ arreglos:[{id:'ar1',maqId:'cc4',fh:'2026-09-25T16:30:00-03:00',desc:'Cambio de filtro de aceite',costo:35000,ini:'MD'}]
 };
 const F=(id,terceroId,lado,tipo,pv,nro,fecha,neto,iva,total,user)=>({id,terceroId,lado,tipo,pv,nro,fecha,neto,iva,otros:r2(total-neto-iva),total,user,creada:fecha});
 S.facturas=[
@@ -616,14 +643,18 @@ async function exportar(k){
 window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
-const NAV=[['nueva','Nueva transacción','mas'],['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
+const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
+const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['maq','Maquinaria','excavadora'],['comb','Combustible','surtidor']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
   const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span><span style="font-size:10px;opacity:.55">versión ${BUILD}</span></span><button data-act="logout">Salir</button>`:'';
-  document.getElementById('nav').innerHTML=NAV.filter(([v])=>(v!=='usuarios'||esAdmin())&&(v!=='nueva'||puedeCargar())).map(([v,l,ic])=>`<button data-view="${v}" class="${v==='nueva'?'new':''}" ${S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist')?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`).join('');
+  const act=v=>S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist');
+  const btn=([v,l,ic])=>`<button data-view="${v}" ${act(v)?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`;
+  const sec=(k,t,items)=>{const ab=!S.navCerr[k];return `<button class="navsec" data-sec="${k}" aria-expanded="${ab}" aria-controls="grp-${k}"><span>${t}</span><span class="car" aria-hidden="true">▾</span></button><div class="navgrp" id="grp-${k}" ${ab?'':'hidden'}>${items.filter(([v])=>vistaPermitida(v)).map(btn).join('')}</div>`};
+  document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()||soloMaq()?sec('ing','Ingeniería / Obras',NAV_ING):'');
 }
-function go(v){S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
+function go(v){S.cf=S.kf=S.af=S.bf=S.igDel=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
@@ -1107,6 +1138,7 @@ function ccSave(forzar){
     if(F.clienteId==='__nuevo__'){const v=validarTercero(F.nuevoCliRazon,F.nuevoCliCuit);if(v.err)return fail(v.err);cliNuevo=v}
     if(!(contrato>0))return fail('Cargá el valor de contrato.');
   }
+  if(F.kind==='maquina'&&F.anio&&!(+F.anio>=1950&&+F.anio<=2100))return fail('El año tiene que tener 4 números (por ejemplo 2018).');
   const prev=F.id&&centro(F.id);
   if(prev){
     const cmp={codigo:cod,nombre:nom,tipo:tipoNuevo?'__nuevo__':tipo,clienteId:obra?F.clienteId:'',contrato};
@@ -1118,7 +1150,8 @@ function ccSave(forzar){
     S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Tipo de centro de costo '+tipoNuevo.nombre+(tipoNuevo.obra?' (con cliente y contrato)':''),txId:null})}
   let clienteId=obra?F.clienteId:'';
   if(cliNuevo)clienteId=nuevoTercero(cliNuevo,'cliente').id;
-  const datos={codigo:cod,nombre:nom,tipo,clienteId,contrato};
+  const extra=F.kind==='maquina'?{marca:(F.marca||'').trim(),modelo:(F.modelo||'').trim(),anio:F.anio?+F.anio:0,patente:(F.patente||'').trim(),notas:(F.notas||'').trim()}:{};
+  const datos={codigo:cod,nombre:nom,tipo,clienteId,contrato,...extra};
   if(F.id){const c=centro(F.id);
     Object.assign(c,datos);S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Modificación',detalle:'Centro de costo '+cod+' · '+nom+(obra?' · contrato '+money(contrato):''),txId:null});toast('Centro '+cod+' actualizado')}
   else{S.centros.push({id:nid('cc'),...datos,activo:true});S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Centro de costo '+cod+' · '+nom+(obra?' · contrato '+money(contrato):''),txId:null});toast('Centro '+cod+' creado. Ya se puede usar en las transacciones.')}
@@ -1239,7 +1272,15 @@ const hhmm=d=>d?new Date(d).toLocaleTimeString('es-AR',{timeZone:TZ,hour:'2-digi
 /* base → pantalla */
 const fromCuenta=r=>({id:r.id,nombre:r.nombre,tipo:r.tipo,moneda:r.moneda,gravaIdc:!!r.grava_idc});
 const fromTercero=r=>({id:r.id,razon:r.razon_social,cuit:r.cuit||'',tipo:r.tipo,sistema:r.cuit===ARCA_CUIT});
-const fromCentro=r=>({id:r.id,codigo:r.codigo,nombre:r.nombre,tipo:r.tipo_id,clienteId:r.cliente_id||'',contrato:r.valor_contrato==null?0:+r.valor_contrato,activo:r.activo});
+const fromCentro=r=>({id:r.id,codigo:r.codigo,nombre:r.nombre,tipo:r.tipo_id,clienteId:r.cliente_id||'',contrato:r.valor_contrato==null?0:+r.valor_contrato,activo:r.activo,marca:r.marca||'',modelo:r.modelo||'',anio:r.anio||0,patente:r.patente||'',notas:r.notas||''});
+const fromContrat=r=>({id:r.id,nombre:r.nombre,cuit:r.cuit||'',tel:r.telefono||'',obraId:r.obra_id,trabajo:r.trabajo||'',dias:r.tiempo_estimado_dias||0,monto:+r.monto,estado:r.estado,obs:r.observaciones||'',ini:r.iniciales||''});
+const toContrat=c=>({id:c.id,nombre:c.nombre,cuit:c.cuit||null,telefono:c.tel||null,obra_id:c.obraId,trabajo:c.trabajo||null,tiempo_estimado_dias:c.dias>0?c.dias:null,monto:num(c.monto),estado:c.estado,observaciones:c.obs||null});
+const fromCertif=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,pct:+r.avance_pct,monto:+r.monto,obs:r.observaciones||'',ini:r.iniciales||''});
+const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),observaciones:k.obs||null});
+const fromComb=r=>({id:r.id,maqId:r.maquina_id,fh:r.fecha_hora,litros:+r.litros,ini:r.iniciales||''});
+const toComb=x=>({id:x.id,maquina_id:x.maqId,fecha_hora:x.fh,litros:num(x.litros)});
+const fromArreglo=r=>({id:r.id,maqId:r.maquina_id,fh:r.fecha_hora,desc:r.descripcion,costo:r.costo==null?0:+r.costo,ini:r.iniciales||''});
+const toArreglo=x=>({id:x.id,maquina_id:x.maqId,fecha_hora:x.fh,descripcion:x.desc,costo:num(x.costo)>0?num(x.costo):null});
 const fromCheque=r=>({id:r.id,tipo:r.tipo,origen:r.origen,numero:r.numero,banco:r.banco||'',librador:r.librador||'',fechaPago:r.fecha_pago,importe:+r.importe,estado:r.estado});
 const fromFactura=r=>({id:r.id,terceroId:r.tercero_id,lado:r.lado,tipo:r.tipo,pv:r.punto_venta,nro:r.numero,fecha:r.fecha,neto:+r.neto_gravado,iva:+r.iva,otros:r2(+r.otros_tributos+ +r.no_gravado),total:+r.total,user:iniDe(r.created_by),creada:(r.created_at||'').slice(0,10)});
 const fromTx=r=>({id:r.id,numero:+r.numero,tipo:r.tipo,fecha:r.fecha,concepto:r.concepto,terceroId:r.tercero_id||'',ccId:r.centro_costo_id,moneda:r.moneda,tc:+r.tipo_cambio,total:+r.total,estado:r.estado,user:iniDe(r.created_by),obs:r.observaciones||'',
@@ -1250,7 +1291,7 @@ const fromTx=r=>({id:r.id,numero:+r.numero,tipo:r.tipo,fecha:r.fecha,concepto:r.
 /* pantalla → base */
 const toTipo=x=>x;
 const toTercero=t=>({id:t.id,razon_social:t.razon,cuit:t.cuit||null,tipo:t.tipo});
-const toCentro=c=>({id:c.id,codigo:c.codigo,nombre:c.nombre,tipo_id:c.tipo,cliente_id:c.clienteId||null,valor_contrato:num(c.contrato)>0?num(c.contrato):null,activo:c.activo!==false});
+const toCentro=c=>({id:c.id,codigo:c.codigo,nombre:c.nombre,tipo_id:c.tipo,cliente_id:c.clienteId||null,valor_contrato:num(c.contrato)>0?num(c.contrato):null,activo:c.activo!==false,marca:c.marca||null,modelo:c.modelo||null,anio:c.anio>0?c.anio:null,patente:c.patente||null,notas:c.notas||null});
 const toCheque=c=>({id:c.id,tipo:c.tipo,origen:c.origen,numero:c.numero,banco:c.banco||null,librador:c.librador||null,fecha_pago:c.fechaPago,importe:num(c.importe),estado:c.estado});
 const toFactura=f=>({id:f.id,tercero_id:f.terceroId,lado:f.lado,tipo:f.tipo,punto_venta:f.pv,numero:f.nro,fecha:f.fecha,neto_gravado:num(f.neto),iva:num(f.iva),otros_tributos:num(f.otros),no_gravado:0,total:num(f.total)});
 const srt=a=>a.map(x=>[JSON.stringify(x),x]).sort((p,q)=>p[0]<q[0]?-1:p[0]>q[0]?1:0).map(p=>p[1]);
@@ -1266,7 +1307,11 @@ const COLS=[
  {k:'cheques',tabla:'cheques',arr:()=>S.cheques,to:toCheque},
  {k:'trans',tabla:'transacciones',arr:()=>S.trans,to:toTx},
  {k:'cuentas',tabla:'cuentas',arr:()=>S.cuentas,to:c=>({id:c.id,grava_idc:!!c.gravaIdc}),fijo:true},
- {k:'params',tabla:'parametros',arr:()=>[{id:'idc',valor:+S.idcRate}],to:x=>x,fijo:true}];
+ {k:'params',tabla:'parametros',arr:()=>[{id:'idc',valor:+S.idcRate}],to:x=>x,fijo:true},
+ {k:'contrat',tabla:'contratistas',arr:()=>S.contratistas,to:toContrat},
+ {k:'certifs',tabla:'certificaciones',arr:()=>S.certifs,to:toCertif},
+ {k:'comb',tabla:'combustible_cargas',arr:()=>S.comb,to:toComb},
+ {k:'arreglos',tabla:'maquinaria_arreglos',arr:()=>S.arreglos,to:toArreglo}];
 const snap=()=>{const o={};COLS.forEach(c=>{o[c.k]=snap1(c)});return o};
 function diff(){
   const out={add:[],mod:[],del:[]};if(!SY.sh)return out;
@@ -1285,7 +1330,7 @@ const must=r=>{if(r.error)throw r.error;return r};
 const unaFila=r=>{must(r);if(!r.data||!r.data.length){const e=new Error('SIN_PERMISO');throw e}};
 async function aplicar(d){
   let hubo=false;
-  const orden=['tipos','terceros','centros','facturas','cheques','cuentas','params'];
+  const orden=['tipos','terceros','centros','contrat','certifs','comb','arreglos','facturas','cheques','cuentas','params'];
   for(const k of orden){
     for(const o of d.add.filter(x=>x.c.k===k&&!x.c.fijo)){must(await sb.from(o.c.tabla).insert(o.p));SY.sh[k].set(o.id,{p:o.p,j:o.j})}
     for(const o of d.mod.filter(x=>x.c.k===k)){
@@ -1304,7 +1349,7 @@ async function aplicar(d){
       if(r.error){await sb.rpc('guardar_transaccion',{p:o.antes});throw r.error}}
     SY.sh.trans.set(o.id,{p:o.p,j:o.j})}
   for(const o of d.del.filter(x=>x.c.k==='trans').sort((a,b)=>(b.antes.padre_id?1:0)-(a.antes.padre_id?1:0))){unaFila(await sb.from('transacciones').delete().eq('id',o.id).select('id'));SY.sh.trans.delete(o.id)}
-  for(const k of ['cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
+  for(const k of ['certifs','contrat','comb','arreglos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
   return hubo}
 function progSync(){if(!AUTH||!S.sesion||SY.cargando||!SY.sh)return;clearTimeout(SY.t);SY.t=setTimeout(correrSync,200)}
 async function correrSync(){
@@ -1319,7 +1364,7 @@ async function correrSync(){
   if(hubo){try{await cargarDatos()}catch(e){}render()}else pintaChip();
 }
 async function traer(tabla,sel,ord){let out=[],desde=0;for(;;){let q=sb.from(tabla).select(sel);(ord||[]).forEach(([c,a])=>q=q.order(c,{ascending:a}));const {data,error}=await q.range(desde,desde+999);if(error)throw error;out=out.concat(data);if(data.length<1000)return out;desde+=1000}}
-const TL={transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro'};
+const TL={transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina'};
 function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||{};
   let acc={INSERT:'Alta',UPDATE:'Modificación',DELETE:'Eliminación'}[a.accion]||a.accion,det='';
   switch(a.tabla){
@@ -1334,6 +1379,10 @@ function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||
    case 'terceros':det=d.razon_social+(d.cuit?' · CUIT '+d.cuit:'');break;
    case 'cuentas':det=d.nombre;break;
    case 'tipos_centro':det=d.nombre;break;
+   case 'contratistas':det=d.nombre+' · '+money(d.monto);break;
+   case 'certificaciones':det='Avance '+d.avance_pct+'% · '+money(d.monto);break;
+   case 'combustible_cargas':det=lts(d.litros);break;
+   case 'maquinaria_arreglos':det=d.descripcion;break;
    case 'perfiles':det=(d.nombre||'')+' '+(d.apellido||'')+' · '+d.iniciales;acc='Modificación de usuario';break;
    default:return null}
   return {fecha:new Date(a.fecha).toLocaleString('sv-SE',{timeZone:TZ}).slice(0,16),ini:a.iniciales||'—',accion:acc,detalle:(TL[a.tabla]||a.tabla)+' · '+det,txId:a.tabla==='transacciones'?a.registro_id:null}}
@@ -1348,16 +1397,19 @@ async function cargarAuditTx(id){try{const {data,error}=await sb.from('auditoria
 async function cargarDatos(){
   SY.cargando=true;
   try{
-    const [cu,ti,te,ce,ch,fa,tx,pa]=await Promise.all([
+    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar]=await Promise.all([
       traer('cuentas','*',[['created_at',true],['id',true]]),traer('tipos_centro','*',[['created_at',true],['id',true]]),
       traer('terceros','*',[['created_at',true],['id',true]]),traer('centros_costo','*',[['created_at',true],['id',true]]),
       traer('cheques','*',[['created_at',true],['id',true]]),traer('facturas','*',[['created_at',true],['id',true]]),
       traer('transacciones','*, transaccion_pagos(*), transaccion_retenciones(*), transaccion_facturas(*)',[['numero',true]]),
-      sb.from('parametros').select('*').eq('clave','alicuota_impuesto_dc').then(must).then(r=>r.data)]);
+      sb.from('parametros').select('*').eq('clave','alicuota_impuesto_dc').then(must).then(r=>r.data),
+      traer('contratistas','*',[['created_at',true],['id',true]]),traer('certificaciones','*',[['created_at',true],['id',true]]),
+      traer('combustible_cargas','*',[['created_at',true],['id',true]]),traer('maquinaria_arreglos','*',[['created_at',true],['id',true]])]);
     await cargarPerfiles();
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(fromCentro);
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
+    S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);S.comb=cb.map(fromComb);S.arreglos=ar.map(fromArreglo);
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
     S.audTx={};await cargarAudit();
@@ -1376,10 +1428,10 @@ function recargaRemota(){clearTimeout(SY.tRe);SY.tRe=setTimeout(async function i
   if(SY.corriendo||SY.cargando||hayCambios()||escribiendo){SY.tRe=setTimeout(intento,1500);return}
   try{await cargarDatos();render()}catch(e){console.error(e)}},700)}
 function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
-  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
+  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
   SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
 function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
-  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[]}}
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.contratistas=[];S.certifs=[];S.comb=[];S.arreglos=[]}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -1392,7 +1444,7 @@ async function alIniciarSesion(session){
   await cargarPerfiles();
   const yo=S.usuarios.find(u=>u.id===data.id)||perfilAUsuario(data);
   if(!S.usuarios.some(u=>u.id===yo.id))S.usuarios.push(yo);
-  if(S.sesion!==yo.id){try{await cargarDatos()}catch(e){S.auth={modo:'login',err:'No se pudieron cargar los datos: '+msgErr(e)};render();return}iniciarRealtime();S.sesion=yo.id;S.user=yo.iniciales;S.view='inicio';S.auth={modo:'login'};render();window.scrollTo(0,0);toast('Hola, '+yo.nombre)}
+  if(S.sesion!==yo.id){try{await cargarDatos()}catch(e){S.auth={modo:'login',err:'No se pudieron cargar los datos: '+msgErr(e)};render();return}iniciarRealtime();S.sesion=yo.id;S.user=yo.iniciales;S.view=vistaInicial(yo.rol);S.auth={modo:'login'};render();window.scrollTo(0,0);toast('Hola, '+yo.nombre)}
 }
 function vLoginAuth(){
   const A=S.auth;const msg=A.msg?`<div class="ok-box" role="status">${A.msg}</div>`:'';const err=A.err?`<div class="alerta" role="alert" style="margin:0"><b>${esc(A.err)}</b></div>`:'';
@@ -1453,10 +1505,12 @@ function esAdmin(){return usuarioActual()?.rol==='dueno'}
 const esDueno=esAdmin;
 const ROLES={
  dueno:{n:'Dueño',d:'Control total. Es el único que modifica, anula y elimina datos, cambia los parámetros y administra a los demás usuarios.',si:['Cargar y consultar todo','Modificar, anular y eliminar','Habilitar, desactivar y eliminar usuarios','Cambiar parámetros e impuestos'],no:[],uno:true},
- contador:{n:'Contador',d:'Trabaja a diario con el sistema: carga movimientos y consulta todo, pero no puede cambiar ni borrar lo ya cargado.',si:['Cargar transacciones, facturas, cheques, clientes y obras','Consultar todo y descargar Excel'],no:['Modificar, anular o eliminar lo ya cargado','Administrar usuarios']},
+ contador:{n:'Contador',d:'Trabaja a diario con el sistema: carga movimientos y consulta todo, pero no puede cambiar ni borrar lo ya cargado.',si:['Cargar transacciones, facturas, cheques, clientes y obras','Consultar todo, incluida Ingeniería/Obras, y descargar Excel'],no:['Modificar, anular o eliminar lo ya cargado','Administrar usuarios']},
+ ingeniero:{n:'Ingeniero',d:'Maneja toda la sección Ingeniería/Obras: obras, contratistas, certificaciones, maquinaria y combustible. No ve Administración.',si:['Cargar, modificar y eliminar obras, contratistas, certificaciones, maquinaria y combustible','Ver los clientes y el valor de contrato de las obras'],no:['Ver Administración (transacciones, cheques, facturas, auditoría)','Administrar usuarios']},
+ operario:{n:'Operario',d:'Personal de campo. Solo carga combustible y arreglos de maquinaria, con pantallas simples y botones grandes.',si:['Cargar combustible: fecha y hora, máquina y litros','Cargar arreglos de maquinaria'],no:['Ver obras, contratistas ni Administración','Modificar o eliminar lo ya cargado']},
  lector:{n:'Lector',d:'Solo mira. Ve la información y descarga Excel, sin poder cargar ni cambiar nada. Pensado para socios, bancos o consultas externas.',si:['Consultar todo y descargar Excel'],no:['Cargar o modificar datos','Administrar usuarios']}};
 const ROL_TXT=r=>(ROLES[r]||ROLES.contador).n;
-const puedeCargar=()=>{const u=usuarioActual();return !!u&&u.rol!=='lector'};
+const puedeCargar=()=>{const u=usuarioActual();return !!u&&['dueno','contador'].includes(u.rol)};
 function sugerirIniciales(n,a){const L=(n.trim()[0]||'')+(a.trim().replace(/\(.*\)/,'').trim()[0]||'');let ini=L.toUpperCase();if(S.usuarios.some(u=>u.iniciales===ini)){const x=(a.trim()[1]||n.trim()[1]||'X').toUpperCase();ini=ini+x}return ini}
 function userFormHTML(F,ctx){
   return `${F.err?`<div class="alerta" role="alert" style="margin:0"><b>${esc(F.err)}</b></div>`:''}<div class="fields" style="padding:0">
@@ -1464,7 +1518,7 @@ function userFormHTML(F,ctx){
    <div class="f"><label for="uf-apellido">Apellido <em>*</em></label><input id="uf-apellido" data-uf="apellido" value="${esc(F.apellido)}" autocomplete="family-name"></div>
    <div class="f wide"><label for="uf-email">Email <em>*</em></label><input id="uf-email" type="email" data-uf="email" value="${esc(F.email)}" autocomplete="email" placeholder="nombre@estudio.com"></div>
    <div class="f"><label for="uf-iniciales">Iniciales <em>*</em></label><input id="uf-iniciales" data-uf="iniciales" value="${esc(F.iniciales)}" maxlength="3" style="text-transform:uppercase;font-family:var(--f-num)"><span class="hint">Aparecen en cada movimiento que cargue.</span></div>
-   ${ctx==='admin'?`<div class="f wide"><label for="uf-rol">Rol</label><select id="uf-rol" data-uf="rol"><option value="contador" ${F.rol!=='lector'?'selected':''}>Contador · carga y consulta</option><option value="lector" ${F.rol==='lector'?'selected':''}>Lector · solo consulta</option></select></div>`:''}
+   ${ctx==='admin'?`<div class="f wide"><label for="uf-rol">Rol</label><select id="uf-rol" data-uf="rol"><option value="contador" ${!F.rol||F.rol==='contador'?'selected':''}>Contador · carga y consulta</option><option value="lector" ${F.rol==='lector'?'selected':''}>Lector · solo consulta</option><option value="ingeniero" ${F.rol==='ingeniero'?'selected':''}>Ingeniero · maneja Ingeniería/Obras</option><option value="operario" ${F.rol==='operario'?'selected':''}>Operario · combustible y arreglos</option></select></div>`:''}
   </div>`;
 }
 function crearUsuario(F,porAdmin){
@@ -1478,7 +1532,7 @@ function crearUsuario(F,porAdmin){
   S.usuarios.push(u);S.audit.push({fecha:nowStamp(),ini:porAdmin?S.user:ini,accion:'Alta de usuario',detalle:u.nombre+' '+u.apellido+' · '+ini+' · '+ROL_TXT(u.rol),txId:null});
   return u;
 }
-function entrar(u){S.sesion=u.id;S.pick={};S.edit=null;S.modal=null;S.user=u.iniciales;S.view='inicio';S.reg=null;render();window.scrollTo(0,0);toast('Hola, '+u.nombre)}
+function entrar(u){S.sesion=u.id;S.pick={};S.edit=null;S.modal=null;S.user=u.iniciales;S.view=vistaInicial(u.rol);S.cf=S.kf=S.af=S.bf=S.igDel=null;S.reg=null;render();window.scrollTo(0,0);toast('Hola, '+u.nombre)}
 function vLogin(){
   if(AUTH)return `<div class="lg-card"><div class="hazard" aria-hidden="true"></div><div class="in"><img class="logo-c" src="${LOGO_C}" alt="CODES Construcciones"><img class="logo-o" src="${LOGO_O}" alt="CODES Construcciones">${vLoginAuth()}</div></div>`;
   const act=S.usuarios.filter(u=>u.activo);
@@ -1488,8 +1542,8 @@ function vLogin(){
 }
 function vUsuarios(){
   const yo=usuarioActual();const F=S.uForm;
-  const cuenta={dueno:0,contador:0,lector:0};S.usuarios.filter(u=>u.activo).forEach(u=>cuenta[u.rol]=(cuenta[u.rol]||0)+1);
-  const roles=`<section class="panel"><h2>Roles <small>qué puede hacer cada uno</small></h2><div class="roles">${Object.entries(ROLES).map(([k,r])=>`<div class="rol rol-${k}"><div class="rt"><b>${r.n}</b><span class="pill ${k==='dueno'?'p-ok':k==='contador'?'p-int':'p-mute'}">${cuenta[k]||0} activo${(cuenta[k]||0)===1?'':'s'}</span></div><p>${r.d}</p><ul>${r.si.map(x=>`<li class="si">${x}</li>`).join('')}${r.no.map(x=>`<li class="no">${x}</li>`).join('')}</ul></div>`).join('')}</div></section>`;
+  const cuenta={dueno:0,contador:0,lector:0,ingeniero:0,operario:0};S.usuarios.filter(u=>u.activo).forEach(u=>cuenta[u.rol]=(cuenta[u.rol]||0)+1);
+  const roles=`<section class="panel"><h2>Roles <small>qué puede hacer cada uno</small></h2><div class="roles">${Object.entries(ROLES).map(([k,r])=>`<div class="rol rol-${k}"><div class="rt"><b>${r.n}</b><span class="pill ${k==='dueno'?'p-ok':k==='contador'||k==='ingeniero'?'p-int':'p-mute'}">${cuenta[k]||0} activo${(cuenta[k]||0)===1?'':'s'}</span></div><p>${r.d}</p><ul>${r.si.map(x=>`<li class="si">${x}</li>`).join('')}${r.no.map(x=>`<li class="no">${x}</li>`).join('')}</ul></div>`).join('')}</div></section>`;
   const form=F?`<section class="panel"><h2>Nuevo usuario</h2><div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">${userFormHTML(F,'admin')}<div class="actions"><button class="btn" data-act="uf-cancel">Cancelar</button><button class="btn dark" data-act="uf-save">Crear usuario</button></div></div></section>`:'';
   const ud=S.uDel&&S.usuarios.find(u=>u.id===S.uDel);
   const movs=u=>S.trans.filter(t=>t.user===u.iniciales&&!t.auto).length;
@@ -1497,7 +1551,7 @@ function vUsuarios(){
   const lista=[...S.usuarios].sort((a,b)=>(a.activo-b.activo));
   const rows=lista.map(u=>{const self=u.id===yo.id,esD=u.rol==='dueno';
     const acc=(self||esD)?'':`<button class="btn small ${u.activo?'':'primary'}" data-act="u-toggle" data-id="${u.id}">${u.activo?'Desactivar':'Habilitar'}</button><button class="btn small danger" data-act="u-del" data-id="${u.id}">Eliminar</button>`;
-    const rolCel=(self||esD)?`<b>${ROL_TXT(u.rol)}</b>`:`<select class="rolsel" data-urol="${u.id}" aria-label="Rol de ${esc(u.nombre)}"><option value="contador" ${u.rol==='contador'?'selected':''}>Contador</option><option value="lector" ${u.rol==='lector'?'selected':''}>Lector</option></select>`;
+    const rolCel=(self||esD)?`<b>${ROL_TXT(u.rol)}</b>`:`<select class="rolsel" data-urol="${u.id}" aria-label="Rol de ${esc(u.nombre)}">${[['contador','Contador'],['lector','Lector'],['ingeniero','Ingeniero'],['operario','Operario']].map(([r,l])=>`<option value="${r}" ${u.rol===r?'selected':''}>${l}</option>`).join('')}</select>`;
     return `<tr ${u.activo?'':'style="background:var(--warn-soft)"'}><td><div style="display:flex;gap:10px;align-items:flex-start"><span class="av ${esD?'':'gris'}">${esc(u.iniciales)}</span><span style="min-width:0"><b>${esc(u.nombre+' '+u.apellido)}</b>${self?' <span class="sub">(vos)</span>':''}<br><span class="sub">${esc(u.email||'sin email')}</span></span></div></td>
     <td>${rolCel}</td>
     <td><span class="pill ${u.activo?'p-ok':'p-warn'}">${u.activo?'Activo':(AUTH?'Pendiente':'Inactivo')}</span></td>
@@ -1909,16 +1963,260 @@ const EXPORTS={
   audit(){return {name:'Auditoría '+audPref(),sheets:[{name:'Auditoría',rows:[['Fecha','Hora','Usuario','Acción','Detalle']].concat(audList().map(a=>[fd(a.fecha.slice(0,10)),a.fecha.slice(11),a.ini,a.accion,a.detalle]))}]}}
 };
 
+/* ---------- Ingeniería / Obras ---------- */
+const rolDe=()=>{const u=usuarioActual();return u?u.rol:''};
+const veAdm=()=>['dueno','contador','lector'].includes(rolDe());
+const manejaIng=()=>['dueno','ingeniero'].includes(rolDe());
+const veIng=()=>veAdm()||rolDe()==='ingeniero';
+const soloMaq=()=>rolDe()==='operario';
+const cargaMaq=()=>['dueno','ingeniero','operario'].includes(rolDe());
+const ING_VIEWS=['obras','contrat','certif','maq','comb'];
+const vistaPermitida=v=>ING_VIEWS.includes(v)?(soloMaq()?(v==='maq'||v==='comb'):veIng()):(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
+const vistaInicial=r=>{r=r||rolDe();return ['dueno','contador','lector'].includes(r)?'inicio':r==='operario'?'comb':'obras'};
+S.navCerr=(()=>{try{return JSON.parse(localStorage.getItem('navCerr'))||{}}catch(e){return {}}})();
+S.cf=null;S.kf=null;S.af=null;S.bf=null;S.igDel=null;S.obraF='';S.maqF='';
+const obras=()=>S.centros.filter(c=>c.tipo==='obra');
+const maquinas=()=>S.centros.filter(c=>c.tipo==='maquina');
+const ahoraLocal=()=>TODAY+'T'+new Date().toLocaleTimeString('sv-SE',{timeZone:TZ}).slice(0,5);
+const fhISO=v=>new Date(v+':00-03:00').toISOString();
+const fhDia=fh=>new Date(fh).toLocaleDateString('sv-SE',{timeZone:TZ});
+const fhHora=fh=>new Date(fh).toLocaleTimeString('sv-SE',{timeZone:TZ}).slice(0,5);
+const fhTxt=fh=>fd(fhDia(fh))+' '+fhHora(fh);
+const lts=n=>Number(n||0).toLocaleString('es-AR',{maximumFractionDigits:2})+' L';
+const aud=(accion,detalle)=>S.audit.push({fecha:nowStamp(),ini:S.user,accion,detalle,txId:null});
+const errBox=F=>F&&F.err?`<div class="alerta" role="alert"><b>${esc(F.err)}</b></div>`:'';
+const barra=p=>`<div class="bar" title="${p.toFixed(1)}%"><i style="width:${Math.max(0,Math.min(100,p))}%"></i></div><span class="mono" style="font-size:12px">${p.toFixed(0)}%</span>`;
+const certDe=cid=>S.certifs.filter(k=>k.contratistaId===cid);
+const certMonto=cid=>sum(certDe(cid),k=>k.monto);
+const certPct=cid=>certDe(cid).reduce((m,k)=>Math.max(m,k.pct),0);
+const ctDe=oid=>S.contratistas.filter(c=>c.obraId===oid);
+const combDe=mid=>S.comb.filter(x=>x.maqId===mid);
+const arrDe=mid=>S.arreglos.filter(x=>x.maqId===mid);
+const maqNom=id=>{const m=centro(id);return m?m.codigo+' · '+m.nombre:'—'};
+const maqDesc=m=>[m.marca,m.modelo,m.anio?m.anio:'',m.patente].filter(Boolean).join(' · ');
+const newBf=()=>({maqId:'',fh:ahoraLocal(),litros:'',err:'',ok:S.bf?S.bf.ok:''});
+const newAr=()=>({maqId:'',fh:ahoraLocal(),desc:'',costo:'',err:'',ok:S.af?S.af.ok:''});
+const fld=(id,label,inner,hint,sp)=>`<div class="f"${sp?` style="grid-column:span ${sp}"`:''}><label for="${id}">${label}</label>${inner}${hint?`<span class="hint">${hint}</span>`:''}</div>`;
+const txt=(id,k,v,ph,extra='')=>`<input id="${id}" data-ig="${k}" value="${esc(v)}" ${ph?`placeholder="${esc(ph)}"`:''} ${extra}>`;
+const mny=(id,k,v,ph='0,00')=>`<div class="money"><span aria-hidden="true">$</span><input class="num" id="${id}" data-ig="${k}" value="${esc(v)}" inputmode="decimal" placeholder="${ph}"></div>`;
+function maqBotones(fk,sel){
+  const ms=maquinas().filter(m=>m.activo!==false);
+  if(!ms.length)return '<div class="empty">Todavía no hay máquinas cargadas.</div>';
+  return `<div class="maqbtns" role="group" aria-label="Máquina">${ms.map(m=>`<button type="button" class="maqbtn" data-igmaq="${fk}" data-id="${m.id}" aria-pressed="${sel===m.id}">${icon('excavadora')}<b>${esc(m.nombre)}</b><span>${esc(m.codigo)}</span></button>`).join('')}</div>`}
+function igDelBox(k){
+  const D=S.igDel;if(!D||D.k!==k)return '';
+  let msg,ok=true;
+  if(k==='contrat'){const n=certDe(D.id).length;if(n){ok=false;msg=`Tiene ${n} certificación${n===1?'':'es'} cargada${n===1?'':'s'}. Eliminalas primero, o marcá al contratista como finalizado.`}else msg='Se elimina el contratista y su monto deja de contar en la obra.'}
+  else msg='Esto no se puede deshacer.';
+  return `<section class="panel" style="padding:0"><div class="alerta" role="alertdialog" style="margin:0;border:0"><b>¿Eliminar este registro?</b><span>${msg}</span><div class="actions"><button class="btn" data-act="ig-del-no">${ok?'Cancelar':'Entendido'}</button>${ok?`<button class="btn danger" data-act="ig-del-ok">Sí, eliminar</button>`:''}</div></div></section>`}
+
+/* --- Obras (centros de costo tipo obra) --- */
+function ccLite(F){
+  const maq=F.kind==='maquina';
+  const clientes=S.terceros.filter(t=>['cliente','ambos'].includes(t.tipo)&&!t.sistema);
+  return `<section class="panel"><h2>${F.id?'Editar':'Nueva'} ${maq?'máquina':'obra'}</h2>${errBox(F)}${F.confirm?ccAviso(centro(F.id),'modificar'):''}<div class="fields">
+   <div class="f"><label for="cc-codigo">Código <em>*</em></label><input id="cc-codigo" data-cc="codigo" value="${esc(F.codigo)}" placeholder="${maq?'Ej: MQ02':'Ej: OB03'}" maxlength="20"></div>
+   <div class="f" style="grid-column:span 2"><label for="cc-nombre">Nombre <em>*</em></label><input id="cc-nombre" data-cc="nombre" value="${esc(F.nombre)}" placeholder="${maq?'Ej: Camión volcador':'Ej: Ampliación Escuela 25'}"></div>
+   ${maq?`${fld('cc-marca','Marca',`<input id="cc-marca" data-cc="marca" value="${esc(F.marca)}" placeholder="Ej: Caterpillar">`)}
+   ${fld('cc-modelo','Modelo',`<input id="cc-modelo" data-cc="modelo" value="${esc(F.modelo)}" placeholder="Ej: 416F">`)}
+   ${fld('cc-anio','Año',`<input id="cc-anio" data-cc="anio" value="${esc(F.anio)}" inputmode="numeric" maxlength="4" placeholder="2018">`)}
+   ${fld('cc-patente','Patente o N° de serie',`<input id="cc-patente" data-cc="patente" value="${esc(F.patente)}">`)}
+   ${fld('cc-notas','Otros datos',`<input id="cc-notas" data-cc="notas" value="${esc(F.notas)}" placeholder="Ej: service cada 250 hs">`,'',2)}`
+   :`<div class="f" style="grid-column:span 2"><label for="cc-clienteId">Cliente de la obra <em>*</em></label><select id="cc-clienteId" data-cc="clienteId">${opt('','Elegir…',F.clienteId)}${clientes.map(t=>opt(t.id,t.razon,F.clienteId)).join('')}${puedeCargar()?opt('__nuevo__','+ Crear cliente nuevo…',F.clienteId):''}</select></div>
+   ${F.clienteId==='__nuevo__'?`<div class="f" style="grid-column:span 2"><label for="cc-nuevoCliRazon">Nombre o razón social del cliente <em>*</em></label><input id="cc-nuevoCliRazon" data-cc="nuevoCliRazon" value="${esc(F.nuevoCliRazon)}"></div>
+   <div class="f"><label for="cc-nuevoCliCuit">CUIT del cliente</label><input id="cc-nuevoCliCuit" data-cc="nuevoCliCuit" inputmode="numeric" value="${esc(F.nuevoCliCuit)}" placeholder="30-12345678-9"></div>`:''}
+   <div class="f"><label for="cc-contrato">Valor de contrato <em>*</em></label><div class="money"><span aria-hidden="true">$</span><input class="num" id="cc-contrato" data-cc="contrato" value="${esc(F.contrato)}" inputmode="decimal" placeholder="0,00"></div><span class="hint">Total a cobrar al cliente, con IVA.</span></div>`}
+  </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="cc-cancel">Cancelar</button><button type="button" class="btn dark" data-act="cc-save">${F.id?'Guardar cambios':maq?'Crear máquina':'Crear obra'}</button></div></section>`}
+function vObras(){
+  const F=S.ccForm&&S.ccForm.kind==='obra'?S.ccForm:null;
+  const lista=[...obras()].sort((a,b)=>(a.activo===false)-(b.activo===false)||a.codigo.localeCompare(b.codigo));
+  let tc=0,tn=0,tk=0;
+  const rows=lista.map(c=>{const cts=ctDe(c.id),con=sum(cts,x=>x.monto),cer=sum(cts,x=>certMonto(x.id)),pct=con>0?cer/con*100:0,cl=c.clienteId&&tercero(c.clienteId);
+    tc+=c.contrato||0;tn+=con;tk+=cer;
+    return `<tr ${c.activo===false?'style="opacity:.6"':''}><td class="mono"><b>${esc(c.codigo)}</b></td><td>${esc(c.nombre)}${cl?`<br><span class="sub">${esc(cl.razon)}</span>`:''}${c.activo===false?' <span class="pill p-mute">Inactiva</span>':''}</td><td class="num">${c.contrato?money(c.contrato):'<span class="sub">—</span>'}</td><td class="mono">${cts.length}</td><td class="num">${money(con)}</td><td class="num">${money(cer)}</td><td style="min-width:120px">${barra(pct)}</td><td class="num"><b>${money(con-cer)}</b></td><td>${manejaIng()?`<button class="btn small" data-act="ob-edit" data-id="${c.id}">Editar</button>`:''}</td></tr>`}).join('');
+  return head('Centro de costos (obras)','Las obras en curso. Cada contratista y cada certificación suma a su obra.',`${F||!manejaIng()?'':'<button class="btn small primary" data-act="ob-new">+ Nueva obra</button>'}${soloMaq()?'':xlsBtn('obras')}`)+(F?ccLite(F):'')+
+  `<section class="panel">${lista.length?`<div class="tw"><table><thead><tr><th>Código</th><th>Obra</th><th class="num">Contrato</th><th>Contratistas</th><th class="num">Contratado</th><th class="num">Certificado</th><th>Avance</th><th class="num">Por certificar</th><th></th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="2"><b>Total</b></td><td class="num"><b>${money(tc)}</b></td><td></td><td class="num"><b>${money(tn)}</b></td><td class="num"><b>${money(tk)}</b></td><td></td><td class="num"><b>${money(tn-tk)}</b></td><td></td></tr></tfoot></table></div>`:'<div class="empty">Todavía no hay obras cargadas.</div>'}
+  <div class="legend">Contratado = suma de lo acordado con los contratistas de la obra. Certificado = lo que ya se aprobó para cobrar según el avance. Por certificar = contratado − certificado.</div></section>`}
+
+/* --- Contratistas --- */
+function vContrat(){
+  const F=S.cf,ob=obras().filter(o=>o.activo!==false);
+  const form=F?`<section class="panel"><h2>${F.id?'Editar contratista':'Nuevo contratista'}</h2>${errBox(F)}<div class="fields">
+   ${fld('cf-nombre','Contratista <em>*</em>',txt('cf-nombre','cf.nombre',F.nombre,'Ej: Hormigones Pérez'),'',2)}
+   ${fld('cf-cuit','CUIT',txt('cf-cuit','cf.cuit',F.cuit,'30-12345678-9','inputmode="numeric"'),'Opcional.')}
+   ${fld('cf-tel','Teléfono',txt('cf-tel','cf.tel',F.tel,'','inputmode="tel"'))}
+   ${fld('cf-obraId','Obra <em>*</em>',`<select id="cf-obraId" data-ig="cf.obraId">${opt('','Elegir obra…',F.obraId)}${ob.map(o=>opt(o.id,o.codigo+' · '+o.nombre,F.obraId)).join('')}</select>`,'',2)}
+   ${fld('cf-trabajo','Trabajo a realizar',txt('cf-trabajo','cf.trabajo',F.trabajo,'Ej: Estructura de hormigón planta baja'),'',2)}
+   ${fld('cf-dias','Tiempo aproximado (días)',txt('cf-dias','cf.dias',F.dias,'Ej: 45','inputmode="numeric"'))}
+   ${fld('cf-monto','Monto a cobrar <em>*</em>',mny('cf-monto','cf.monto',F.monto),'Total acordado con el contratista.')}
+   ${fld('cf-obs','Observaciones',txt('cf-obs','cf.obs',F.obs),'',2)}
+  </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="ct-cancel">Cancelar</button><button type="button" class="btn dark" data-act="ct-save">${F.id?'Guardar cambios':'Crear contratista'}</button></div></section>`:'';
+  const ls=S.contratistas.filter(c=>!S.obraF||c.obraId===S.obraF).sort((a,b)=>(a.estado==='finalizado')-(b.estado==='finalizado')||a.nombre.localeCompare(b.nombre));
+  const rows=ls.map(c=>{const o=centro(c.obraId),cer=certMonto(c.id),pct=c.monto>0?cer/c.monto*100:0,fin=c.estado==='finalizado';
+    return `<tr ${fin?'style="opacity:.6"':''}><td><b>${esc(c.nombre)}</b>${c.tel?`<br><span class="sub">${esc(c.tel)}</span>`:''}${c.trabajo?`<br><span class="sub">${esc(c.trabajo)}</span>`:''}</td><td>${o?esc(o.codigo+' · '+o.nombre):'—'}</td><td class="mono">${c.dias?c.dias+' días':'—'}</td><td class="num">${money(c.monto)}</td><td class="num">${money(cer)}</td><td style="min-width:120px">${barra(pct)}</td><td class="num"><b>${money(c.monto-cer)}</b></td><td><span class="pill ${fin?'p-mute':'p-ok'}">${fin?'Finalizado':'Activo'}</span></td><td style="white-space:nowrap">${manejaIng()?`<button class="btn small" data-act="ce-new" data-ct="${c.id}">Certificar</button> <button class="btn small" data-act="ct-edit" data-id="${c.id}">Editar</button> <button class="btn small" data-act="ct-fin" data-id="${c.id}">${fin?'Reabrir':'Finalizar'}</button> <button class="btn small danger" data-act="ig-del" data-k="contrat" data-id="${c.id}">Eliminar</button>`:''}</td></tr>`}).join('');
+  const sel=`<select id="igObraF" aria-label="Filtrar por obra" class="rolsel"><option value="">Todas las obras</option>${obras().map(o=>opt(o.id,o.codigo+' · '+o.nombre,S.obraF)).join('')}</select>`;
+  return head('Contratistas','Quién trabaja en cada obra, cuánto tiempo estimado y cuánto se le paga. Todo suma a la obra.',`${F||!manejaIng()?'':'<button class="btn small primary" data-act="ct-new">+ Nuevo contratista</button>'}${xlsBtn('contrat')}`)+form+igDelBox('contrat')+
+  `<section class="panel"><div class="toolbar" style="padding-top:14px">${sel}<span class="sub">${ls.length} contratista${ls.length===1?'':'s'} · total ${money(sum(ls,c=>c.monto))}</span></div>${ls.length?`<div class="tw"><table><thead><tr><th>Contratista</th><th>Obra</th><th>Tiempo</th><th class="num">Monto</th><th class="num">Certificado</th><th>Avance</th><th class="num">Por cobrar</th><th>Estado</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">Todavía no hay contratistas cargados.</div>'}</section>`}
+function ctSave(){
+  const F=S.cf;F.err='';const fail=m=>{F.err=m;render()};
+  const nombre=F.nombre.trim(),monto=num(F.monto),dias=F.dias===''?0:parseInt(F.dias,10);
+  if(!nombre)return fail('Cargá el nombre del contratista.');
+  if(!F.obraId)return fail('Elegí a qué obra pertenece.');
+  if(!(monto>0))return fail('Cargá el monto a cobrar.');
+  if(F.dias!==''&&!(dias>0))return fail('El tiempo aproximado tiene que ser un número de días.');
+  if(F.id){const c=by(S.contratistas,F.id);const cer=certMonto(c.id);if(monto+0.005<cer)return fail('El monto no puede ser menor a lo ya certificado ('+money(cer)+').');
+    Object.assign(c,{nombre,cuit:F.cuit.trim(),tel:F.tel.trim(),obraId:F.obraId,trabajo:F.trabajo.trim(),dias:dias>0?dias:0,monto,obs:F.obs.trim()});
+    aud('Modificación','Contratista '+nombre+' · '+money(monto));toast('Contratista actualizado')}
+  else{S.contratistas.push({id:nid('ct'),nombre,cuit:F.cuit.trim(),tel:F.tel.trim(),obraId:F.obraId,trabajo:F.trabajo.trim(),dias:dias>0?dias:0,monto,estado:'activo',obs:F.obs.trim(),ini:S.user});
+    aud('Alta','Contratista '+nombre+' · '+money(monto));toast('Contratista cargado. Ya suma a la obra.')}
+  S.cf=null;render()}
+
+/* --- Certificación --- */
+function kfCalc(F,from){const c=by(S.contratistas,F.contratistaId);if(!c)return;const prev=certPct(c.id);
+  if(from==='pct'){const p=num(F.pct);F.monto=p>prev?toIn(Math.round((p-prev)/100*c.monto*100)/100):''}
+  else if(from==='monto'){const m=num(F.monto);F.monto=m>0?toIn(m):'';F.pct=m>0?String(Math.round((prev+m/c.monto*100)*100)/100).replace('.',','):''}}
+function vCertif(){
+  const F=S.kf,cs=S.contratistas.filter(c=>c.estado!=='finalizado'||(F&&F.contratistaId===c.id));
+  const c=F&&by(S.contratistas,F.contratistaId),prev=c?certPct(c.id):0,cer=c?certMonto(c.id):0;
+  const form=F?`<section class="panel"><h2>Nueva certificación</h2>${errBox(F)}<div class="fields">
+   ${fld('kf-contratistaId','Contratista <em>*</em>',`<select id="kf-contratistaId" data-ig="kf.contratistaId">${opt('','Elegir contratista…',F.contratistaId)}${cs.map(x=>opt(x.id,x.nombre+' · '+((centro(x.obraId)||{}).codigo||''),F.contratistaId)).join('')}</select>`,'',2)}
+   ${fld('kf-fecha','Fecha <em>*</em>',`<input id="kf-fecha" type="date" data-ig="kf.fecha" value="${esc(F.fecha)}">`)}
+   ${c?`<div class="f wide"><div class="ok-box" style="margin:0">Monto acordado <b>${money(c.monto)}</b> · certificado hasta ahora <b>${money(cer)}</b> (${prev.toFixed(1)}%) · resta <b>${money(c.monto-cer)}</b></div></div>`:''}
+   ${fld('kf-pct','Avance acumulado (%)',`<input id="kf-pct" data-ig="kf.pct" value="${esc(F.pct)}" inputmode="decimal" placeholder="Ej: 40">`,'El total de la obra del contratista hasta hoy, de 0 a 100.')}
+   ${fld('kf-monto','Monto a cobrar por este avance',mny('kf-monto','kf.monto',F.monto),'Se calcula solo con el avance. También podés cargar el monto y se calcula el %.')}
+   ${fld('kf-obs','Observaciones',txt('kf-obs','kf.obs',F.obs),'',3)}
+  </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="ce-cancel">Cancelar</button><button type="button" class="btn dark" data-act="ce-save">Guardar certificación</button></div></section>`:'';
+  const ls=[...S.certifs].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const rows=ls.map(k=>{const ct=by(S.contratistas,k.contratistaId),o=ct&&centro(ct.obraId);
+    return `<tr><td class="mono">${fd(k.fecha)}</td><td><b>${ct?esc(ct.nombre):'—'}</b>${k.obs?`<br><span class="sub">${esc(k.obs)}</span>`:''}</td><td>${o?esc(o.codigo+' · '+o.nombre):'—'}</td><td class="mono">${k.pct.toFixed(1).replace('.',',')} %</td><td class="num"><b>${money(k.monto)}</b></td><td class="mono">${esc(k.ini||'—')}</td><td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="certif" data-id="${k.id}">Eliminar</button>`:''}</td></tr>`}).join('');
+  const resumen=S.contratistas.map(x=>{const cm=certMonto(x.id),p=x.monto>0?cm/x.monto*100:0,o=centro(x.obraId);
+    return `<tr><td><b>${esc(x.nombre)}</b></td><td>${o?esc(o.codigo):'—'}</td><td class="num">${money(x.monto)}</td><td class="num">${money(cm)}</td><td style="min-width:120px">${barra(p)}</td><td class="num">${money(x.monto-cm)}</td></tr>`}).join('');
+  return head('Certificación','El avance de cada contratista y lo que corresponde cobrar. Afecta al contratista y a la obra.',`${F||!manejaIng()?'':'<button class="btn small primary" data-act="ce-new">+ Nueva certificación</button>'}${xlsBtn('certif')}`)+form+igDelBox('certif')+
+  (S.contratistas.length?`<section class="panel"><h2>Avance por contratista</h2><div class="tw"><table><thead><tr><th>Contratista</th><th>Obra</th><th class="num">Acordado</th><th class="num">Certificado</th><th>Avance</th><th class="num">Resta</th></tr></thead><tbody>${resumen}</tbody></table></div></section>`:'')+
+  `<section class="panel"><h2>Certificaciones cargadas</h2>${ls.length?`<div class="tw"><table><thead><tr><th>Fecha</th><th>Contratista</th><th>Obra</th><th>Avance acum.</th><th class="num">Monto</th><th>Cargó</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">Todavía no hay certificaciones cargadas.</div>'}</section>`}
+function ceSave(){
+  const F=S.kf;F.err='';const fail=m=>{F.err=m;render()};
+  const c=by(S.contratistas,F.contratistaId);
+  if(!c)return fail('Elegí el contratista.');
+  if(!F.fecha)return fail('Cargá la fecha.');
+  if(F.pct===''&&F.monto==='')return fail('Cargá el avance en % o el monto a cobrar.');
+  if(F.monto===''||num(F.monto)===0&&F.pct!=='')kfCalc(F,'pct');else if(F.pct==='')kfCalc(F,'monto');
+  const prev=certPct(c.id),pct=num(F.pct),monto=num(F.monto);
+  if(pct>100.0001)return fail('El avance no puede pasar de 100%.');
+  if(pct<prev-0.0001)return fail('El avance acumulado no puede ser menor al ya certificado ('+prev.toFixed(1).replace('.',',')+'%).');
+  if(!(monto>0))return fail('El monto a cobrar tiene que ser mayor a cero.');
+  if(certMonto(c.id)+monto>c.monto+0.01)return fail('Con esta certificación se supera lo acordado con el contratista ('+money(c.monto)+').');
+  S.certifs.push({id:nid('ce'),contratistaId:c.id,fecha:F.fecha,pct,monto,obs:F.obs.trim(),ini:S.user});
+  aud('Alta','Certificación · '+c.nombre+' · avance '+pct+'% · '+money(monto));
+  S.kf=null;render();toast('Certificación guardada')}
+
+/* --- Maquinaria --- */
+function vMaq(){
+  const F=S.ccForm&&S.ccForm.kind==='maquina'?S.ccForm:null;
+  if(soloMaq()&&!S.af)S.af=newAr();
+  const A=S.af;
+  const big=soloMaq();
+  const af=A?`<section class="panel"><h2>Cargar arreglo</h2><div class="opform ${big?'xl':''}">${errBox(A)}${A.ok?`<div class="ok-box" role="status"><b>✔ ${esc(A.ok)}</b></div>`:''}
+    <div class="f"><label>¿Qué máquina?</label>${maqBotones('af',A.maqId)}</div>
+    <div class="f"><label for="af-fh">Fecha y hora</label><input id="af-fh" type="datetime-local" data-ig="af.fh" value="${esc(A.fh)}"></div>
+    <div class="f"><label for="af-desc">¿Qué se arregló?</label><input id="af-desc" data-ig="af.desc" value="${esc(A.desc)}" placeholder="Ej: Cambio de manguera hidráulica"></div>
+    ${big?'':`<div class="f"><label for="af-costo">Costo (opcional)</label>${mny('af-costo','af.costo',A.costo)}</div>`}
+    <div class="actions"><button type="button" class="btn ${big?'big':''} primary" data-act="ar-save">Guardar arreglo</button>${big?'':'<button type="button" class="btn" data-act="ar-cancel">Cerrar</button>'}</div></div></section>`:'';
+  const ms=[...maquinas()].sort((a,b)=>(a.activo===false)-(b.activo===false)||a.codigo.localeCompare(b.codigo));
+  const mrows=ms.map(m=>{const cb=combDe(m.id),ar=arrDe(m.id),ult=[...cb].sort((a,b)=>b.fh.localeCompare(a.fh))[0];
+    return `<tr ${m.activo===false?'style="opacity:.6"':''}><td class="mono"><b>${esc(m.codigo)}</b></td><td><b>${esc(m.nombre)}</b>${maqDesc(m)?`<br><span class="sub">${esc(maqDesc(m))}</span>`:''}${m.notas?`<br><span class="sub">${esc(m.notas)}</span>`:''}</td><td class="num">${lts(sum(cb,x=>x.litros))}</td><td class="mono">${ult?fhTxt(ult.fh):'—'}</td><td class="mono">${ar.length}</td>${big?'':`<td class="num">${money(sum(ar,x=>x.costo))}</td>`}<td>${manejaIng()?`<button class="btn small" data-act="mq-edit" data-id="${m.id}">Editar</button>`:''}</td></tr>`}).join('');
+  const als=S.arreglos.filter(x=>!S.maqF||x.maqId===S.maqF).sort((a,b)=>b.fh.localeCompare(a.fh));
+  const arows=als.map(x=>`<tr><td class="mono">${fhTxt(x.fh)}</td><td>${esc(maqNom(x.maqId))}</td><td>${esc(x.desc)}</td>${big?'':`<td class="num">${x.costo?money(x.costo):'—'}</td>`}<td class="mono">${esc(x.ini||'—')}</td><td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="arreglo" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`).join('');
+  const sel=`<select id="igMaqF" aria-label="Filtrar por máquina" class="rolsel"><option value="">Todas las máquinas</option>${maquinas().map(m=>opt(m.id,m.codigo+' · '+m.nombre,S.maqF)).join('')}</select>`;
+  return head('Maquinaria','Datos de cada máquina, su combustible acumulado y sus arreglos.',`${(F||!manejaIng())?'':'<button class="btn small primary" data-act="mq-new">+ Nueva máquina</button>'}${A||!cargaMaq()||big?'':'<button class="btn small" data-act="ar-new">+ Cargar arreglo</button>'}${big?'':xlsBtn('maq')}`)+(F?ccLite(F):'')+af+igDelBox('arreglo')+
+  `<section class="panel"><h2>Máquinas</h2>${ms.length?`<div class="tw"><table><thead><tr><th>Código</th><th>Máquina</th><th class="num">Combustible</th><th>Última carga</th><th>Arreglos</th>${big?'':'<th class="num">Costo arreglos</th>'}<th></th></tr></thead><tbody>${mrows}</tbody></table></div>`:'<div class="empty">Todavía no hay máquinas cargadas.</div>'}</section>
+  <section class="panel"><div class="toolbar" style="padding-top:14px"><h2 style="margin:0;padding:0">Arreglos</h2>${sel}</div>${als.length?`<div class="tw"><table><thead><tr><th>Fecha y hora</th><th>Máquina</th><th>Qué se arregló</th>${big?'':'<th class="num">Costo</th>'}<th>Cargó</th><th></th></tr></thead><tbody>${arows}</tbody></table></div>`:'<div class="empty">Todavía no hay arreglos cargados.</div>'}</section>`}
+function arSave(){
+  const A=S.af;A.err='';A.ok='';const fail=m=>{A.err=m;render()};
+  if(!A.maqId)return fail('Tocá la máquina que se arregló.');
+  if(!A.fh)return fail('Cargá la fecha y la hora.');
+  if(!A.desc.trim())return fail('Escribí qué se arregló.');
+  const m=centro(A.maqId),costo=num(A.costo);
+  S.arreglos.push({id:nid('ar'),maqId:A.maqId,fh:fhISO(A.fh),desc:A.desc.trim(),costo:costo>0?costo:0,ini:S.user});
+  aud('Alta','Arreglo · '+m.codigo+' · '+A.desc.trim());
+  S.af=newAr();S.af.ok='Guardado: arreglo de '+m.nombre;if(!soloMaq()){S.af=null}render();toast('Arreglo guardado')}
+
+/* --- Combustible --- */
+function vComb(){
+  const big=soloMaq();
+  const B=cargaMaq()?(S.bf||(S.bf=newBf())):null;
+  const form=B?`<section class="panel"><h2>Cargar combustible</h2><div class="opform ${big?'xl':''}">${errBox(B)}${B.ok?`<div class="ok-box" role="status"><b>✔ ${esc(B.ok)}</b></div>`:''}
+    <div class="f"><label>¿A qué máquina?</label>${maqBotones('bf',B.maqId)}</div>
+    <div class="f"><label for="bf-fh">Fecha y hora</label><input id="bf-fh" type="datetime-local" data-ig="bf.fh" value="${esc(B.fh)}"></div>
+    <div class="f"><label for="bf-litros">¿Cuántos litros?</label><input id="bf-litros" data-ig="bf.litros" value="${esc(B.litros)}" inputmode="decimal" placeholder="Ej: 80"></div>
+    <div class="actions"><button type="button" class="btn ${big?'big':''} primary" data-act="cb-save">Guardar carga</button></div></div></section>`:'';
+  const ls=S.comb.filter(x=>!S.maqF||x.maqId===S.maqF).sort((a,b)=>b.fh.localeCompare(a.fh));
+  const rows=ls.slice(0,300).map(x=>`<tr><td class="mono">${fhTxt(x.fh)}</td><td>${esc(maqNom(x.maqId))}</td><td class="num"><b>${lts(x.litros)}</b></td>${big?'':`<td class="mono">${esc(x.ini||'—')}</td>`}<td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="comb" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`).join('');
+  const sel=`<select id="igMaqF" aria-label="Filtrar por máquina" class="rolsel"><option value="">Todas las máquinas</option>${maquinas().map(m=>opt(m.id,m.codigo+' · '+m.nombre,S.maqF)).join('')}</select>`;
+  const porMaq=maquinas().map(m=>[m,sum(combDe(m.id),x=>x.litros)]).filter(p=>p[1]>0);
+  return head('Combustible','Cada carga suma al combustible de la máquina.',big?'':xlsBtn('comb'))+form+igDelBox('comb')+
+  `<section class="panel"><div class="toolbar" style="padding-top:14px"><h2 style="margin:0;padding:0">Cargas</h2>${sel}<span class="sub">${ls.length} carga${ls.length===1?'':'s'} · <b>${lts(sum(ls,x=>x.litros))}</b></span></div>
+  ${!big&&porMaq.length?`<div class="chips" style="padding:0 16px 10px">${porMaq.map(([m,l])=>`<span class="pill p-int">${esc(m.codigo)} · ${lts(l)}</span>`).join('')}</div>`:''}
+  ${ls.length?`<div class="tw"><table><thead><tr><th>Fecha y hora</th><th>Máquina</th><th class="num">Litros</th>${big?'':'<th>Cargó</th>'}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">Todavía no hay cargas de combustible.</div>'}</section>`}
+function cbSave(){
+  const B=S.bf;B.err='';B.ok='';const fail=m=>{B.err=m;render()};
+  const l=num(B.litros);
+  if(!B.maqId)return fail('Tocá la máquina a la que se le cargó.');
+  if(!B.fh)return fail('Cargá la fecha y la hora.');
+  if(!(l>0))return fail('Escribí cuántos litros se cargaron.');
+  const m=centro(B.maqId);
+  S.comb.push({id:nid('cb'),maqId:B.maqId,fh:fhISO(B.fh),litros:l,ini:S.user});
+  aud('Alta','Combustible · '+m.codigo+' · '+lts(l));
+  S.bf=newBf();S.bf.ok='Guardado: '+lts(l)+' en '+m.nombre;render();toast('Carga guardada')}
+
+/* --- Acciones de Ingeniería --- */
+function igAct(act,a){
+  const num0=()=>({err:'',confirm:false,nuevoTipo:'',nuevoTipoObra:false,nuevoCliRazon:'',nuevoCliCuit:''});
+  switch(act){
+   case 'ob-new':if(!manejaIng())return true;S.ccForm={...num0(),kind:'obra',id:null,codigo:'',nombre:'',tipo:'obra',clienteId:'',contrato:''};render();window.scrollTo(0,0);return true;
+   case 'ob-edit':{if(!manejaIng())return true;const c=centro(a.dataset.id);S.ccForm={...num0(),kind:'obra',id:c.id,codigo:c.codigo,nombre:c.nombre,tipo:'obra',clienteId:c.clienteId||'',contrato:c.contrato?toIn(c.contrato):''};render();window.scrollTo(0,0);return true}
+   case 'mq-new':if(!manejaIng())return true;S.ccForm={...num0(),kind:'maquina',id:null,codigo:'',nombre:'',tipo:'maquina',clienteId:'',contrato:'',marca:'',modelo:'',anio:'',patente:'',notas:''};render();window.scrollTo(0,0);return true;
+   case 'mq-edit':{if(!manejaIng())return true;const c=centro(a.dataset.id);S.ccForm={...num0(),kind:'maquina',id:c.id,codigo:c.codigo,nombre:c.nombre,tipo:'maquina',clienteId:'',contrato:'',marca:c.marca||'',modelo:c.modelo||'',anio:c.anio?String(c.anio):'',patente:c.patente||'',notas:c.notas||''};render();window.scrollTo(0,0);return true}
+   case 'ct-new':if(!manejaIng())return true;S.cf={id:null,nombre:'',cuit:'',tel:'',obraId:S.obraF||'',trabajo:'',dias:'',monto:'',obs:'',err:''};render();window.scrollTo(0,0);return true;
+   case 'ct-edit':{if(!manejaIng())return true;const c=by(S.contratistas,a.dataset.id);S.cf={id:c.id,nombre:c.nombre,cuit:c.cuit||'',tel:c.tel||'',obraId:c.obraId,trabajo:c.trabajo||'',dias:c.dias?String(c.dias):'',monto:toIn(c.monto),obs:c.obs||'',err:''};render();window.scrollTo(0,0);return true}
+   case 'ct-cancel':S.cf=null;render();return true;
+   case 'ct-save':ctSave();return true;
+   case 'ct-fin':{if(!manejaIng())return true;const c=by(S.contratistas,a.dataset.id);c.estado=c.estado==='finalizado'?'activo':'finalizado';aud('Modificación','Contratista '+c.nombre+' · '+(c.estado==='finalizado'?'finalizado':'reabierto'));render();return true}
+   case 'ce-new':{if(!manejaIng())return true;S.kf={contratistaId:a.dataset.ct||'',fecha:TODAY,pct:'',monto:'',obs:'',err:''};if(S.view!=='certif'){go('certif');S.kf={contratistaId:a.dataset.ct||'',fecha:TODAY,pct:'',monto:'',obs:'',err:''};render()}else render();window.scrollTo(0,0);return true}
+   case 'ce-cancel':S.kf=null;render();return true;
+   case 'ce-save':ceSave();return true;
+   case 'ar-new':if(!cargaMaq())return true;S.af=newAr();render();return true;
+   case 'ar-cancel':S.af=null;render();return true;
+   case 'ar-save':if(!cargaMaq())return true;arSave();return true;
+   case 'cb-save':if(!cargaMaq())return true;cbSave();return true;
+   case 'ig-del':if(!manejaIng())return true;S.igDel={k:a.dataset.k,id:a.dataset.id};render();window.scrollTo(0,0);return true;
+   case 'ig-del-no':S.igDel=null;render();return true;
+   case 'ig-del-ok':{if(!manejaIng()||!S.igDel)return true;const {k,id}=S.igDel;S.igDel=null;
+     const T={contrat:['contratistas',x=>'Contratista '+x.nombre],certif:['certifs',x=>'Certificación '+money(x.monto)],comb:['comb',x=>'Combustible '+lts(x.litros)],arreglo:['arreglos',x=>'Arreglo '+x.desc]}[k];
+     if(!T)return true;const x=by(S[T[0]],id);if(!x)return render(),true;
+     if(k==='contrat'&&certDe(id).length)return render(),true;
+     S[T[0]]=S[T[0]].filter(y=>y.id!==id);aud('Eliminación',T[1](x));render();toast('Eliminado');return true}
+  }
+  return false}
+Object.assign(EXPORTS,{
+  obras(){return {name:'Obras',sheets:[{name:'Obras',rows:[['Código','Obra','Cliente','Contrato','Contratistas','Contratado','Certificado','Avance %','Por certificar']].concat(obras().map(c=>{const cts=ctDe(c.id),con=sum(cts,x=>x.monto),cer=sum(cts,x=>certMonto(x.id)),cl=c.clienteId&&tercero(c.clienteId);return [c.codigo,c.nombre,cl?cl.razon:'',c.contrato||0,cts.length,con,cer,con>0?Math.round(cer/con*1000)/10:0,con-cer]}))}]}},
+  contrat(){return {name:'Contratistas',sheets:[{name:'Contratistas',rows:[['Contratista','CUIT','Teléfono','Obra','Trabajo','Tiempo (días)','Monto','Certificado','Avance %','Por cobrar','Estado']].concat(S.contratistas.map(c=>{const cer=certMonto(c.id),o=centro(c.obraId);return [c.nombre,c.cuit||'',c.tel||'',o?o.codigo+' · '+o.nombre:'',c.trabajo||'',c.dias||'',c.monto,cer,c.monto>0?Math.round(cer/c.monto*1000)/10:0,c.monto-cer,c.estado==='finalizado'?'Finalizado':'Activo']}))}]}},
+  certif(){return {name:'Certificaciones',sheets:[{name:'Certificaciones',rows:[['Fecha','Contratista','Obra','Avance acumulado %','Monto','Observaciones','Cargó']].concat([...S.certifs].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(k=>{const c=by(S.contratistas,k.contratistaId),o=c&&centro(c.obraId);return [fd(k.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',k.pct,k.monto,k.obs||'',k.ini||'']}))}]}},
+  maq(){return {name:'Maquinaria',sheets:[
+    {name:'Máquinas',rows:[['Código','Máquina','Marca','Modelo','Año','Patente / serie','Otros datos','Combustible (L)','Arreglos','Costo arreglos']].concat(maquinas().map(m=>[m.codigo,m.nombre,m.marca||'',m.modelo||'',m.anio||'',m.patente||'',m.notas||'',sum(combDe(m.id),x=>x.litros),arrDe(m.id).length,sum(arrDe(m.id),x=>x.costo)]))},
+    {name:'Arreglos',rows:[['Fecha','Hora','Máquina','Qué se arregló','Costo','Cargó']].concat([...S.arreglos].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[fd(fhDia(x.fh)),fhHora(x.fh),maqNom(x.maqId),x.desc,x.costo||'',x.ini||'']))}]}},
+  comb(){return {name:'Combustible',sheets:[{name:'Combustible',rows:[['Fecha','Hora','Máquina','Litros','Cargó']].concat([...S.comb].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[fd(fhDia(x.fh)),fhHora(x.fh),maqNom(x.maqId),x.litros,x.ini||'']))}]}}
+});
+
 /* ---------- Render y eventos ---------- */
 function render(){
   const app=document.querySelector('.app'),lg=document.getElementById('login');
   if(!S.sesion){app.hidden=true;lg.hidden=false;lg.innerHTML=vLogin();renderModal();return}
   app.hidden=false;lg.hidden=true;lg.innerHTML='';
-  if(S.view==='usuarios'&&!esAdmin())S.view='inicio';
-  if((S.view==='nueva'||S.view==='exist')&&!puedeCargar())S.view='inicio';
+  if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -1936,6 +2234,8 @@ document.addEventListener('click',e=>{
   const cp=e.target.closest('[data-cvper]');if(cp){const [y,m]=TODAY.split('-').map(Number);const pad=n=>String(n).padStart(2,'0');const last=(y,m)=>new Date(y,m,0).getDate();const k=cp.dataset.cvper;if(k==='mes'){S.cv.desde=`${y}-${pad(m)}-01`;S.cv.hasta=`${y}-${pad(m)}-${last(y,m)}`}else if(k==='ant'){const py=m===1?y-1:y,pm=m===1?12:m-1;S.cv.desde=`${py}-${pad(pm)}-01`;S.cv.hasta=`${py}-${pad(pm)}-${last(py,pm)}`}else{S.cv.desde='';S.cv.hasta=TODAY}render();return}
   const sc=e.target.closest('[data-scroll]');if(sc){document.getElementById(sc.dataset.scroll)?.scrollIntoView({behavior:'smooth',block:'start'});return}
   const x=e.target.closest('[data-xls]');if(x){exportar(x.dataset.xls);return}
+  const sc2=e.target.closest('[data-sec]');if(sc2){const k=sc2.dataset.sec;S.navCerr[k]=!S.navCerr[k];try{localStorage.setItem('navCerr',JSON.stringify(S.navCerr))}catch(_){}renderNav();return}
+  const gm=e.target.closest('[data-igmaq]');if(gm){const F=S[gm.dataset.igmaq];if(F){F.maqId=gm.dataset.id;F.ok='';render()}return}
   const b=e.target.closest('[data-view]');if(b){e.preventDefault();if(b.dataset.view!=='trans')S.sel=null;go(b.dataset.view);return}
   const ay=e.target.closest('[data-audy]');if(ay){S.audY=ay.dataset.audy;cambiaAudit();return}
   const am=e.target.closest('[data-audm]');if(am){S.audM=am.dataset.audm;cambiaAudit();return}
@@ -1956,6 +2256,7 @@ document.addEventListener('click',e=>{
   const sg=e.target.closest('.seg button');if(sg){const t=sg.dataset.t;if(t!==D.tipo){D.tipo=t;D.terceroId='';D.facts={};D.nf=null;D.nt=null;D.pagos=[newPago(t)];if(t==='interna')D.rets=[];S.errors=[];render()}return}
   const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act,i=+a.dataset.i;
   if(accionPk(act,a,e))return;
+  if(igAct(act,a))return;
   if(act==='add-pago'){const np=newPago(D.tipo,D.tipo==='interna'?'transferencia':'efectivo');const rest=num(D.total)-sum(D.rets,r=>num(r.importe))-sum(D.pagos,x=>num(x.importe));if(rest>0.005)np.importe=toIn(rest);D.pagos.push(np);render()}
   else if(act==='rm-pago'){D.pagos.splice(i,1);render()}
   else if(act==='add-ret'){D.rets.push({clase:'retencion',impuesto:'iibb',jur:'',cert:'',importe:''});render()}
@@ -2020,6 +2321,7 @@ main.addEventListener('input',e=>{
   if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;return}
   if(el.dataset.nt&&D.nt){D.nt[el.dataset.nt]=el.value;return}
   if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;return}
+  if(el.dataset.ig){const [f,k]=el.dataset.ig.split('.');if(S[f]){S[f][k]=el.value;S[f].ok=''}return}
   if(el.dataset.cc&&S.ccForm){if(el.type==='checkbox')return;S.ccForm[el.dataset.cc]=el.value;S.ccForm.confirm=false;return}
   if(el.dataset.cv==='q'){S.cv.q=el.value;const pos=el.selectionStart;render();const q=document.getElementById('cv-q');q.focus();q.setSelectionRange(pos,pos);return}
   if(el.dataset.cfg&&!esDueno())return;
@@ -2035,6 +2337,9 @@ main.addEventListener('input',e=>{
 });
 main.addEventListener('change',e=>{
   const el=e.target;
+  if(el.id==='igObraF'){S.obraF=el.value;render();return}
+  if(el.id==='igMaqF'){S.maqF=el.value;render();return}
+  if(el.dataset.ig){const [f,k]=el.dataset.ig.split('.');const F=S[f];if(F){F[k]=el.value;if(f==='kf'&&k==='contratistaId'){F.pct='';F.monto='';render()}else if(f==='kf'&&(k==='pct'||k==='monto')){kfCalc(F,k);render()}}return}
   if(el.id==='bancoF'){S.bancoF=el.value;render();return}
   if(el.id==='ccTipoF'){S.ccTipo=el.value;if(S.ccF&&S.ccTipo&&centro(S.ccF)?.tipo!==S.ccTipo)S.ccF='';render();return}
   if(el.id==='ccF'){S.ccF=el.value;render();return}
@@ -2061,7 +2366,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='6-oct 14:00';
+const BUILD='6-oct 15:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

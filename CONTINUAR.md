@@ -30,6 +30,13 @@
 ## Usuarios y roles (hecho)
 - Tres roles: Dueño (todo), Contador (carga y consulta) y Lector (solo mira). La pantalla Usuarios los explica, permite cambiar el rol, habilitar, desactivar y eliminar. Un usuario con movimientos no se elimina (se desactiva). El rol Lector está bloqueado también en la base (`sql/05_rol_lector_y_usuarios.sql`).
 
+## Ingeniería / Obras (hecho)
+- Menú: sección «Administración» (plegable, la ven Dueño, Contador y Lector) y sección «Ingeniería / Obras» (la leen todos; el estado plegado se recuerda en el navegador).
+- Roles nuevos: **Ingeniero** (maneja toda Ingeniería/Obras, no ve Administración, ve clientes y valor de contrato) y **Operario** (solo Maquinaria y Combustible: carga combustible y arreglos con botones grandes; no ve costos). Contador y Lector leen Ingeniería sin modificar; solo Dueño e Ingeniero modifican y eliminan allí. `puedeCargar()` ahora es solo Dueño y Contador.
+- Pantallas: Centro de costos (obras = centros tipo obra), Contratistas (obra, trabajo, días estimados, monto), Certificación (avance acumulado % o monto; calcula el otro; no deja pasar del monto del contratista), Maquinaria (máquinas = centros tipo maquina con marca/modelo/año/patente/notas, más arreglos), Combustible (cada carga suma a la máquina). Todo con Excel (salvo Operario) y registrado en Auditoría.
+- Base: `sql/07_ingenieria_obras.sql` (ya aplicado). Tablas contratistas, certificaciones, combustible_cargas, maquinaria_arreglos; políticas restrictivas para que Ingeniero/Operario no lean las tablas de Administración.
+- Límites: combustible, certificaciones y arreglos no se editan (se eliminan y se vuelven a cargar); el Ingeniero puede editar obras y máquinas pero no eliminar ni desactivar centros (eso es del Dueño).
+
 ## Pendiente
 1. Cargar datos reales: clientes, proveedores, obras, cheques y saldos iniciales (lo que se escribió en la versión de ejemplo no quedó guardado en ningún lado).
 2. Probar con usuarios reales (dueño y contador) desde el celular y ajustar lo que moleste.
