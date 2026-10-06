@@ -653,7 +653,7 @@ function vInicio(){
 
 /* ---------- Transacciones ---------- */
 function ctaIds(){
-  if(S.ctaF==='caja')return['c1'];if(S.ctaF==='cajausd')return['c2'];if(S.ctaF==='cartera')return['c6'];
+  if(S.ctaF==='caja')return S.cuentas.filter(c=>c.tipo==='caja'&&c.moneda==='ARS').map(c=>c.id);if(S.ctaF==='cajausd')return S.cuentas.filter(c=>c.tipo==='caja'&&c.moneda!=='ARS').map(c=>c.id);if(S.ctaF==='cartera')return S.cuentas.filter(CARTERA).map(c=>c.id);
   if(S.ctaF==='bancos')return S.bancoF?[S.bancoF]:S.cuentas.filter(BANCO).map(c=>c.id);
   return null;
 }
@@ -2028,7 +2028,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='6-oct 11:05';
+const BUILD='6-oct 13:15';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
