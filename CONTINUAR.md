@@ -49,6 +49,6 @@
 - Una existencia por cuenta y por año: si ya hay una activa, avisa. Para corregirla se usa Modificar/Anular en Transacciones.
 
 ## v3 (6-oct 20:00)
-- Menú: grupo **Administración**, grupo **Ingeniería / Obras** (obras, contratistas, certificación, resumen de gasto), grupo **Operario** (maquinaria, arreglos, combustible; único que ve el operario) y **Resumen de control** suelto abajo (solo administración).
+- Menú: grupo **Administración**, grupo **Ingeniería / Obras** (obras, contratistas, certificación, resumen de gasto), grupo **Operario** (maquinaria, arreglos, combustible; único que ve el operario) y **Resumen operativo** suelto abajo (solo administración).
 - Certificación agrupada por obra → contratista; cada avance admite adjuntos (foto/PDF ≤10 MB) en el bucket privado `adjuntos-obra` (metadatos en `certificaciones.adjuntos`).
 - Nueva vista `gasto` (Resumen de gasto): presupuesto, certificado, cobrado, avance, falta certificar y falta cobrar por contratista y obra.
