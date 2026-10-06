@@ -433,7 +433,7 @@ const mesTxt=ym=>{const [y,m]=ym.split('-');return MESES[+m-1]+' '+y};
 /* ---------- Datos de ejemplo ---------- */
 const S={
  user:'FY',view:'inicio',filtro:'todas',q:'',sel:null,confirm:null,errors:[],
- audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',bancoF:'',factF:'todas',nfFac:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
+ audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
  rDesde:(()=>{const [y,m]=TODAY.split('-').map(Number);const py=m===1?y-1:y,pm=m===1?12:m-1;return py+'-'+String(pm).padStart(2,'0')+'-01'})(),rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
@@ -662,6 +662,8 @@ function txList(){
   const ids=ctaIds();
   let list=[...S.trans];
   if(S.filtro!=='todas')list=list.filter(t=>t.tipo===S.filtro);
+  if(S.ccTipo)list=list.filter(t=>centro(t.ccId)?.tipo===S.ccTipo);
+  if(S.ccF)list=list.filter(t=>t.ccId===S.ccF);
   if(ids)list=list.filter(t=>t.pagos.some(p=>ids.includes(p.origen)||ids.includes(p.destino)));
   if(S.q){const q=S.q.toLowerCase();list=list.filter(t=>(t.concepto+' '+(tercero(t.terceroId)?.razon||'')+' '+centro(t.ccId).nombre+' '+centro(t.ccId).codigo+' '+t.numero).toLowerCase().includes(q))}
   if(ids){ordenTx(list,false);let run=0;list.forEach(t=>{t._mov=t.estado==='activa'?movCta(t,ids):0;run+=t._mov;t._run=run})}
@@ -673,7 +675,7 @@ function ctaNombre(){if(S.ctaF==='todas')return '';if(S.ctaF==='bancos')return S
 /* Totales de lo que se ve en pantalla (respetan los filtros y la búsqueda; las anuladas no suman) */
 function txTotales(list){const act=list.filter(t=>t.estado==='activa');const f=k=>sum(act.filter(t=>t.tipo===k),t=>t.total*t.tc);
   const ing=f('entrada'),egr=f('salida'),int=f('interna');return {cant:list.length,anul:list.length-act.length,ing,egr,int,res:ing-egr}}
-function txFiltroTxt(){const p=[];if(S.filtro!=='todas')p.push({entrada:'ingresos',salida:'egresos',interna:'internos',inicial:'existencia inicial'}[S.filtro]);if(S.ctaF!=='todas')p.push(ctaNombre());if(S.q)p.push('búsqueda «'+S.q+'»');return p.join(' · ')}
+function txFiltroTxt(){const p=[];if(S.filtro!=='todas')p.push({entrada:'ingresos',salida:'egresos',interna:'internos',inicial:'existencia inicial'}[S.filtro]);if(S.ctaF!=='todas')p.push(ctaNombre());if(S.ccF&&centro(S.ccF))p.push('centro '+centro(S.ccF).codigo);else if(S.ccTipo)p.push('centros tipo '+(CC_TIPOS[S.ccTipo]||S.ccTipo).toLowerCase());if(S.q)p.push('búsqueda «'+S.q+'»');return p.join(' · ')}
 function txFoot(list,ids){
   if(!list.length)return '';
   const T=txTotales(list),pre=pkCols(8),post=ids?3:2,mon=S.ctaF==='cajausd'?'USD':'ARS',flt=txFiltroTxt();
@@ -682,11 +684,16 @@ function txFoot(list,ids){
    fila('Total ingresos',T.ing,'var(--ok)')+fila('Total egresos',T.egr,'var(--brand)')+fila('Resultado (ingresos − egresos)',T.res,T.res<0?'var(--bad)':'var(--ok)')+fila('Movimientos internos',T.int)+
    (ids?`<tr><td colspan="${pre+1}" style="text-align:right">Movimiento neto en la cuenta · saldo final</td><td class="num">${money(sum(list,t=>t._mov||0),mon)}</td><td class="num">${money(list[list.length-1]._run||0,mon)}</td><td></td></tr>`:'')+`</tfoot>`;
 }
+function agruparTx(list){
+  const g=new Map();list.forEach(t=>{(g.get(t.ccId)||g.set(t.ccId,[]).get(t.ccId)).push(t)});
+  return [...g.entries()].sort((a,b)=>(centro(a[0])?.codigo||'').localeCompare(centro(b[0])?.codigo||'')).flatMap(([id,ts])=>{const act=ts.filter(t=>t.estado==='activa');
+    return [{_g:1,cc:centro(id),n:ts.length,ing:sum(act.filter(t=>t.tipo==='entrada'),t=>t.total*t.tc),egr:sum(act.filter(t=>t.tipo==='salida'),t=>t.total*t.tc)},...ts]})}
+const grupoRow=g=>`<tr class="mesrow"><td colspan="${pkCols(12)}"><b>${esc(g.cc?g.cc.codigo+' · '+g.cc.nombre:'—')}</b> <span class="sub">${esc(CC_TIPOS[g.cc?.tipo]||'')} · ${g.n} transacci${g.n===1?'ón':'ones'} · Ingresos ${money(g.ing)} · Egresos ${money(g.egr)}</span></td></tr>`;
 function txTable(list,ids){
   if(!list.length)return '<div class="empty">No hay transacciones con ese filtro.</div>';
   const mon=S.ctaF==='cajausd'?'USD':'ARS';
   return `<div class="tw"><table><thead><tr>${pkHead('trans',list.map(t=>t.id))}<th>Nº</th><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Cliente / Proveedor</th><th>Centro</th><th>Forma de pago</th><th>Factura</th><th class="num">Total</th>${ids?'<th class="num">Mov. en cuenta</th><th class="num">Saldo</th>':'<th>Cuadre</th>'}<th>Usr</th></tr></thead><tbody>${
-   list.map(t=>{const d=cuadreTx(t);const tr=tercero(t.terceroId);const medios=[...new Set(t.pagos.map(p=>medioTxt[p.medio]))].join(', ');
+   (S.agrup&&!ids?agruparTx(list):list).map(t=>{if(t._g)return grupoRow(t);const d=cuadreTx(t);const tr=tercero(t.terceroId);const medios=[...new Set(t.pagos.map(p=>medioTxt[p.medio]))].join(', ');
    const fac=t.facts.length?t.facts.map(f=>nroFact(factura(f.facturaId))).join('<br>'):(t.tipo==='interna'||t.tipo==='inicial'||t.auto?'<span class="sub">—</span>':'<span class="sub">Sin factura</span>');
    return `<tr class="click ${S.sel===t.id?'sel':''} ${t.estado==='anulada'?'void':''} ${isPicked('trans',t.id)?'picked':''}" data-tx="${t.id}" tabindex="0">${pkCell('trans',t.id)}<td class="mono">${t.numero}</td><td class="mono">${fd(t.fecha)}</td><td>${t.estado==='anulada'?'<span class="pill p-mute">Anulada</span>':tipoPill(t.tipo)}${t.auto==='idc'?'<br><span class="pill p-warn" style="margin-top:4px">Imp. D/C</span>':''}</td><td>${esc(t.concepto)}</td><td>${tr?esc(tr.razon):'<span class="sub">Movimiento interno</span>'}</td><td><b>${esc(centro(t.ccId).codigo)}</b></td><td>${medios}${t.rets.length?'<br><span class="sub">+ '+t.rets.length+' ret./perc.</span>':''}</td><td class="mono">${fac}</td><td class="num">${money(t.total,t.moneda)}</td>${ids?`<td class="num" style="color:${t._mov<0?'var(--bad)':'var(--ok)'}">${money(t._mov,mon)}</td><td class="num">${money(t._run,mon)}</td>`:`<td>${Math.abs(d)<0.005?'<span class="pill p-ok">OK</span>':'<span class="pill p-warn">Dif. '+money(d,t.moneda)+'</span>'}</td>`}<td class="mono">${t.user}</td></tr>`}).join('')}</tbody>${txFoot(list,ids)}</table></div>`;
 }
@@ -701,6 +708,7 @@ function vTrans(){
    (sel?detail(sel):'')+
    `<section class="panel"><h2>${ids?'Libro de '+esc(ctaNombre()):'Registro'} <small>${ids?'Ordenado por fecha, con saldo acumulado':'Tocá una fila para ver el detalle'}</small></h2>
    <div class="toolbar"><div class="grp"><span class="lbl">Tipo</span><div class="chips">${chips}</div></div><input class="search" id="q" type="search" placeholder="Buscar concepto, tercero, obra o Nº" value="${esc(S.q)}" aria-label="Buscar"></div>
+   <div class="toolbar"><div class="grp"><span class="lbl">Centro</span><select class="sel" id="ccTipoF" aria-label="Tipo de centro">${opt('','Todos los tipos',S.ccTipo)}${Object.entries(CC_TIPOS).map(([k,l])=>opt(k,k==='obra'?'Obras':l,S.ccTipo)).join('')}</select><select class="sel" id="ccF" aria-label="Centro de costo u obra">${opt('',S.ccTipo==='obra'?'Todas las obras':'Todos los centros',S.ccF)}${S.centros.filter(c=>!S.ccTipo||c.tipo===S.ccTipo).map(c=>opt(c.id,c.codigo+' · '+c.nombre+(c.activo===false?' (inactivo)':''),S.ccF)).join('')}</select><button type="button" class="chip" data-agrup="1" aria-pressed="${!!S.agrup}">Agrupar por centro</button></div></div>
    <div class="toolbar"><div class="grp"><span class="lbl">Cuenta</span><div class="chips">${ctas}</div>${bancoSel}</div></div>
    ${txTable(list,ids)}</section>`;
 }
@@ -913,7 +921,7 @@ function save(){
     facts:D.tipo==='interna'?[]:Object.entries(D.facts).map(([facturaId,v])=>({facturaId,importe:num(v)}))};
   S.trans.push(tx);S.audit.push({fecha:now,ini:S.user,accion:'Alta',detalle:'Transacción Nº '+numero+' · '+tx.concepto,txId:id});
   const idc=crearIDC(tx,now);
-  const t=D.tipo;resetDraft(t);S.sel=id;S.filtro='todas';S.ctaF='todas';S.q='';go('trans');toast('Transacción Nº '+numero+' guardada'+(idc.length?' + impuesto D/C '+money(sum(idc,x=>x.total)):''));
+  const t=D.tipo;resetDraft(t);S.sel=id;S.filtro='todas';S.ctaF='todas';S.q='';S.ccTipo='';S.ccF='';go('trans');toast('Transacción Nº '+numero+' guardada'+(idc.length?' + impuesto D/C '+money(sum(idc,x=>x.total)):''));
 }
 /* ---------- Existencia inicial ---------- */
 const cuentasIni=()=>S.cuentas.filter(c=>CAJA(c)||BANCO(c));
@@ -954,7 +962,7 @@ function guardarInicial(){
       rets:[],facts:[],pagos:mine.map(x=>({medio:'otro',destino:x.c.id,importe:x.imp,ref:''}))};
     S.trans.push(tx);nums.push(numero);last=id;
     S.audit.push({fecha:now,ini:S.user,accion:'Alta',detalle:'Existencia inicial Nº '+numero+' · '+mine.map(x=>x.c.nombre+' '+money(x.imp,m)).join(', '),txId:id})});
-  S.ini=null;S.sel=last;S.filtro='todas';S.ctaF='todas';S.q='';go('trans');
+  S.ini=null;S.sel=last;S.filtro='todas';S.ctaF='todas';S.q='';S.ccTipo='';S.ccF='';go('trans');
   toast('Existencia inicial guardada (Nº '+nums.join(', ')+')');
 }
 function anular(id){
@@ -1846,13 +1854,35 @@ function accionPk(act,a,e){
 }
 
 /* ---------- Planillas para Excel ---------- */
+/* Hojas extra del Excel de Transacciones: por centro de costo, por obra, detalle agrupado e impuesto D/C (respetan los filtros de pantalla) */
+function transHojas(list){
+  const act=list.filter(t=>t.estado==='activa'),padres=new Set(act.map(t=>t.id));
+  const idc=S.trans.filter(h=>h.auto==='idc'&&h.estado==='activa'&&padres.has(h.padreId));
+  const ars=t=>t.total*t.tc,por={};
+  [...act,...idc].forEach(t=>{const x=por[t.ccId]||(por[t.ccId]={n:0,i:0,e:0,d:0});if(!t.auto)x.n++;
+    if(t.auto)x.d+=ars(t);else if(t.tipo==='entrada')x.i+=ars(t);else if(t.tipo==='salida')x.e+=ars(t)});
+  const cc=Object.keys(por).map(id=>centro(id)).filter(Boolean).sort((a,b)=>a.codigo.localeCompare(b.codigo));
+  const tot=(arr,k)=>sum(arr,c=>por[c.id][k]);
+  const hCC=[['Código','Centro de costo','Tipo','Cliente','Valor de contrato','Transacciones','Ingresos','Egresos (sin imp. D/C)','Impuesto D/C','Resultado']].concat(cc.map(c=>{const x=por[c.id];return [c.codigo,c.nombre,CC_TIPOS[c.tipo]||c.tipo,c.clienteId?(tercero(c.clienteId)?.razon||''):'',c.contrato||'',x.n,x.i,x.e,x.d,x.i-x.e-x.d]}));
+  hCC.push([],['TOTAL','','','','',tot(cc,'n'),tot(cc,'i'),tot(cc,'e'),tot(cc,'d'),tot(cc,'i')-tot(cc,'e')-tot(cc,'d')]);
+  const ob=cc.filter(c=>c.tipo==='obra');
+  const hOb=[['Obra','Código','Cliente','Valor de contrato','Cobrado en lo filtrado','Cobrado total a la fecha','Saldo pendiente de cobro','Egresos (sin imp. D/C)','Impuesto D/C','Resultado de lo filtrado']].concat(ob.map(c=>{const x=por[c.id],k=ccContrato(c);return [c.nombre,c.codigo,c.clienteId?(tercero(c.clienteId)?.razon||''):'',c.contrato||'',x.i,k?k.cobrado:'',k?k.pendiente:'',x.e,x.d,x.i-x.e-x.d]}));
+  if(ob.length)hOb.push([],['TOTAL','','',sum(ob,c=>c.contrato||0),tot(ob,'i'),'','',tot(ob,'e'),tot(ob,'d'),tot(ob,'i')-tot(ob,'e')-tot(ob,'d')]);
+  const det=[['Centro de costo','Nº','Fecha','Tipo','Concepto','Cliente / Proveedor','Forma de pago','Estado','Total']];
+  cc.forEach(c=>{const x=por[c.id];det.push([c.codigo+' · '+c.nombre+' ('+(CC_TIPOS[c.tipo]||c.tipo)+')']);
+    list.filter(t=>t.ccId===c.id).sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.numero-b.numero).forEach(t=>{const tr=tercero(t.terceroId);det.push(['',t.numero,fd(t.fecha),TIPO_LBL[t.tipo],t.concepto,tr?tr.razon:'',t.pagos.map(p=>medioLbl(t.tipo,p.medio)).join(' | '),t.estado==='activa'?'Activa':'Anulada',t.total])});
+    det.push(['','','','','Subtotal '+c.codigo,'','','Ingresos',x.i],['','','','','','','','Egresos',x.e],['','','','','','','','Impuesto D/C',x.d],[])});
+  const hIdc=[['Fecha','Nº','Concepto','Transacción que lo origina','Centro de costo','Importe']].concat(idc.sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.numero-b.numero).map(h=>{const p=by(S.trans,h.padreId);return [fd(h.fecha),h.numero,h.concepto,p?'Nº '+p.numero+' · '+p.concepto:'',centro(h.ccId).codigo+' · '+centro(h.ccId).nombre,h.total]}));
+  hIdc.push([],['','','','','TOTAL',sum(idc,h=>h.total)]);
+  return [{name:'Por centro de costo',rows:hCC},...(ob.length?[{name:'Por obra',rows:hOb}]:[]),{name:'Detalle por centro',rows:det},{name:'Impuesto D-C',rows:hIdc}];
+}
 const EXPORTS={
-  trans(){const {list,ids}=txList();const cols=['Nº','Fecha','Tipo','Estado','Concepto','Cliente / Proveedor','CUIT','Centro de costo','Moneda','Tipo de cambio','Total','Formas de pago','Sale de','Entra a','Ret./perc.','Facturas','Usuario'];if(ids)cols.push('Movimiento en cuenta','Saldo');
-    const rows=[cols].concat(list.map(t=>{const tr=tercero(t.terceroId);const r=[t.numero,fd(t.fecha),TIPO_LBL[t.tipo],t.estado==='activa'?'Activa':'Anulada',t.concepto,tr?tr.razon:'Movimiento interno',tr?tr.cuit:'',centro(t.ccId).codigo+' · '+centro(t.ccId).nombre,t.moneda,t.tc,t.total,t.pagos.map(p=>medioLbl(t.tipo,p.medio)+' '+p.importe).join(' | '),t.pagos.map(p=>p.origen?cuenta(p.origen).nombre:'').filter(Boolean).join(' | '),t.pagos.map(p=>p.destino?cuenta(p.destino).nombre:'').filter(Boolean).join(' | '),sum(t.rets,x=>x.importe),t.facts.map(f=>nroFact(factura(f.facturaId))).join(' | '),t.user];if(ids)r.push(t._mov,t._run);return r}));
+  trans(){const {list,ids}=txList();const cols=['Nº','Fecha','Tipo','Estado','Concepto','Cliente / Proveedor','CUIT','Centro de costo','Moneda','Tipo de cambio','Total','Formas de pago','Sale de','Entra a','Ret./perc.','Facturas','Usuario','Tipo de centro','Cliente de la obra'];if(ids)cols.push('Movimiento en cuenta','Saldo');
+    const rows=[cols].concat(list.map(t=>{const tr=tercero(t.terceroId);const r=[t.numero,fd(t.fecha),TIPO_LBL[t.tipo],t.estado==='activa'?'Activa':'Anulada',t.concepto,tr?tr.razon:'Movimiento interno',tr?tr.cuit:'',centro(t.ccId).codigo+' · '+centro(t.ccId).nombre,t.moneda,t.tc,t.total,t.pagos.map(p=>medioLbl(t.tipo,p.medio)+' '+p.importe).join(' | '),t.pagos.map(p=>p.origen?cuenta(p.origen).nombre:'').filter(Boolean).join(' | '),t.pagos.map(p=>p.destino?cuenta(p.destino).nombre:'').filter(Boolean).join(' | '),sum(t.rets,x=>x.importe),t.facts.map(f=>nroFact(factura(f.facturaId))).join(' | '),t.user,CC_TIPOS[centro(t.ccId).tipo]||'',centro(t.ccId).clienteId?(tercero(centro(t.ccId).clienteId)?.razon||''):''];if(ids)r.push(t._mov,t._run);return r}));
     const T=txTotales(list),flt=txFiltroTxt(),fila=(l,v)=>{const r=new Array(11).fill('');r[4]=l;r[10]=v;return r};
     rows.push([],fila('TOTALES · '+T.cant+' transacciones'+(flt?' · '+flt:''),''),fila('Total ingresos',T.ing),fila('Total egresos',T.egr),fila('Resultado (ingresos − egresos)',T.res),fila('Movimientos internos',T.int));
-    if(ids&&list.length){const r=new Array(19).fill('');r[4]='Movimiento neto en la cuenta · saldo final';r[17]=sum(list,t=>t._mov||0);r[18]=list[list.length-1]._run||0;rows.push(r)}
-    return {name:ids?'Libro '+ctaNombre():'Transacciones',sheets:[{name:ids?ctaNombre():'Transacciones',rows}]}},
+    if(ids&&list.length){const r=new Array(21).fill('');r[4]='Movimiento neto en la cuenta · saldo final';r[19]=sum(list,t=>t._mov||0);r[20]=list[list.length-1]._run||0;rows.push(r)}
+    return {name:ids?'Libro '+ctaNombre():'Transacciones',sheets:[{name:ids?ctaNombre():'Transacciones',rows},...transHojas(list)]}},
   centros(){return {name:'Centros de costo',sheets:[{name:'Centros de costo',rows:[['Código','Nombre','Tipo','Cliente','Estado','Movimientos','Valor de contrato','Ingresos','Egresos','Resultado','Saldo pendiente']].concat(S.centros.map(c=>{const st=ccStats(c.id);const k=ccContrato(c);return [c.codigo,c.nombre,CC_TIPOS[c.tipo]||c.tipo,c.clienteId?tercero(c.clienteId).razon:'',c.activo===false?'Inactivo':'Activo',st.n,k?k.contrato:'',st.i,st.e,st.i-st.e,k?k.pendiente:'']}))}]}},
   facturas(){const rows=[['Mes','Emitida/Recibida','Fiscal','Comprobante','Fecha','Cliente / Proveedor','CUIT','Neto','IVA','No gravado/otros','Total','Imputado','Saldo','Estado','Usuario']].concat(factList().map(f=>{const t=tercero(f.terceroId);return [mesTxt(f.fecha.slice(0,7)).replace(/^./,c=>c.toUpperCase()),f.lado==='debito'?'Emitida':'Recibida',f.lado==='debito'?'Débito fiscal':'Crédito fiscal',nroFact(f),fd(f.fecha),t.razon,t.cuit,f.neto,f.iva,f.otros,f.total,isNC(f)?0:imputado(f.id),saldoFact(f),factEstado(f)[0],f.user]}));
     return {name:'Facturas',sheets:[{name:'Facturas',rows}]}},
@@ -1909,6 +1939,7 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-view]');if(b){e.preventDefault();if(b.dataset.view!=='trans')S.sel=null;go(b.dataset.view);return}
   const ay=e.target.closest('[data-audy]');if(ay){S.audY=ay.dataset.audy;cambiaAudit();return}
   const am=e.target.closest('[data-audm]');if(am){S.audM=am.dataset.audm;cambiaAudit();return}
+  if(e.target.closest('[data-agrup]')){S.agrup=!S.agrup;render();return}
   const fl=e.target.closest('[data-filtro]');if(fl){S.filtro=fl.dataset.filtro;render();return}
   const ct=e.target.closest('[data-cta]');if(ct){S.ctaF=ct.dataset.cta;if(S.ctaF!=='bancos')S.bancoF='';render();return}
   const cq=e.target.closest('[data-chq]');if(cq){S.chqFiltro=cq.dataset.chq;render();return}
@@ -2005,6 +2036,8 @@ main.addEventListener('input',e=>{
 main.addEventListener('change',e=>{
   const el=e.target;
   if(el.id==='bancoF'){S.bancoF=el.value;render();return}
+  if(el.id==='ccTipoF'){S.ccTipo=el.value;if(S.ccF&&S.ccTipo&&centro(S.ccF)?.tipo!==S.ccTipo)S.ccF='';render();return}
+  if(el.id==='ccF'){S.ccF=el.value;render();return}
   if(el.dataset.cv&&el.dataset.cv!=='q'){S.cv[el.dataset.cv]=el.value;render();return}
   if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;if(S.edit.k==='centros'&&el.dataset.e==='tipo')render();if(S.edit.k==='trans'&&el.dataset.e==='pmedio'){const t=by(S.trans,el.dataset.id);if(t&&pagoEditable(t)){ajustaPago(t,S.edit.v[t.id]);render()}}return}
   if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;return}
@@ -2028,7 +2061,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='6-oct 13:15';
+const BUILD='6-oct 14:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
