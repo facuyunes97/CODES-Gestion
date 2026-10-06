@@ -151,3 +151,25 @@ end $$;
 alter policy operario_ve_maquinas on centros_costo using (rol_actual() = 'operario' and tipo_id in ('maquina','obra'));
 alter policy limite_por_rol on centros_costo using (es_admin_lectura()
   or (rol_actual() = 'ingeniero' and tipo_id in ('obra','maquina')) or (rol_actual() = 'operario' and tipo_id in ('maquina','obra')));
+
+-- 6) Contratistas como proveedores (migración contratistas_como_proveedores)
+alter table contratistas add column if not exists tercero_id uuid references terceros(id);
+create function contratista_proveedor() returns trigger language plpgsql security definer set search_path = public as
+$$ begin
+  if new.tercero_id is null then
+    if new.cuit is not null and btrim(new.cuit) <> '' then select id into new.tercero_id from terceros where cuit = new.cuit limit 1; end if;
+    if new.tercero_id is null then
+      insert into terceros (razon_social, cuit, tipo) values (new.nombre, nullif(btrim(coalesce(new.cuit,'')),''), 'proveedor') returning id into new.tercero_id;
+    end if;
+  end if;
+  return new;
+end $$;
+create trigger trg_contratista_proveedor before insert on contratistas for each row execute function contratista_proveedor();
+-- (además se creó el proveedor de cada contratista que ya existía)
+create function pagos_contratistas() returns table (contratista_id uuid, total numeric, cantidad integer)
+language sql stable security definer set search_path = public as
+$$ select c.id, coalesce(sum(t.total * t.tipo_cambio), 0), count(t.id)::integer
+   from contratistas c left join transacciones t on t.tercero_id = c.tercero_id and t.tipo = 'salida' and t.estado = 'activa'
+   where public.ve_ingenieria() group by c.id $$;
+revoke all on function pagos_contratistas() from public, anon;
+grant execute on function pagos_contratistas() to authenticated;
