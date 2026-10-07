@@ -52,3 +52,10 @@
 - Menú: grupo **Administración**, grupo **Ingeniería / Obras** (obras, contratistas, certificación, resumen de gasto), grupo **Operario** (maquinaria, arreglos, combustible; único que ve el operario) y **Resumen operativo** suelto abajo (solo administración).
 - Certificación agrupada por obra → contratista; cada avance admite adjuntos (foto/PDF ≤10 MB) en el bucket privado `adjuntos-obra` (metadatos en `certificaciones.adjuntos`).
 - Nueva vista `gasto` (Resumen de gasto): presupuesto, certificado, cobrado, avance, falta certificar y falta cobrar por contratista y obra.
+
+## v4 (7-oct 12:00)
+- Calendario propio para los campos de fecha (escritorio): mes y año grandes, días de otros meses atenuados, botón Hoy. En celular se usa el nativo.
+- Movimiento interno muestra los saldos de bancos y cajas, y cómo quedan con el movimiento.
+- Resumen: "Resultado por centro de costo" sin máquinas. Centros de costo agrupados por tipo y plegables. Tabla de obras con la columna Obra ancha.
+- Combustible agrupado por obra, con filtro por máquina y por fecha (desde/hasta).
+- Backup semanal automático (pg_cron, domingos 3:00 Argentina) con cartel en la app; el dueño puede hacer uno manual y descargarlos desde Usuarios → Copias de seguridad. No hay borrado automático de backups viejos (la app muestra los últimos 10).

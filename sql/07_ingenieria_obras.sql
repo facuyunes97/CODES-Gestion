@@ -182,3 +182,8 @@ on conflict (id) do nothing;
 create policy adjuntos_obra_select on storage.objects for select to authenticated using (bucket_id='adjuntos-obra' and public.ve_ingenieria());
 create policy adjuntos_obra_insert on storage.objects for insert to authenticated with check (bucket_id='adjuntos-obra' and public.maneja_ingenieria());
 create policy adjuntos_obra_delete on storage.objects for delete to authenticated using (bucket_id='adjuntos-obra' and public.maneja_ingenieria());
+
+-- v4: backups semanales (tablas, funciones y cron aplicados en producción) -----
+-- tablas public.backups (metadatos: lee admin) y public.backups_datos (JSON completo: lee solo el dueño)
+-- funciones hacer_backup_interno(tipo) (solo cron/servidor) y hacer_backup_manual() (solo dueño)
+-- select cron.schedule('backup-semanal','0 6 * * 0',$$select public.hacer_backup_interno('automatico')$$);  -- domingos 03:00 Argentina
