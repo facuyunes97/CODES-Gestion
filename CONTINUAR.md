@@ -69,3 +69,4 @@
 - WhatsApp: sin hacer; a definir (Telegram / WhatsApp Business API).
 
 - (7-oct 19:00) Facturas recopiladas: aviso "Proveedor cargado / no cargado" por CUIT con selector de proveedor (completa CUIT y aprende el mail), botones Cargar · Editar · Descartar, editor con todos los campos (proveedor, razón, CUIT, tipo, PV, nro, fecha, neto, IVA, otros, total, CUIT receptor) y miniatura del PDF.
+- (7-oct 20:00) Auto-descarte: triggers rc_auto_descartar_t / rc_auto_descartar_f (sql/09): recopilada con mismo CUIT+tipo+PV+nro+total que una factura cargada pasa sola a Descartadas con nota. Mismo nro con otro importe queda pendiente con aviso.

@@ -1105,7 +1105,11 @@ const recop=id=>S.recop.find(x=>x.id===id);
 const rcEmail=r=>((/<([^>]+)>/.exec(r.remit||'')||[,r.remit||''])[1]||'').trim().toLowerCase();
 const rcKey=r=>(r.cuit||rcEmail(r))&&r.nro&&r.pv?[r.cuit||('@'+rcEmail(r)),r.pv,r.nro].join('|'):'';
 const rcHermanas=r=>{const k=rcKey(r);return k?S.recop.filter(x=>x!==r&&rcKey(x)===k):[]};
-const rcPend=()=>{const v=new Set();let n=0;S.recop.forEach(r=>{if(r.estado!=='pendiente')return;const k=rcKey(r);if(k){if(v.has(k))return;v.add(k)}n++});return n};
+/* Si la factura ya está cargada en Facturas (mismo CUIT + tipo + punto de venta + número + total) la recopilada se descarta sola */
+function rcBarrer(){S.recop.forEach(r=>{if(r.estado!=='pendiente'||!r.cuit||!(r.pv>0)||!(r.nro>0)||!(r.total>0))return;
+  const d=cuitDig(r.cuit);const f=S.facturas.find(f=>f.lado==='credito'&&f.tipo===r.tipo&&f.pv===r.pv&&f.nro===r.nro&&cuitDig((tercero(f.terceroId)||{}).cuit)===d&&Math.abs(f.total-r.total)<=0.01);
+  if(f){r.estado='descartada';r.facturaId=f.id;r.obs='Ya estaba cargada en Facturas: se descartó sola.'}})}
+const rcPend=()=>{rcBarrer();const v=new Set();let n=0;S.recop.forEach(r=>{if(r.estado!=='pendiente')return;const k=rcKey(r);if(k){if(v.has(k))return;v.add(k)}n++});return n};
 const RC_EST={pendiente:['Pendiente','p-warn'],cargada:['Cargada','p-ok'],descartada:['Descartada','p-mute']};
 /* Qué le falta a una recopilada para poder cargarla sin revisar */
 function rcFalta(r){const f=[];if(!r.cuit&&!rcTercero(r))f.push('CUIT del emisor');if(!TIPOS_F.includes(r.tipo))f.push('tipo');if(!(r.pv>0)||!(r.nro>0))f.push('número');if(!r.fecha)f.push('fecha');if(!(r.total>0))f.push('total');
@@ -1137,6 +1141,7 @@ function rcConfHTML(C){
   <div class="tw"><table><thead><tr><th>Comprobante</th><th>Proveedor</th><th>Fecha</th><th class="num">Total</th><th>Imputar IVA a</th></tr></thead><tbody>${filas}</tbody></table></div>
   <div class="actions"><button type="button" class="btn" data-act="rc-conf-cancel">Cancelar</button><button type="button" class="btn dark" data-act="rc-conf-ok">Confirmar y cargar</button></div></div></section>`}
 function vRecop(){
+  rcBarrer();
   const F=S.recopF,cnt=k=>S.recop.filter(r=>r.estado===k).length;
   const vistas=new Set(),repes={};
   const lista=S.recop.filter(r=>F==='todas'||r.estado===F).filter(r=>{const k=rcKey(r);if(!k)return true;if(vistas.has(k)){repes[k]=(repes[k]||0)+1;return false}vistas.add(k);return true});
@@ -1149,7 +1154,7 @@ function vRecop(){
     <td class="rcc"><b>${esc(r.razon||(rcTercero(r)||{}).razon||'(sin razón social)')}</b><span class="sub">CUIT ${esc(r.cuit||(rcTercero(r)||{}).cuit||'sin leer')}</span>${r.estado==='pendiente'?(()=>{const t=rcTercero(r);return `${t?`<span class="pill p-ok">Proveedor cargado</span>`:`<span class="pill p-warn">Proveedor no cargado</span>`}<select class="rcprov" data-rcprov="${r.id}" aria-label="Proveedor del sistema">${rcProvOpts(t,t?t.id:'')}</select>`})():''}</td>
     <td class="mono rcc">${r.nro?tipoFTxt(r.tipo)+' '+String(r.pv).padStart(4,'0')+'-'+String(r.nro).padStart(8,'0'):'—'}<span class="sub">${r.fecha?fd(r.fecha):'sin fecha'}</span></td>
     <td class="num rcc"><b>${money(r.total)}</b><span class="sub">Neto ${money(r.neto)}</span><span class="sub">IVA ${money(r.iva)}</span></td>
-    <td class="rcc">${r.pdf?`<button type="button" class="rcthb" data-act="rc-pdf" data-id="${r.id}" data-th="${r.id}" title="Abrir el PDF" ${S.recopTh[r.id]?'':'hidden'}><img alt="Vista previa" src="${S.recopTh[r.id]||''}"></button>`:''}${repes[rcKey(r)]?`<span class="sub">Llegó también en ${repes[rcKey(r)]} mail${repes[rcKey(r)]===1?'':'s'} más (misma factura).</span>`:''}${falta.length?`<span class="pill p-bad">Revisar</span> <span class="sub">Falta: ${esc(falta.join(', '))}</span>`:''}${dup?`<span class="pill p-warn">Ya está en Facturas</span> `:''}${r.obs?`<span class="sub">${esc(r.obs)}</span>`:''}<span class="sub">${esc(r.remit)}${r.asunto?' · '+esc(r.asunto):''}</span></td>
+    <td class="rcc">${r.pdf?`<button type="button" class="rcthb" data-act="rc-pdf" data-id="${r.id}" data-th="${r.id}" title="Abrir el PDF" ${S.recopTh[r.id]?'':'hidden'}><img alt="Vista previa" src="${S.recopTh[r.id]||''}"></button>`:''}${repes[rcKey(r)]?`<span class="sub">Llegó también en ${repes[rcKey(r)]} mail${repes[rcKey(r)]===1?'':'s'} más (misma factura).</span>`:''}${falta.length?`<span class="pill p-bad">Revisar</span> <span class="sub">Falta: ${esc(falta.join(', '))}</span>`:''}${dup?`<span class="pill p-warn">Ya hay una factura con este número en Facturas (otro importe)</span> `:''}${r.obs?`<span class="sub">${esc(r.obs)}</span>`:''}<span class="sub">${esc(r.remit)}${r.asunto?' · '+esc(r.asunto):''}</span></td>
     <td class="rcacts">${r.pdf?`<button class="btn small" data-act="rc-pdf" data-id="${r.id}">Ver PDF</button>`:''}${r.mailUrl?`<a class="btn small" href="${esc(r.mailUrl)}" target="_blank" rel="noopener">Ver mail</a>`:''}
     ${r.estado==='pendiente'?`<button class="btn small dark" data-act="rc-uno" data-id="${r.id}">Cargar</button><button class="btn small" data-act="rc-edit" data-id="${r.id}">Editar</button><button class="btn small" data-act="rc-desc" data-id="${r.id}">Descartar</button>`:r.estado==='descartada'?`<button class="btn small" data-act="rc-rest" data-id="${r.id}">Volver a pendiente</button>`:''}</td></tr>`};
   const sinPuente=!S.recop.length;
@@ -2779,7 +2784,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 19:30';
+const BUILD='7-oct 20:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
