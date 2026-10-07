@@ -5,6 +5,7 @@
  *  2) Cada 10 min sincroniza los cheques/Echeq con el calendario compartido "CODES SRL".
  */
 var URL_PUENTE = 'https://ljnhikarhvwgbktkkzug.supabase.co/functions/v1/puente';
+var URL_AVISOS = 'https://ljnhikarhvwgbktkkzug.supabase.co/functions/v1/avisos';
 var CLAVE = 'PEGAR_AQUI_LA_CLAVE';
 var CALENDARIO_ID = '1aa1b0e83c5cd779e17d303c7014ea125e1bd24aa709e6b0444309e6550a0c4d@group.calendar.google.com';
 var ETIQUETA = 'CODES-revisado';
@@ -19,6 +20,7 @@ function instalar() {
 function ciclo() {
   try { facturas_(); } catch (e) { console.error('facturas: ' + e); }
   try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
+  try { avisos_(); } catch (e) { console.error('avisos: ' + e); }
 }
 
 function llamar_(cuerpo) {
@@ -30,6 +32,14 @@ function llamar_(cuerpo) {
   var j; try { j = JSON.parse(txt); } catch (e) { throw new Error('respuesta rara: ' + txt.slice(0, 200)); }
   if (!j.ok) throw new Error(j.error || 'error');
   return j;
+}
+
+// Avisos al grupo de Telegram (facturas nuevas, cheques por vencer)
+function avisos_() {
+  var r = UrlFetchApp.fetch(URL_AVISOS, { method: 'post', contentType: 'application/json', headers: { 'x-clave': CLAVE }, payload: '{}', muteHttpExceptions: true });
+  var j = JSON.parse(r.getContentText());
+  if (!j.ok) throw new Error(j.error || 'error');
+  if (j.aviso) console.log(j.aviso);
 }
 
 function facturas_() {

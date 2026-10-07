@@ -6,3 +6,4 @@
 -- cheques_calendario: cheque_id, evento_id, fecha, firma, cerrado, actualizado (la escribe solo la función puente)
 -- ingesta_claves: id, nombre, hash (sha256), creada (RLS sin políticas)
 -- bucket privado facturas-recopiladas (PDF, 8 MB), lectura solo es_admin_lectura()
+-- Telegram: config_secretos(clave, valor) guarda telegram_token y telegram_chat_id; avisos_enviados(clave) evita repetir avisos. Ambas con RLS y sin acceso desde la app.
