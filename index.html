@@ -1109,13 +1109,26 @@ const rcHermanas=r=>{const k=rcKey(r);return k?S.recop.filter(x=>x!==r&&rcKey(x)
 function rcBarrer(){S.recop.forEach(r=>{if(r.estado!=='pendiente'||!r.cuit||!(r.pv>0)||!(r.nro>0)||!(r.total>0))return;
   const d=cuitDig(r.cuit);const f=S.facturas.find(f=>f.lado==='credito'&&f.tipo===r.tipo&&f.pv===r.pv&&f.nro===r.nro&&cuitDig((tercero(f.terceroId)||{}).cuit)===d&&Math.abs(f.total-r.total)<=0.01);
   if(f){r.estado='descartada';r.facturaId=f.id;r.obs='Ya estaba cargada en Facturas: se descartó sola.'}})}
-const rcPend=()=>{rcBarrer();const v=new Set();let n=0;S.recop.forEach(r=>{if(r.estado!=='pendiente')return;const k=rcKey(r);if(k){if(v.has(k))return;v.add(k)}n++});return n};
+const rcPend=()=>{rcAutoProv();rcBarrer();const v=new Set();let n=0;S.recop.forEach(r=>{if(r.estado!=='pendiente')return;const k=rcKey(r);if(k){if(v.has(k))return;v.add(k)}n++});return n};
 const RC_EST={pendiente:['Pendiente','p-warn'],cargada:['Cargada','p-ok'],descartada:['Descartada','p-mute']};
 /* Qué le falta a una recopilada para poder cargarla sin revisar */
 function rcFalta(r){const f=[];if(!r.cuit&&!rcTercero(r))f.push('CUIT del emisor');if(!TIPOS_F.includes(r.tipo))f.push('tipo');if(!(r.pv>0)||!(r.nro>0))f.push('número');if(!r.fecha)f.push('fecha');if(!(r.total>0))f.push('total');
   if(r.rcuit!=='30-71700245-4')f.push('que sea a nombre de CODES SRL');return f}
 const cuitDig=v=>String(v||'').replace(/\D/g,'');
-const rcTercero=r=>{if(r.provId){const t=S.terceros.find(x=>x.id===r.provId);if(t)return t}const d=cuitDig(r.cuit);return d?S.terceros.find(t=>!t.sistema&&cuitDig(t.cuit)===d):undefined};
+/* Proveedor de la recopilada: elegido a mano > por CUIT > (si no se leyó CUIT) por el nombre de quien manda el mail */
+const rcNorm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const RC_STOP=new Set(['sa','srl','sas','sociedad','anonima','cia','ing','los','las','del','por','con','gmail','com','ar']);
+const rcToks=s=>rcNorm(s).split(' ').filter(w=>w.length>=3&&!RC_STOP.has(w));
+function rcPorNombre(r){const q=new Set(rcToks((r.remit||'')+' '+(r.razon||'')));if(!q.size)return undefined;
+  const c=S.terceros.filter(t=>{if(t.sistema||!['proveedor','ambos'].includes(t.tipo))return false;const k=rcToks(t.razon);return k.length&&k.every(w=>q.has(w))});
+  return c.length===1?c[0]:undefined}
+const rcTercero=r=>{if(r.provId){const t=S.terceros.find(x=>x.id===r.provId);if(t)return t}const d=cuitDig(r.cuit);if(d)return S.terceros.find(t=>!t.sistema&&cuitDig(t.cuit)===d);return rcPorNombre(r)};
+/* Al crear un proveedor en Clientes y proveedores, las recopiladas que le corresponden toman su CUIT y razón solas */
+function rcAutoProv(){const lista=S.recop.filter(r=>r.estado==='pendiente'&&!r.cuit&&!r.provId).map(r=>[r,rcPorNombre(r)]).filter(([r,t])=>t&&t.cuit);if(!lista.length)return;
+  const ems=new Map();
+  lista.forEach(([r,t])=>{r.cuit=t.cuit;if(!r.razon)r.razon=t.razon;if(!ems.has(rcEmail(r)))ems.set(rcEmail(r),r)});
+  if(REAL&&puedeCargar())lista.forEach(([r])=>{sb.from('facturas_recopiladas').update({emisor_cuit:r.cuit,emisor_razon:r.razon||null}).eq('id',r.id).then(()=>{},e=>console.warn(e))});
+  ems.forEach(r=>{rcAprender(r)})}
 const rcProvOpts=(t,sel)=>(t?'':opt('','Proveedor nuevo: se crea al cargar',sel))+S.terceros.filter(x=>!x.sistema&&(x.id===sel||['proveedor','ambos'].includes(x.tipo))).sort((a,b)=>a.razon.localeCompare(b.razon,'es')).map(x=>opt(x.id,x.razon+(x.cuit?' · '+x.cuit:''),sel)).join('');
 const rcFm=(r,per)=>{const t=rcTercero(r);return {lado:'credito',terceroId:t?t.id:'',tipo:r.tipo,pv:String(r.pv),nro:String(r.nro),fecha:r.fecha,per:per||'',neto:toIn(r.neto),iva:toIn(r.iva),otros:toIn(r.otros)}};
 const rcViejo=r=>r.fecha&&r.fecha.slice(0,7)<TODAY.slice(0,7);
@@ -1141,7 +1154,7 @@ function rcConfHTML(C){
   <div class="tw"><table><thead><tr><th>Comprobante</th><th>Proveedor</th><th>Fecha</th><th class="num">Total</th><th>Imputar IVA a</th></tr></thead><tbody>${filas}</tbody></table></div>
   <div class="actions"><button type="button" class="btn" data-act="rc-conf-cancel">Cancelar</button><button type="button" class="btn dark" data-act="rc-conf-ok">Confirmar y cargar</button></div></div></section>`}
 function vRecop(){
-  rcBarrer();
+  rcAutoProv();rcBarrer();
   const F=S.recopF,cnt=k=>S.recop.filter(r=>r.estado===k).length;
   const vistas=new Set(),repes={};
   const lista=S.recop.filter(r=>F==='todas'||r.estado===F).filter(r=>{const k=rcKey(r);if(!k)return true;if(vistas.has(k)){repes[k]=(repes[k]||0)+1;return false}vistas.add(k);return true});
@@ -2784,7 +2797,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 20:00';
+const BUILD='7-oct 20:30';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
