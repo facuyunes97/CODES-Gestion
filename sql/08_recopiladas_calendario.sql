@@ -1,0 +1,8 @@
+-- Ya aplicado en Supabase (migración puente_google_tablas). Solo documentación.
+-- facturas_recopiladas: facturas leídas de Gmail, pendientes de autorización (RLS: lee es_admin_lectura(), actualiza puede_cargar())
+-- columnas: id, gmail_message_id, adjunto, recibida_at, remitente, asunto, mail_url, emisor_cuit, emisor_razon, receptor_cuit,
+--   tipo, punto_venta, numero, fecha, neto_gravado, iva, otros, total, moneda, cae, pdf_path, observaciones,
+--   estado ('pendiente'|'cargada'|'descartada'), factura_id, resuelta_at, resuelta_por, created_at; unique(gmail_message_id, adjunto)
+-- cheques_calendario: cheque_id, evento_id, fecha, firma, cerrado, actualizado (la escribe solo la función puente)
+-- ingesta_claves: id, nombre, hash (sha256), creada (RLS sin políticas)
+-- bucket privado facturas-recopiladas (PDF, 8 MB), lectura solo es_admin_lectura()

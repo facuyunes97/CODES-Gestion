@@ -351,7 +351,8 @@ tr.mesrow td{background:var(--surface-2);padding:7px 12px;font-size:13px}
 .rol li{padding-left:22px;position:relative}.rol li::before{position:absolute;left:0;font-weight:700}
 .rol li.si::before{content:"✓";color:var(--ok)}.rol li.no::before{content:"✕";color:var(--bad)}.rol li.no{color:var(--ink-2)}
 .rol-dueno{border-top:3px solid var(--brand)}.rolsel{padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface)}
-body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open],body.lector [data-act=nffac-open]{display:none!important}
+body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open],body.lector [data-act=nffac-open],body.lector [data-act=rc-sel],body.lector [data-act=rc-all],body.lector [data-act=rc-uno],body.lector [data-act=rc-edit],body.lector [data-act=rc-desc],body.lector [data-act=rc-rest],body.lector [data-act=rc-sel-cargar],body.lector [data-act=rc-sel-desc]{display:none!important}
+.rcacts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.rcacts .btn{text-decoration:none}
 /* Estado de guardado */
 .sync{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}.sync i.live{background:var(--ok)}
@@ -477,7 +478,7 @@ const mesTxt=ym=>{const [y,m]=ym.split('-');return MESES[+m-1]+' '+y};
 /* ---------- Datos de ejemplo ---------- */
 const S={
  user:'FY',view:'inicio',filtro:'todas',q:'',sel:null,confirm:null,errors:[],
- audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
+ audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,recop:[],recopF:'pendiente',recopSel:{},recopEd:null,recopConf:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
  rDesde:(()=>{const [y,m]=TODAY.split('-').map(Number);const py=m===1?y-1:y,pm=m===1?12:m-1;return py+'-'+String(pm).padStart(2,'0')+'-01'})(),rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
@@ -672,7 +673,7 @@ async function exportar(k){
 window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
-const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
+const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['recop','Facturas recopiladas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
 const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
 const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -1092,6 +1093,103 @@ function vFacturas(){
   <div class="tw"><table><thead><tr>${pkHead('facturas',list.map(f=>f.id))}<th>Tipo</th><th>Comprobante</th><th>Fecha</th><th>Cliente / Proveedor</th><th class="num">Neto</th><th class="num">IVA</th><th class="num">Total</th><th class="num">Saldo</th><th>Estado</th><th>Usr</th></tr></thead><tbody>${body||`<tr><td colspan="${pkCols(10)}" class="sub">No hay facturas con ese filtro.</td></tr>`}</tbody></table></div></section>`;
 }
 
+/* ---------- Facturas recopiladas (mails de codessrl.sgo@gmail.com) ----------
+   Un script dentro de la cuenta de Gmail manda los PDF al sistema y quedan PENDIENTES.
+   Nada entra a Facturas hasta que alguien lo autoriza con "Cargar al sistema". */
+const fromRecop=r=>({id:r.id,recibida:r.recibida_at||'',remit:r.remitente||'',asunto:r.asunto||'',mailUrl:r.mail_url||'',adj:r.adjunto||'',cuit:r.emisor_cuit||'',razon:r.emisor_razon||'',rcuit:r.receptor_cuit||'',tipo:r.tipo||'',pv:r.punto_venta||0,nro:r.numero||0,fecha:r.fecha||'',neto:+r.neto_gravado||0,iva:+r.iva||0,otros:+r.otros||0,total:+r.total||0,cae:r.cae||'',pdf:r.pdf_path||'',obs:r.observaciones||'',estado:r.estado,facturaId:r.factura_id||''});
+const recop=id=>S.recop.find(x=>x.id===id);
+const RC_EST={pendiente:['Pendiente','p-warn'],cargada:['Cargada','p-ok'],descartada:['Descartada','p-mute']};
+/* Qué le falta a una recopilada para poder cargarla sin revisar */
+function rcFalta(r){const f=[];if(!r.cuit)f.push('CUIT del emisor');if(!TIPOS_F.includes(r.tipo))f.push('tipo');if(!(r.pv>0)||!(r.nro>0))f.push('número');if(!r.fecha)f.push('fecha');if(!(r.total>0))f.push('total');
+  if(r.rcuit!=='30-71700245-4')f.push('que sea a nombre de CODES SRL');return f}
+const rcTercero=r=>S.terceros.find(t=>!t.sistema&&t.cuit===r.cuit);
+const rcFm=(r,per)=>{const t=rcTercero(r);return {lado:'credito',terceroId:t?t.id:'',tipo:r.tipo,pv:String(r.pv),nro:String(r.nro),fecha:r.fecha,per:per||'',neto:toIn(r.neto),iva:toIn(r.iva),otros:toIn(r.otros)}};
+const rcViejo=r=>r.fecha&&r.fecha.slice(0,7)<TODAY.slice(0,7);
+function rcOpcionesPer(r){const m=r.fecha.slice(0,7);return [[m,'Mes de la factura ('+mesTxt(m)+')'],[mesSig(m),'Mes siguiente ('+mesTxt(mesSig(m))+')'],[TODAY.slice(0,7),'Este mes ('+mesTxt(TODAY.slice(0,7))+')']].filter((o,i,a)=>a.findIndex(x=>x[0]===o[0])===i)}
+function rcEditHTML(E){
+  const inp=(k,lbl,extra='')=>`<div class="f"><label for="rce-${k}">${lbl}</label><input id="rce-${k}" data-rce="${k}" value="${esc(E[k])}" ${extra}></div>`;
+  const mi=(k,lbl)=>`<div class="f"><label for="rce-${k}">${lbl}</label><div class="money"><span aria-hidden="true">$</span><input class="num" inputmode="decimal" id="rce-${k}" data-rce="${k}" value="${esc(E[k])}" placeholder="0,00"></div></div>`;
+  return `<section class="panel"><div class="newfact"><h3>Revisar factura recopilada</h3>${E.err?`<div class="alerta" role="alert"><b>${esc(E.err)}</b></div>`:''}
+  <div class="fields">${inp('razon','Proveedor (razón social)')}${inp('cuit','CUIT del proveedor','inputmode="numeric" placeholder="30-12345678-9"')}
+  <div class="f"><label for="rce-tipo">Tipo</label><select id="rce-tipo" data-rce="tipo">${TIPOS_F.map(t=>opt(t,tipoFTxt(t),E.tipo)).join('')}</select></div>
+  ${inp('pv','Punto de venta','inputmode="numeric"')}${inp('nro','Número','inputmode="numeric"')}
+  <div class="f"><label for="rce-fecha">Fecha</label><input type="date" id="rce-fecha" data-rce="fecha" value="${esc(E.fecha)}"></div>
+  ${mi('neto','Neto gravado')}${mi('iva','IVA')}${mi('otros','No gravado / otros')}
+  <div class="f"><label>Total</label><div class="money"><span aria-hidden="true">$</span><input class="num" value="${toIn(num(E.neto)+num(E.iva)+num(E.otros))}" readonly></div></div></div>
+  <div class="actions"><button type="button" class="btn" data-act="rc-ed-cancel">Cancelar</button><button type="button" class="btn dark" data-act="rc-ed-save">Guardar cambios</button></div></div></section>`}
+function rcConfHTML(C){
+  const rs=C.ids.map(recop).filter(Boolean);
+  const filas=rs.map(r=>{const t=rcTercero(r);const sel=rcViejo(r)?`<select data-rcper="${r.id}" aria-label="Imputar IVA">${rcOpcionesPer(r).map(([v,l])=>opt(v,l,C.per[r.id])).join('')}</select>`:'<span class="sub">Mes de la factura</span>';
+    return `<tr><td class="mono">${tipoFTxt(r.tipo)} ${String(r.pv).padStart(4,'0')}-${String(r.nro).padStart(8,'0')}</td><td>${esc(r.razon||r.cuit)}${t?'':' <span class="pill p-mute">proveedor nuevo</span>'}</td><td class="mono">${fd(r.fecha)}</td><td class="num">${money(r.total)}</td><td>${sel}</td></tr>`}).join('');
+  const viejas=rs.some(rcViejo);
+  return `<section class="panel"><div class="newfact"><h3>Cargar ${rs.length} factura${rs.length===1?'':'s'} al sistema</h3>
+  <p class="sub">Van a quedar en <b>Facturas</b> como recibidas. Si el proveedor no existe se crea.${viejas?' Hay facturas de meses anteriores: elegí a qué mes se imputa el IVA.':''}</p>
+  <div class="tw"><table><thead><tr><th>Comprobante</th><th>Proveedor</th><th>Fecha</th><th class="num">Total</th><th>Imputar IVA a</th></tr></thead><tbody>${filas}</tbody></table></div>
+  <div class="actions"><button type="button" class="btn" data-act="rc-conf-cancel">Cancelar</button><button type="button" class="btn dark" data-act="rc-conf-ok">Confirmar y cargar</button></div></div></section>`}
+function vRecop(){
+  const F=S.recopF,cnt=k=>S.recop.filter(r=>r.estado===k).length;
+  const lista=S.recop.filter(r=>F==='todas'||r.estado===F);
+  const chips=[['pendiente','Pendientes'],['cargada','Cargadas'],['descartada','Descartadas'],['todas','Todas']].map(([k,l])=>`<button class="chip" data-rcf="${k}" aria-pressed="${F===k}">${l}${k==='todas'?'':' ('+cnt(k)+')'}</button>`).join('');
+  const pend=lista.filter(r=>r.estado==='pendiente');const nSel=pend.filter(r=>S.recopSel[r.id]).length;
+  const row=r=>{const falta=r.estado==='pendiente'?rcFalta(r):[];const e=RC_EST[r.estado]||[r.estado,'p-mute'];
+    const dup=r.estado==='pendiente'&&!falta.length?S.facturas.find(f=>f.lado==='credito'&&f.tipo===r.tipo&&f.pv===r.pv&&f.nro===r.nro&&tercero(f.terceroId)?.cuit===r.cuit):null;
+    return `<tr class="rec ${S.recopSel[r.id]?'picked':''}"><td>${r.estado==='pendiente'?`<input type="checkbox" data-act="rc-sel" data-id="${r.id}" ${S.recopSel[r.id]?'checked':''} aria-label="Seleccionar"> `:''}<span class="pill ${e[1]}">${e[0]}</span></td>
+    <td class="mono">${r.recibida?fd(r.recibida.slice(0,10)):''}</td>
+    <td><b>${esc(r.razon||'(sin razón social)')}</b><span class="sub">${esc(r.cuit||'sin CUIT')}</span></td>
+    <td class="mono">${r.nro?tipoFTxt(r.tipo)+' '+String(r.pv).padStart(4,'0')+'-'+String(r.nro).padStart(8,'0'):'—'}<span class="sub">${r.fecha?fd(r.fecha):'sin fecha'}</span></td>
+    <td class="num">${money(r.neto)}</td><td class="num">${money(r.iva)}</td><td class="num"><b>${money(r.total)}</b></td>
+    <td>${falta.length?`<span class="pill p-bad">Revisar</span> <span class="sub">Falta: ${esc(falta.join(', '))}</span>`:''}${dup?`<span class="pill p-warn">Ya está en Facturas</span> `:''}${r.obs?`<span class="sub">${esc(r.obs)}</span>`:''}<span class="sub">${esc(r.remit)}${r.asunto?' · '+esc(r.asunto):''}</span></td>
+    <td class="rcacts">${r.pdf?`<button class="btn small" data-act="rc-pdf" data-id="${r.id}">Ver PDF</button>`:''}${r.mailUrl?`<a class="btn small" href="${esc(r.mailUrl)}" target="_blank" rel="noopener">Ver mail</a>`:''}
+    ${r.estado==='pendiente'?`<button class="btn small" data-act="rc-edit" data-id="${r.id}">Revisar</button><button class="btn small" data-act="rc-uno" data-id="${r.id}">Cargar</button><button class="btn small" data-act="rc-desc" data-id="${r.id}">Descartar</button>`:r.estado==='descartada'?`<button class="btn small" data-act="rc-rest" data-id="${r.id}">Volver a pendiente</button>`:''}</td></tr>`};
+  const sinPuente=!S.recop.length;
+  return head('Facturas recopiladas','Facturas que llegaron a codessrl.sgo@gmail.com a nombre de CODES SRL (CUIT 30-71700245-4). No entran al sistema hasta que las autorices.',`<button class="btn small" data-act="sync-refresh">Actualizar</button>`)+
+  (S.recopEd?rcEditHTML(S.recopEd):'')+(S.recopConf?rcConfHTML(S.recopConf):'')+
+  `<section class="panel"><div class="toolbar" style="padding-top:14px"><div class="grp"><div class="chips">${chips}</div></div>
+  <div class="grp"><label class="sub"><input type="checkbox" data-act="rc-all" ${pend.length&&nSel===pend.length?'checked':''}> Seleccionar todas las pendientes</label><button class="btn small dark" data-act="rc-sel-cargar" ${nSel?'':'disabled'}>Cargar seleccionadas (${nSel})</button><button class="btn small" data-act="rc-sel-desc" ${nSel?'':'disabled'}>Descartar seleccionadas</button></div></div>
+  ${sinPuente?'<div class="empty">Todavía no llegó ninguna factura. Cuando el script de Google esté instalado en la cuenta de Gmail, las facturas aparecen acá solas (se revisa cada 10 minutos).</div>':
+  `<div class="tw"><table><thead><tr><th>Estado</th><th>Llegó</th><th>Proveedor</th><th>Comprobante</th><th class="num">Neto</th><th class="num">IVA</th><th class="num">Total</th><th>Observaciones</th><th></th></tr></thead><tbody>${lista.map(row).join('')||'<tr><td colspan="9"><div class="empty">No hay facturas en este estado.</div></td></tr>'}</tbody></table></div>`}
+  <div class="legend">Los datos se leen automáticamente del PDF: controlá siempre los importes antes de cargar. Solo se muestran facturas con CUIT receptor de CODES SRL.</div></section>`;
+}
+async function rcMarcar(r,estado,facturaId){
+  const ahora=new Date().toISOString();
+  if(REAL){const {error}=await sb.from('facturas_recopiladas').update({estado,factura_id:facturaId||null,resuelta_at:estado==='pendiente'?null:ahora,resuelta_por:estado==='pendiente'?null:S.sesion}).eq('id',r.id);if(error)throw error}
+  r.estado=estado;r.facturaId=facturaId||'';
+}
+async function rcCargar(ids,pers){
+  let ok=0,dups=0;const mal=[];
+  for(const id of ids){const r=recop(id);if(!r||r.estado!=='pendiente')continue;
+    const falta=rcFalta(r);if(falta.length){mal.push(tipoFTxt(r.tipo||'?')+' '+r.pv+'-'+r.nro);continue}
+    const Fm=rcFm(r,rcViejo(r)?(pers[id]||r.fecha.slice(0,7)):'');
+    if(!Fm.terceroId)Fm.terceroId='__nuevo__',Fm.ntRazon=r.razon||('Proveedor '+r.cuit),Fm.ntCuit=r.cuit;
+    const d=Fm.terceroId==='__nuevo__'?null:findDup(Fm);
+    if(d){try{await rcMarcar(r,'cargada',d.id);dups++}catch(e){mal.push(msgErr(e))}continue}
+    const f=crearFactura(Fm);if(!f){mal.push((Fm.err||'no se pudo cargar')+' ('+tipoFTxt(r.tipo)+' '+r.pv+'-'+r.nro+')');continue}
+    try{await rcMarcar(r,'cargada',f.id);ok++;S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Factura recopilada autorizada · '+nroFact(f),txId:null})}catch(e){mal.push(msgErr(e))}
+    delete S.recopSel[id]}
+  return {ok,dups,mal}}
+function rcResumen(x){return (x.ok?x.ok+' cargada'+(x.ok===1?'':'s')+' a Facturas. ':'')+(x.dups?x.dups+' ya estaba'+(x.dups===1?'':'n')+' en Facturas. ':'')+(x.mal.length?'Sin cargar: '+x.mal.join('; ')+'.':'')}
+async function rcAct(act,a){
+  const id=a.dataset.id,r=id&&recop(id);
+  if(act==='rc-sel'){S.recopSel[id]=a.checked;render()}
+  else if(act==='rc-all'){S.recop.filter(x=>x.estado==='pendiente'&&(S.recopF==='todas'||S.recopF==='pendiente')).forEach(x=>S.recopSel[x.id]=a.checked);render()}
+  else if(act==='rc-pdf'&&r){let url='';if(REAL){const {data,error}=await sb.storage.from('facturas-recopiladas').createSignedUrl(r.pdf,120);if(error||!data){toast('No se pudo abrir el PDF');return}url=data.signedUrl}else url=r.pdf;
+    if(!url)return;const l=document.createElement('a');l.href=url;l.target='_blank';l.rel='noopener';document.body.appendChild(l);l.click();l.remove()}
+  else if(act==='rc-edit'&&r){S.recopEd={id:r.id,razon:r.razon,cuit:r.cuit,tipo:r.tipo||'A',pv:String(r.pv||''),nro:String(r.nro||''),fecha:r.fecha,neto:toIn(r.neto),iva:toIn(r.iva),otros:toIn(r.otros),err:''};render();window.scrollTo(0,0)}
+  else if(act==='rc-ed-cancel'){S.recopEd=null;render()}
+  else if(act==='rc-ed-save'){const E=S.recopEd,x=recop(E.id);const cuit=E.cuit.trim()?normCuit(E.cuit):'';
+    if(E.cuit.trim()&&!cuit){E.err='El CUIT tiene que tener 11 números.';render();return}
+    const pv=parseInt(E.pv,10)||0,nro=parseInt(E.nro,10)||0,neto=num(E.neto),iva=num(E.iva),otros=num(E.otros),total=r2(neto+iva+otros);
+    if(REAL){const {error}=await sb.from('facturas_recopiladas').update({emisor_razon:E.razon.trim()||null,emisor_cuit:cuit||null,tipo:E.tipo,punto_venta:pv||null,numero:nro||null,fecha:E.fecha||null,neto_gravado:neto,iva,otros,total,observaciones:null}).eq('id',x.id);if(error){E.err='No se pudo guardar: '+msgErr(error);render();return}}
+    Object.assign(x,{obs:'',razon:E.razon.trim(),cuit,tipo:E.tipo,pv,nro,fecha:E.fecha,neto,iva,otros,total});S.recopEd=null;toast('Cambios guardados');render()}
+  else if(act==='rc-uno'&&r){S.recopConf={ids:[r.id],per:{}};render();window.scrollTo(0,0)}
+  else if(act==='rc-sel-cargar'){const ids=S.recop.filter(x=>x.estado==='pendiente'&&S.recopSel[x.id]).map(x=>x.id);if(!ids.length)return;S.recopConf={ids,per:{}};render();window.scrollTo(0,0)}
+  else if(act==='rc-conf-cancel'){S.recopConf=null;render()}
+  else if(act==='rc-conf-ok'){const C=S.recopConf;S.recopConf=null;const x=await rcCargar(C.ids,C.per);toast(rcResumen(x)||'Nada para cargar');render()}
+  else if(act==='rc-desc'&&r){try{await rcMarcar(r,'descartada');delete S.recopSel[id];toast('Factura descartada')}catch(e){toast('No se pudo descartar: '+msgErr(e))}render()}
+  else if(act==='rc-sel-desc'){let n=0;for(const x of S.recop.filter(x=>x.estado==='pendiente'&&S.recopSel[x.id])){try{await rcMarcar(x,'descartada');delete S.recopSel[x.id];n++}catch(e){toast('No se pudo descartar: '+msgErr(e));break}}if(n)toast(n+' descartada'+(n===1?'':'s'));render()}
+  else if(act==='rc-rest'&&r){try{await rcMarcar(r,'pendiente');toast('Volvió a pendientes')}catch(e){toast('No se pudo: '+msgErr(e))}render()}
+}
+
 /* ---------- Posición de IVA ----------
    Resultado del mes = débito fiscal − crédito fiscal − saldo a favor del mes anterior − ret./perc. de IVA sufridas.
    Positivo: IVA A PAGAR y el mes siguiente arranca en 0. Negativo: IVA A FAVOR y ese importe se suma al mes siguiente. */
@@ -1448,7 +1546,7 @@ async function cargarAuditTx(id){try{const {data,error}=await sb.from('auditoria
 async function cargarDatos(){
   SY.cargando=true;
   try{
-    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar,an,pr,pg]=await Promise.all([
+    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar,an,pr,pg,rcp]=await Promise.all([
       traer('cuentas','*',[['created_at',true],['id',true]]),traer('tipos_centro','*',[['created_at',true],['id',true]]),
       traer('terceros','*',[['created_at',true],['id',true]]),traer('centros_costo','*',[['created_at',true],['id',true]]),
       traer('cheques','*',[['created_at',true],['id',true]]),traer('facturas','*',[['created_at',true],['id',true]]),
@@ -1457,12 +1555,14 @@ async function cargarDatos(){
       traer('contratistas','*',[['created_at',true],['id',true]]),traer('certificaciones','*',[['created_at',true],['id',true]]),
       traer('combustible_cargas','*',[['created_at',true],['id',true]]),traer('maquinaria_arreglos','*',[['created_at',true],['id',true]]),
       traer('anticipos_obra','*',[['created_at',true],['id',true]]),traer('precios_combustible','*',[['id',true]]),
-      sb.rpc('pagos_contratistas').then(r=>r.error?[]:(r.data||[]))]);
+      sb.rpc('pagos_contratistas').then(r=>r.error?[]:(r.data||[])),
+      sb.from('facturas_recopiladas').select('*').order('recibida_at',{ascending:false}).limit(500).then(r=>r.error?[]:(r.data||[]))]);
     await cargarPerfiles();
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
     S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);S.comb=cb.map(fromComb);S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios={nafta:0,diesel_500:0,diesel_premium:0};pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
+    S.recop=rcp.map(fromRecop);
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
     S.audTx={};await cargarAudit();await cargarBackups();
@@ -1484,7 +1584,7 @@ function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
   ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
   SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
 function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
-  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.contratistas=[];S.certifs=[];S.comb=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios={nafta:0,diesel_500:0,diesel_premium:0}}}
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.contratistas=[];S.certifs=[];S.comb=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios={nafta:0,diesel_500:0,diesel_premium:0}}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -2463,7 +2563,7 @@ function render(){
   if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,recop:vRecop,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -2497,6 +2597,7 @@ document.addEventListener('click',e=>{
   const cf=e.target.closest('[data-calf]');if(cf){S.calF=cf.dataset.calf;render();return}
   const ms=e.target.closest('[data-mes]');if(ms){const k=+ms.dataset.mes;if(k===0)S.calMes=TODAY.slice(0,7);else{let [y,m]=S.calMes.split('-').map(Number);m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}S.calMes=y+'-'+String(m).padStart(2,'0')}render();return}
   const ff=e.target.closest('[data-factf]');if(ff){S.factF=ff.dataset.factf;render();return}
+  const rf=e.target.closest('[data-rcf]');if(rf){S.recopF=rf.dataset.rcf;render();return}
   const im=e.target.closest('[data-ivames]');if(im){S.ivaMes=im.dataset.ivames;render();return}
   const pr=e.target.closest('[data-per]');if(pr){const [y,m]=TODAY.split('-').map(Number);const pad=n=>String(n).padStart(2,'0');const last=(y,m)=>new Date(y,m,0).getDate();
     if(pr.dataset.per==='mes'){S.rDesde=`${y}-${pad(m)}-01`;S.rHasta=`${y}-${pad(m)}-${last(y,m)}`}
@@ -2508,6 +2609,7 @@ document.addEventListener('click',e=>{
   const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act,i=+a.dataset.i;
   if(accionPk(act,a,e))return;
   if(igAct(act,a))return;
+  if(act.startsWith('rc-')){rcAct(act,a);return}
   if(act==='add-pago'){const np=newPago(D.tipo,D.tipo==='interna'?'transferencia':'efectivo');const rest=num(D.total)-sum(D.rets,r=>num(r.importe))-sum(D.pagos,x=>num(x.importe));if(rest>0.005)np.importe=toIn(rest);D.pagos.push(np);render()}
   else if(act==='rm-pago'){D.pagos.splice(i,1);render()}
   else if(act==='add-ret'){D.rets.push({clase:'retencion',impuesto:'iibb',jur:'',cert:'',importe:''});render()}
@@ -2570,6 +2672,7 @@ main.addEventListener('input',e=>{
   if(el.dataset.inic&&S.ini){S.ini.m[el.dataset.inic]=el.value;updIni();return}
   if(el.dataset.initc&&S.ini){S.ini.tc[el.dataset.initc]=el.value;return}
   if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;return}
+  if(el.dataset.rce&&S.recopEd){S.recopEd[el.dataset.rce]=el.value;return}
   if(el.dataset.nt&&D.nt){D.nt[el.dataset.nt]=el.value;return}
   if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;return}
   if(el.dataset.ig){const [f,k]=el.dataset.ig.split('.');if(S[f]){S[f][k]=el.value;S[f].ok=''}return}
@@ -2588,6 +2691,8 @@ main.addEventListener('input',e=>{
 });
 main.addEventListener('change',e=>{
   const el=e.target;
+  if(el.dataset.rcper&&S.recopConf){S.recopConf.per[el.dataset.rcper]=el.value;return}
+  if(el.dataset.rce&&S.recopEd&&el.tagName==='SELECT'){S.recopEd[el.dataset.rce]=el.value;return}
   if(el.id==='igObraF'){S.obraF=el.value;render();return}
   if(el.id==='igMaqF'){S.maqF=el.value;render();return}
   if(el.id==='igCbD0'||el.id==='igCbD1'){S[el.id==='igCbD0'?'cbD0':'cbD1']=el.value;render();return}
@@ -2621,7 +2726,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 13:00';
+const BUILD='7-oct 16:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

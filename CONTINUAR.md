@@ -62,3 +62,8 @@
 
 ## v5 (7-oct 13:00)
 - Al cargar una factura con fecha de un mes anterior, el formulario avisa y obliga a elegir el mes de IVA: mes de la factura o mes siguiente (y "este mes" si pasó más de un mes). Se guarda en `facturas.periodo_iva`. La posición de IVA y la lista de Facturas agrupan por ese mes; en Modificar facturas hay una columna "Imputa a (IVA)".
+
+## v6 · Facturas recopiladas y calendario de cheques (7-oct)
+- App: menú Administración → **Facturas recopiladas** (selección, Ver PDF/mail, Revisar, Cargar al sistema con elección de mes de IVA para facturas viejas, Descartar). Carga usa `crearFactura` (crea proveedor por CUIT si falta, evita duplicados).
+- Carpeta `puente/`: parser, Edge Function y script de Google. **Pendiente de instalar** (ver `puente/LEEME.md`): desplegar función, crear clave, pegar script en codessrl.sgo@gmail.com.
+- WhatsApp: sin hacer; a definir (Telegram / WhatsApp Business API).
