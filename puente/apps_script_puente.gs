@@ -27,9 +27,14 @@ function reprocesar() {
 }
 
 function ciclo() {
-  try { facturas_(); } catch (e) { console.error('facturas: ' + e); }
-  try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
-  try { avisos_(); } catch (e) { console.error('avisos: ' + e); }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return; // ya hay un ciclo corriendo
+  try {
+    // primero lo liviano (calendario y avisos); las facturas al final porque pueden tardar
+    try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
+    try { avisos_(); } catch (e) { console.error('avisos: ' + e); }
+    try { facturas_(); } catch (e) { console.error('facturas: ' + e); }
+  } finally { lock.releaseLock(); }
 }
 
 function llamar_(cuerpo) {
@@ -53,8 +58,10 @@ function avisos_() {
 
 function facturas_() {
   var et = GmailApp.getUserLabelByName(ETIQUETA) || GmailApp.createLabel(ETIQUETA);
-  var hilos = GmailApp.search('has:attachment filename:pdf -label:' + ETIQUETA + ' newer_than:' + DIAS_ATRAS + 'd', 0, 15);
+  var hilos = GmailApp.search('has:attachment filename:pdf -label:' + ETIQUETA + ' newer_than:' + DIAS_ATRAS + 'd', 0, 8);
+  var t0 = Date.now();
   hilos.forEach(function (h) {
+    if (Date.now() - t0 > 240000) return; // máx. 4 min por ciclo; sigue en el próximo
     var ok = true;
     h.getMessages().forEach(function (m) {
       m.getAttachments({ includeInlineImages: false }).forEach(function (a) {
@@ -90,7 +97,7 @@ function cheques_() {
     var dia = new Date(+f[0], +f[1] - 1, +f[2]);
     var tipo = c.tipo === 'echeq' ? 'Echeq' : 'Cheque';
     var sentido = c.origen === 'propio' ? 'A PAGAR' : 'A COBRAR';
-    var cerrado = o.op === 'cerrar';
+    var cerrado = o.op === 'cerrar' || o.cerrado === true;
     var titulo = (cerrado ? '✔ ' : '') + tipo + ' ' + sentido + ' $' + Number(c.importe).toLocaleString('es-AR') + (c.moneda && c.moneda !== 'ARS' ? ' ' + c.moneda : '') + ' · ' + (c.librador || c.banco || '');
     var desc = tipo + ' Nº ' + (c.numero || '-') + '\nBanco: ' + (c.banco || '-') + '\nLibrador: ' + (c.librador || '-') + '\nEstado: ' + c.estado + '\n(cargado desde CODES Gestión)';
     var ev = null;

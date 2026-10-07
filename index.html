@@ -352,6 +352,7 @@ tr.mesrow td{background:var(--surface-2);padding:7px 12px;font-size:13px}
 .rol li.si::before{content:"✓";color:var(--ok)}.rol li.no::before{content:"✕";color:var(--bad)}.rol li.no{color:var(--ink-2)}
 .rol-dueno{border-top:3px solid var(--brand)}.rolsel{padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface)}
 body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open],body.lector [data-act=nffac-open],body.lector [data-act=rc-sel],body.lector [data-act=rc-all],body.lector [data-act=rc-uno],body.lector [data-act=rc-edit],body.lector [data-act=rc-desc],body.lector [data-act=rc-rest],body.lector [data-act=rc-sel-cargar],body.lector [data-act=rc-sel-desc]{display:none!important}
+.rcthb{padding:0;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:zoom-in;line-height:0;overflow:hidden;float:right;margin:0 0 4px 10px}.rcthb[hidden]{display:none}.rcthb img{width:52px;height:70px;object-fit:cover;object-position:top;display:block}
 .rcacts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.rcacts .btn{text-decoration:none}
 /* Estado de guardado */
 .sync{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
@@ -478,7 +479,7 @@ const mesTxt=ym=>{const [y,m]=ym.split('-');return MESES[+m-1]+' '+y};
 /* ---------- Datos de ejemplo ---------- */
 const S={
  user:'FY',view:'inicio',filtro:'todas',q:'',sel:null,confirm:null,errors:[],
- audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,recop:[],recopF:'pendiente',recopSel:{},recopEd:null,recopConf:null,calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
+ audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,recop:[],recopF:'pendiente',recopSel:{},recopEd:null,recopConf:null,recopTh:{},calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
  rDesde:(()=>{const [y,m]=TODAY.split('-').map(Number);const py=m===1?y-1:y,pm=m===1?12:m-1;return py+'-'+String(pm).padStart(2,'0')+'-01'})(),rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
@@ -1098,6 +1099,9 @@ function vFacturas(){
    Nada entra a Facturas hasta que alguien lo autoriza con "Cargar al sistema". */
 const fromRecop=r=>({id:r.id,recibida:r.recibida_at||'',remit:r.remitente||'',asunto:r.asunto||'',mailUrl:r.mail_url||'',adj:r.adjunto||'',cuit:r.emisor_cuit||'',razon:r.emisor_razon||'',rcuit:r.receptor_cuit||'',tipo:r.tipo||'',pv:r.punto_venta||0,nro:r.numero||0,fecha:r.fecha||'',neto:+r.neto_gravado||0,iva:+r.iva||0,otros:+r.otros||0,total:+r.total||0,cae:r.cae||'',pdf:r.pdf_path||'',obs:r.observaciones||'',estado:r.estado,facturaId:r.factura_id||''});
 const recop=id=>S.recop.find(x=>x.id===id);
+/* Misma factura recibida en varios mails: mismo CUIT del emisor + punto de venta + número */
+const rcKey=r=>r.cuit&&r.nro&&r.pv?[r.cuit,r.pv,r.nro].join('|'):'';
+const rcHermanas=r=>{const k=rcKey(r);return k?S.recop.filter(x=>x!==r&&rcKey(x)===k):[]};
 const RC_EST={pendiente:['Pendiente','p-warn'],cargada:['Cargada','p-ok'],descartada:['Descartada','p-mute']};
 /* Qué le falta a una recopilada para poder cargarla sin revisar */
 function rcFalta(r){const f=[];if(!r.cuit)f.push('CUIT del emisor');if(!TIPOS_F.includes(r.tipo))f.push('tipo');if(!(r.pv>0)||!(r.nro>0))f.push('número');if(!r.fecha)f.push('fecha');if(!(r.total>0))f.push('total');
@@ -1128,7 +1132,8 @@ function rcConfHTML(C){
   <div class="actions"><button type="button" class="btn" data-act="rc-conf-cancel">Cancelar</button><button type="button" class="btn dark" data-act="rc-conf-ok">Confirmar y cargar</button></div></div></section>`}
 function vRecop(){
   const F=S.recopF,cnt=k=>S.recop.filter(r=>r.estado===k).length;
-  const lista=S.recop.filter(r=>F==='todas'||r.estado===F);
+  const vistas=new Set(),repes={};
+  const lista=S.recop.filter(r=>F==='todas'||r.estado===F).filter(r=>{const k=rcKey(r);if(!k)return true;if(vistas.has(k)){repes[k]=(repes[k]||0)+1;return false}vistas.add(k);return true});
   const chips=[['pendiente','Pendientes'],['cargada','Cargadas'],['descartada','Descartadas'],['todas','Todas']].map(([k,l])=>`<button class="chip" data-rcf="${k}" aria-pressed="${F===k}">${l}${k==='todas'?'':' ('+cnt(k)+')'}</button>`).join('');
   const pend=lista.filter(r=>r.estado==='pendiente');const nSel=pend.filter(r=>S.recopSel[r.id]).length;
   const row=r=>{const falta=r.estado==='pendiente'?rcFalta(r):[];const e=RC_EST[r.estado]||[r.estado,'p-mute'];
@@ -1138,7 +1143,7 @@ function vRecop(){
     <td><b>${esc(r.razon||'(sin razón social)')}</b><span class="sub">${esc(r.cuit||'sin CUIT')}</span></td>
     <td class="mono">${r.nro?tipoFTxt(r.tipo)+' '+String(r.pv).padStart(4,'0')+'-'+String(r.nro).padStart(8,'0'):'—'}<span class="sub">${r.fecha?fd(r.fecha):'sin fecha'}</span></td>
     <td class="num">${money(r.neto)}</td><td class="num">${money(r.iva)}</td><td class="num"><b>${money(r.total)}</b></td>
-    <td>${falta.length?`<span class="pill p-bad">Revisar</span> <span class="sub">Falta: ${esc(falta.join(', '))}</span>`:''}${dup?`<span class="pill p-warn">Ya está en Facturas</span> `:''}${r.obs?`<span class="sub">${esc(r.obs)}</span>`:''}<span class="sub">${esc(r.remit)}${r.asunto?' · '+esc(r.asunto):''}</span></td>
+    <td>${r.pdf?`<button type="button" class="rcthb" data-act="rc-pdf" data-id="${r.id}" data-th="${r.id}" title="Abrir el PDF" ${S.recopTh[r.id]?'':'hidden'}><img alt="Vista previa" src="${S.recopTh[r.id]||''}"></button>`:''}${repes[rcKey(r)]?`<span class="sub">Llegó también en ${repes[rcKey(r)]} mail${repes[rcKey(r)]===1?'':'s'} más (misma factura).</span>`:''}${falta.length?`<span class="pill p-bad">Revisar</span> <span class="sub">Falta: ${esc(falta.join(', '))}</span>`:''}${dup?`<span class="pill p-warn">Ya está en Facturas</span> `:''}${r.obs?`<span class="sub">${esc(r.obs)}</span>`:''}<span class="sub">${esc(r.remit)}${r.asunto?' · '+esc(r.asunto):''}</span></td>
     <td class="rcacts">${r.pdf?`<button class="btn small" data-act="rc-pdf" data-id="${r.id}">Ver PDF</button>`:''}${r.mailUrl?`<a class="btn small" href="${esc(r.mailUrl)}" target="_blank" rel="noopener">Ver mail</a>`:''}
     ${r.estado==='pendiente'?`<button class="btn small" data-act="rc-edit" data-id="${r.id}">Revisar</button><button class="btn small" data-act="rc-uno" data-id="${r.id}">Cargar</button><button class="btn small" data-act="rc-desc" data-id="${r.id}">Descartar</button>`:r.estado==='descartada'?`<button class="btn small" data-act="rc-rest" data-id="${r.id}">Volver a pendiente</button>`:''}</td></tr>`};
   const sinPuente=!S.recop.length;
@@ -1150,10 +1155,33 @@ function vRecop(){
   `<div class="tw"><table><thead><tr><th>Estado</th><th>Llegó</th><th>Proveedor</th><th>Comprobante</th><th class="num">Neto</th><th class="num">IVA</th><th class="num">Total</th><th>Observaciones</th><th></th></tr></thead><tbody>${lista.map(row).join('')||'<tr><td colspan="9"><div class="empty">No hay facturas en este estado.</div></td></tr>'}</tbody></table></div>`}
   <div class="legend">Los datos se leen automáticamente del PDF: controlá siempre los importes antes de cargar. Solo se muestran facturas con CUIT receptor de CODES SRL.</div></section>`;
 }
+/* Vista previa (primera página del PDF), se genera en el navegador y solo para las filas visibles */
+let PDFJS_P=null;
+function pdfjs(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(PDFJS_P)return PDFJS_P;
+  PDFJS_P=new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    sc.onload=()=>{try{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';ok(window.pdfjsLib)}catch(e){PDFJS_P=null;no(e)}};
+    sc.onerror=()=>{PDFJS_P=null;no(new Error('pdfjs'))};document.head.appendChild(sc)});return PDFJS_P}
+let RC_TH_BUSY=false;
+async function rcThumbs(){
+  if(RC_TH_BUSY||S.view!=='recop')return;RC_TH_BUSY=true;
+  try{const ids=[...document.querySelectorAll('button[data-th]')].map(b=>b.dataset.th).filter(id=>S.recopTh[id]===undefined).slice(0,40);
+    for(const id of ids){const r=recop(id);if(!r||!r.pdf){S.recopTh[id]='';continue}
+      S.recopTh[id]='';
+      try{let url=r.pdf;if(REAL){const {data,error}=await sb.storage.from('facturas-recopiladas').createSignedUrl(r.pdf,300);if(error||!data)continue;url=data.signedUrl}
+        const lib=await pdfjs();const doc=await lib.getDocument({url}).promise;const pg=await doc.getPage(1);const v0=pg.getViewport({scale:1});
+        const cv=document.createElement('canvas');const sc=140/v0.width;const v=pg.getViewport({scale:sc});cv.width=Math.round(v.width);cv.height=Math.round(Math.min(v.height,v.width*1.4));
+        const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:cx,viewport:v}).promise;
+        const du=cv.toDataURL('image/jpeg',0.7);S.recopTh[id]=du;
+        document.querySelectorAll('button[data-th="'+id+'"]').forEach(b=>{const im=b.querySelector('img');if(im)im.src=du;b.hidden=false})
+      }catch(e){console.warn('miniatura',e)}}
+  }finally{RC_TH_BUSY=false}}
 async function rcMarcar(r,estado,facturaId){
   const ahora=new Date().toISOString();
   if(REAL){const {error}=await sb.from('facturas_recopiladas').update({estado,factura_id:facturaId||null,resuelta_at:estado==='pendiente'?null:ahora,resuelta_por:estado==='pendiente'?null:S.sesion}).eq('id',r.id);if(error)throw error}
   r.estado=estado;r.facturaId=facturaId||'';
+  for(const h of rcHermanas(r)){if(h.estado!=='pendiente'&&estado!=='pendiente')continue;
+    if(REAL){const {error}=await sb.from('facturas_recopiladas').update({estado,factura_id:facturaId||null,resuelta_at:estado==='pendiente'?null:ahora,resuelta_por:estado==='pendiente'?null:S.sesion}).eq('id',h.id);if(error)continue}
+    h.estado=estado;h.facturaId=facturaId||''}
 }
 async function rcCargar(ids,pers){
   let ok=0,dups=0;const mal=[];
@@ -2564,7 +2592,7 @@ function render(){
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
   const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,recop:vRecop,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
-  document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
+  document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(S.view==='recop')setTimeout(rcThumbs,50);if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
 function tarjetas(){
@@ -2726,7 +2754,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 16:00';
+const BUILD='7-oct 17:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

@@ -17,6 +17,7 @@ async function sha256(s: string) {
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json" } });
 const VIGENTES = ["en_cartera", "emitido"];
 const CERRADOS = ["depositado", "endosado", "cobrado", "debitado"];
+const hoyAR = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
 const firmaDe = (c: any) => [c.fecha_pago, c.numero, c.banco, c.importe, c.moneda, c.tipo, c.origen, c.estado, c.librador].join("|");
 
 Deno.serve(async (req) => {
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
       const d = r.datos;
       // misma factura recibida en otro mail: no duplicar
       if (!previa && d.numero && d.emisor_cuit) {
-        const dup = await sb.from("facturas_recopiladas").select("id").eq("emisor_cuit", d.emisor_cuit).eq("tipo", d.tipo).eq("punto_venta", d.punto_venta).eq("numero", d.numero).limit(1);
+        const dup = await sb.from("facturas_recopiladas").select("id").eq("emisor_cuit", d.emisor_cuit).eq("punto_venta", d.punto_venta).eq("numero", d.numero).limit(1);
         if (dup.data && dup.data.length) return json({ ok: true, ignorada: "repetida" });
       }
       const fila = {
@@ -80,6 +81,8 @@ Deno.serve(async (req) => {
         if (VIGENTES.includes(c.estado)) {
           if (!m) ops.push({ op: "crear", cheque: c, firma: firmaDe(c) });
           else if (m.firma !== firmaDe(c) || m.cerrado) ops.push({ op: "actualizar", evento_id: m.evento_id, cheque: c, firma: firmaDe(c) });
+        } else if (!m && CERRADOS.includes(c.estado) && c.fecha_pago && c.fecha_pago >= hoyAR()) {
+          ops.push({ op: "crear", cerrado: true, cheque: c, firma: firmaDe(c) });
         } else if (m && !m.cerrado && CERRADOS.includes(c.estado)) {
           ops.push({ op: "cerrar", evento_id: m.evento_id, cheque: c, firma: firmaDe(c) });
         } else if (m && ["rechazado", "anulado"].includes(c.estado)) {

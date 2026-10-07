@@ -50,6 +50,17 @@ const fechaISO = s => {
   return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 };
 
+// Nombre del emisor: por lo general está arriba a la izquierda del comprobante, sin etiqueta.
+const RUIDO = /^(original|duplicado|triplicado|factura|nota\b|comprobante|cod\b|c[oó]digo|fecha|punto|comp\b|cuit|ingresos|condici[oó]n|domicilio|raz[oó]n|n[°º]|p[aá]gina|\d|\W)/i;
+export function razonArriba(t) {
+  const ok = l => l.length >= 3 && l.length <= 80 && /[A-Za-zÁÉÍÓÚÑáéíóúñ]{3}/.test(l) && !/^[ABCME]$/.test(l) && !RUIDO.test(l) && !/CODES/i.test(l);
+  const lineas = String(t || '').split(/\n+/).map(x => x.trim()).filter(Boolean).slice(0, 14);
+  for (const l of lineas) if (ok(l)) return l.slice(0, 90);
+  // texto sin saltos de línea: tomar el comienzo hasta la primera palabra clave del encabezado
+  const ini = String(t || '').trim().slice(0, 160).split(/\s(?:ORIGINAL|DUPLICADO|TRIPLICADO|FACTURA|NOTA DE|Raz[oó]n Social|Domicilio|CUIT|Condici[oó]n|Fecha|Punto de Venta)/i)[0].trim();
+  return ok(ini) ? ini : '';
+}
+
 // Devuelve { esFactura, ignorar, motivo, datos, observaciones }
 export function analizar(texto, nombreArchivo = '') {
   const t = String(texto || '').replace(/ /g, ' ').replace(/[ \t]+/g, ' ');
@@ -130,6 +141,7 @@ export function analizar(texto, nombreArchivo = '') {
     const todas = [...t.matchAll(/Raz[oó]n Social:?\s*([^\n]+)/gi)].map(x => x[1].split(/\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto)/i)[0].trim()).filter(x => x && !/CODES/i.test(x));
     razon = (todas[0] || '').slice(0, 90);
   }
+  if (!razon) razon = razonArriba(t);
   if (!emisor) obs.push('No se pudo leer el CUIT del emisor.');
   if (!razon) obs.push('No se pudo leer la razón social del emisor.');
 
