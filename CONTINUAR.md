@@ -67,3 +67,5 @@
 - App: menú Administración → **Facturas recopiladas** (selección, Ver PDF/mail, Revisar, Cargar al sistema con elección de mes de IVA para facturas viejas, Descartar). Carga usa `crearFactura` (crea proveedor por CUIT si falta, evita duplicados).
 - Carpeta `puente/`: parser, Edge Function y script de Google. **Pendiente de instalar** (ver `puente/LEEME.md`): desplegar función, crear clave, pegar script en codessrl.sgo@gmail.com.
 - WhatsApp: sin hacer; a definir (Telegram / WhatsApp Business API).
+
+- (7-oct 19:00) Facturas recopiladas: aviso "Proveedor cargado / no cargado" por CUIT con selector de proveedor (completa CUIT y aprende el mail), botones Cargar · Editar · Descartar, editor con todos los campos (proveedor, razón, CUIT, tipo, PV, nro, fecha, neto, IVA, otros, total, CUIT receptor) y miniatura del PDF.
