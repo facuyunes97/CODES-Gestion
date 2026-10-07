@@ -17,6 +17,15 @@ function instalar() {
   ciclo();
 }
 
+// Si hace falta que el sistema vuelva a leer los mails (por ejemplo después de mejorar el lector): ejecutar una vez.
+function reprocesar() {
+  var et = GmailApp.getUserLabelByName(ETIQUETA);
+  if (!et) return;
+  var hilos = et.getThreads(0, 100);
+  hilos.forEach(function (h) { h.removeLabel(et); });
+  console.log('Listo: ' + hilos.length + ' hilos se vuelven a leer en el próximo ciclo (10 min).');
+}
+
 function ciclo() {
   try { facturas_(); } catch (e) { console.error('facturas: ' + e); }
   try { cheques_(); } catch (e) { console.error('cheques: ' + e); }

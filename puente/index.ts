@@ -33,8 +33,9 @@ Deno.serve(async (req) => {
     if (b.action === "factura") {
       if (!b.message_id || !b.pdf_base64) return json({ ok: false, error: "faltan datos" }, 400);
       const adjunto = String(b.adjunto || "").slice(0, 200);
-      const ya = await sb.from("facturas_recopiladas").select("id").eq("gmail_message_id", b.message_id).eq("adjunto", adjunto).limit(1);
-      if (ya.data && ya.data.length) return json({ ok: true, ignorada: "ya estaba" });
+      const ya = await sb.from("facturas_recopiladas").select("id,texto,estado").eq("gmail_message_id", b.message_id).eq("adjunto", adjunto).limit(1);
+      const previa = ya.data && ya.data[0];
+      if (previa && (previa.texto || previa.estado !== "pendiente")) return json({ ok: true, ignorada: "ya estaba" });
       const bin = Uint8Array.from(atob(b.pdf_base64), (c) => c.charCodeAt(0));
       if (bin.length > 8 * 1024 * 1024) return json({ ok: true, ignorada: "pdf muy grande" });
       let texto = "";
@@ -49,14 +50,21 @@ Deno.serve(async (req) => {
       const path = `${b.message_id}/${seguro || "factura.pdf"}`;
       await sb.storage.from("facturas-recopiladas").upload(path, bin, { contentType: "application/pdf", upsert: true });
       const d = r.datos;
-      const { error } = await sb.from("facturas_recopiladas").insert({
+      // misma factura recibida en otro mail: no duplicar
+      if (!previa && d.numero && d.emisor_cuit) {
+        const dup = await sb.from("facturas_recopiladas").select("id").eq("emisor_cuit", d.emisor_cuit).eq("tipo", d.tipo).eq("punto_venta", d.punto_venta).eq("numero", d.numero).limit(1);
+        if (dup.data && dup.data.length) return json({ ok: true, ignorada: "repetida" });
+      }
+      const fila = {
         gmail_message_id: b.message_id, adjunto, recibida_at: b.recibida || null,
         remitente: String(b.remitente || "").slice(0, 200), asunto: String(b.asunto || "").slice(0, 300), mail_url: b.mail_url || null,
         emisor_cuit: d.emisor_cuit || null, emisor_razon: d.emisor_razon || null, receptor_cuit: d.receptor_cuit || null,
         tipo: d.tipo, punto_venta: d.punto_venta, numero: d.numero, fecha: d.fecha,
         neto_gravado: d.neto_gravado, iva: d.iva, otros: d.otros, total: d.total, cae: d.cae || null,
         pdf_path: path, observaciones: r.observaciones.length ? r.observaciones.join(" ") : null,
-      });
+        texto: texto.slice(0, 8000),
+      };
+      const { error } = previa ? await sb.from("facturas_recopiladas").update(fila).eq("id", previa.id) : await sb.from("facturas_recopiladas").insert(fila);
       if (error && !/duplicate/i.test(error.message)) return json({ ok: false, error: error.message }, 500);
       return json({ ok: true, guardada: true, observaciones: r.observaciones });
     }
