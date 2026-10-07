@@ -796,7 +796,7 @@ function detail(t){
 
 /* ---------- Formulario de factura (se usa en Nueva transacción y en Facturas) ---------- */
 const TIPOS_F=['A','B','C','M','E','NC_A','NC_B','NC_C','ND_A','ND_B','ND_C'];
-function newFactForm(o){return Object.assign({lado:'credito',terceroId:'',tipo:'A',pv:'',nro:'',fecha:TODAY,neto:'',alic:'21',iva:'',otros:'',err:'',dup:null},o)}
+function newFactForm(o){return Object.assign({lado:'credito',terceroId:'',tipo:'A',pv:'',nro:'',fecha:TODAY,per:'',neto:'',alic:'21',iva:'',otros:'',err:'',dup:null},o)}
 function factCalc(Fm){Fm.iva=toIn(num(Fm.neto)*num(Fm.alic)/100)}
 const factTotal=Fm=>num(Fm.neto)+num(Fm.iva)+num(Fm.otros);
 function findDup(Fm){const pv=parseInt(Fm.pv,10),nro=parseInt(Fm.nro,10);const t=tercero(Fm.terceroId);
@@ -817,6 +817,8 @@ function factFormHTML(Fm,ctx){
    <div class="f"><label for="nf-${ctx}-pv">Punto de venta <em>*</em></label><input inputmode="numeric" id="nf-${ctx}-pv" data-nf="pv" data-ctx="${ctx}" value="${esc(Fm.pv)}" placeholder="0001"></div>
    <div class="f"><label for="nf-${ctx}-nro">Número <em>*</em></label><input inputmode="numeric" id="nf-${ctx}-nro" data-nf="nro" data-ctx="${ctx}" value="${esc(Fm.nro)}" placeholder="00000000"></div>
    <div class="f"><label for="nf-${ctx}-fecha">Fecha <em>*</em></label><input type="date" id="nf-${ctx}-fecha" data-nf="fecha" data-ctx="${ctx}" value="${esc(Fm.fecha)}"></div>
+   ${(()=>{const mf=Fm.fecha&&Fm.fecha.slice(0,7),cur=TODAY.slice(0,7);if(!mf||mf>=cur)return '';const ops=[[mf,'Mes de la factura'],[mesSig(mf),'Mes siguiente']];if(mesSig(mf)<cur)ops.push([cur,'Este mes']);
+     return `<div class="f wide"><div class="alerta" role="alert"><b>Esta factura es de ${mesTxt(mf)}, un mes anterior al actual.</b><span>¿A qué mes de IVA la imputás?</span><div class="chips" role="group" aria-label="Mes de imputación">${ops.map(([m,l])=>`<button type="button" class="chip" data-nfper="${m}" data-ctx="${ctx}" aria-pressed="${Fm.per===m}">${l} · ${mesTxt(m)}</button>`).join('')}</div></div></div>`})()}
    <div class="f"><label for="nf-${ctx}-neto">Neto gravado</label>${mIn('neto')}</div>
    <div class="f"><label for="nf-${ctx}-alic">Alícuota IVA</label><select id="nf-${ctx}-alic" data-nf="alic" data-ctx="${ctx}">${['21','10.5','27','0'].map(a=>opt(a,a.replace('.',',')+' %',Fm.alic)).join('')}</select></div>
    <div class="f"><label for="nf-${ctx}-iva">IVA</label>${mIn('iva')}</div>
@@ -833,11 +835,12 @@ function crearFactura(Fm){
   const pv=parseInt(Fm.pv,10),nro=parseInt(Fm.nro,10);
   if(!(pv>0)||!(nro>0)){Fm.err='Cargá punto de venta y número de la factura.';return null}
   if(!Fm.fecha){Fm.err='Cargá la fecha de la factura.';return null}
+  if(Fm.fecha.slice(0,7)<TODAY.slice(0,7)&&!Fm.per){Fm.err='La factura es de un mes anterior: elegí a qué mes la imputás.';return null}
   const total=factTotal(Fm);if(!(total>0)){Fm.err='El total de la factura tiene que ser mayor a cero.';return null}
   const d=tNuevo?null:findDup(Fm);if(d){Fm.dup=d.id;return null}
   if(tNuevo)Fm.terceroId=nuevoTercero(tNuevo,Fm.lado==='debito'?'cliente':'proveedor').id;
-  const f={id:nid('f'),terceroId:Fm.terceroId,lado:Fm.lado,tipo:Fm.tipo,pv,nro,fecha:Fm.fecha,neto:num(Fm.neto),iva:num(Fm.iva),otros:num(Fm.otros),total:r2(total),user:S.user,creada:TODAY};
-  S.facturas.push(f);S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Factura '+nroFact(f)+' · '+tercero(f.terceroId).razon,txId:null});
+  const f={id:nid('f'),terceroId:Fm.terceroId,lado:Fm.lado,tipo:Fm.tipo,pv,nro,fecha:Fm.fecha,per:(Fm.per&&Fm.per!==Fm.fecha.slice(0,7))?Fm.per:'',neto:num(Fm.neto),iva:num(Fm.iva),otros:num(Fm.otros),total:r2(total),user:S.user,creada:TODAY};
+  S.facturas.push(f);S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Factura '+nroFact(f)+' · '+tercero(f.terceroId).razon+(f.per?' · imputada a '+mesTxt(f.per):''),txId:null});
   return f;
 }
 
@@ -1078,9 +1081,9 @@ function vFacturas(){
   const list=factList();const pos=posicionIVA();
   const chips=[['todas','Todas'],['debito','Emitidas'],['credito','Recibidas']].map(([k,l])=>`<button class="chip" data-factf="${k}" aria-pressed="${S.factF===k}">${l}</button>`).join('');
   const cob=sum(S.facturas.filter(f=>f.lado==='debito'),saldoFact),pag=sum(S.facturas.filter(f=>f.lado==='credito'),saldoFact);
-  const meses=[...new Set(list.map(f=>f.fecha.slice(0,7)))];
-  const row=f=>{const st=factEstado(f);return `<tr class="${f.lado==='debito'?'em':'rec'} ${isPicked('facturas',f.id)?'picked':''}">${pkCell('facturas',f.id)}<td><span class="pill ${f.lado==='debito'?'p-em':'p-rec'}">${f.lado==='debito'?'Emitida':'Recibida'}</span></td><td class="mono">${nroFact(f)}</td><td class="mono">${fd(f.fecha)}</td><td>${esc(tercero(f.terceroId).razon)}</td><td class="num">${money(f.neto)}</td><td class="num">${money(f.iva)}</td><td class="num">${money(f.total)}</td><td class="num">${isNC(f)?'—':money(saldoFact(f))}</td><td><span class="pill ${st[1]}">${st[0]}</span></td><td class="mono">${f.user}</td></tr>`};
-  const body=meses.map(m=>{const fs=list.filter(f=>f.fecha.startsWith(m));const df=sum(fs.filter(f=>f.lado==='debito'),f=>sgn(f)*f.iva),cf=sum(fs.filter(computaCF),f=>sgn(f)*f.iva);
+  const meses=[...new Set(list.map(perF))];
+  const row=f=>{const st=factEstado(f);return `<tr class="${f.lado==='debito'?'em':'rec'} ${isPicked('facturas',f.id)?'picked':''}">${pkCell('facturas',f.id)}<td><span class="pill ${f.lado==='debito'?'p-em':'p-rec'}">${f.lado==='debito'?'Emitida':'Recibida'}</span></td><td class="mono">${nroFact(f)}</td><td class="mono">${fd(f.fecha)}${perF(f)!==f.fecha.slice(0,7)?`<br><span class="pill p-warn" title="Se imputa a otro mes de IVA">IVA ${mesTxt(perF(f))}</span>`:''}</td><td>${esc(tercero(f.terceroId).razon)}</td><td class="num">${money(f.neto)}</td><td class="num">${money(f.iva)}</td><td class="num">${money(f.total)}</td><td class="num">${isNC(f)?'—':money(saldoFact(f))}</td><td><span class="pill ${st[1]}">${st[0]}</span></td><td class="mono">${f.user}</td></tr>`};
+  const body=meses.map(m=>{const fs=list.filter(f=>perF(f)===m);const df=sum(fs.filter(f=>f.lado==='debito'),f=>sgn(f)*f.iva),cf=sum(fs.filter(computaCF),f=>sgn(f)*f.iva);
     return `<tr class="mes"><td colspan="${pkCols(10)}"><span class="mt">${mesTxt(m)}</span><span class="ms">${fs.length} factura${fs.length===1?'':'s'}</span><span class="ms">Débito fiscal <b class="mono">${money(df)}</b></span><span class="ms">Crédito fiscal <b class="mono">${money(cf)}</b></span>${ivaPill(pos.find(r=>r.mes===m))}</td></tr>`+fs.map(row).join('')}).join('');
   return head('Facturas','Emitidas y recibidas en una sola lista, separadas por mes.',`<button class="btn small dark" data-view="iva">Ver posición de IVA</button>${xlsBtn('facturas')}`)+
   (S.nfFac?`<section class="panel">${factFormHTML(S.nfFac,'fac')}</section>`:'')+
@@ -1094,15 +1097,16 @@ function vFacturas(){
    Positivo: IVA A PAGAR y el mes siguiente arranca en 0. Negativo: IVA A FAVOR y ese importe se suma al mes siguiente. */
 const sgn=f=>isNC(f)?-1:1;
 const computaCF=f=>f.lado==='credito'&&['A','M','NC_A','ND_A'].includes(f.tipo);
+const perF=f=>f.per||f.fecha.slice(0,7);
 const mesSig=ym=>{let [y,m]=ym.split('-').map(Number);m++;if(m>12){m=1;y++}return y+'-'+String(m).padStart(2,'0')};
 function posicionIVA(){
   const retIva=[];activas().forEach(t=>t.rets.forEach(r=>{if(r.impuesto==='iva'&&esSufrida(t,r))retIva.push({mes:t.fecha.slice(0,7),importe:r.importe*t.tc,t,r})}));
-  const todos=[...S.facturas.map(f=>f.fecha.slice(0,7)),...retIva.map(x=>x.mes)].sort();
+  const todos=[...S.facturas.map(perF),...retIva.map(x=>x.mes)].sort();
   if(!todos.length)return [];
   const meses=[];for(let m=todos[0];m<=todos[todos.length-1];m=mesSig(m))meses.push(m);
   let arrastre=0;
   return meses.map(mes=>{
-    const fs=S.facturas.filter(f=>f.fecha.startsWith(mes)).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const fs=S.facturas.filter(f=>perF(f)===mes).sort((a,b)=>a.fecha.localeCompare(b.fecha));
     const df=sum(fs.filter(f=>f.lado==='debito'),f=>sgn(f)*f.iva),cf=sum(fs.filter(computaCF),f=>sgn(f)*f.iva);
     const rets=retIva.filter(x=>x.mes===mes),rp=sum(rets,x=>x.importe);
     const resultado=df-cf-arrastre-rp;
@@ -1325,7 +1329,7 @@ const toComb=x=>({id:x.id,maquina_id:x.maqId,obra_id:x.obraId||null,tipo_combust
 const fromArreglo=r=>({id:r.id,maqId:r.maquina_id,fh:r.fecha_hora,desc:r.descripcion,costo:r.costo==null?0:+r.costo,ini:r.iniciales||''});
 const toArreglo=x=>({id:x.id,maquina_id:x.maqId,fecha_hora:x.fh,descripcion:x.desc,costo:num(x.costo)>0?num(x.costo):null});
 const fromCheque=r=>({id:r.id,tipo:r.tipo,origen:r.origen,numero:r.numero,banco:r.banco||'',librador:r.librador||'',fechaPago:r.fecha_pago,importe:+r.importe,estado:r.estado});
-const fromFactura=r=>({id:r.id,terceroId:r.tercero_id,lado:r.lado,tipo:r.tipo,pv:r.punto_venta,nro:r.numero,fecha:r.fecha,neto:+r.neto_gravado,iva:+r.iva,otros:r2(+r.otros_tributos+ +r.no_gravado),total:+r.total,user:iniDe(r.created_by),creada:(r.created_at||'').slice(0,10)});
+const fromFactura=r=>({id:r.id,terceroId:r.tercero_id,lado:r.lado,tipo:r.tipo,pv:r.punto_venta,nro:r.numero,fecha:r.fecha,neto:+r.neto_gravado,iva:+r.iva,otros:r2(+r.otros_tributos+ +r.no_gravado),total:+r.total,user:iniDe(r.created_by),creada:(r.created_at||'').slice(0,10),per:r.periodo_iva||''});
 const fromTx=r=>({id:r.id,numero:+r.numero,tipo:r.tipo,fecha:r.fecha,concepto:r.concepto,terceroId:r.tercero_id||'',ccId:r.centro_costo_id,moneda:r.moneda,tc:+r.tipo_cambio,total:+r.total,estado:r.estado,user:iniDe(r.created_by),obs:r.observaciones||'',
   auto:r.auto_tipo==='impuesto_dc'?'idc':undefined,padreId:r.padre_id||undefined,
   pagos:(r.transaccion_pagos||[]).map(p=>({medio:p.medio,origen:p.cuenta_origen_id||undefined,destino:p.cuenta_destino_id||undefined,chequeId:p.cheque_id||undefined,importe:+p.importe,ref:p.referencia||''})),
@@ -1336,7 +1340,7 @@ const toTipo=x=>x;
 const toTercero=t=>({id:t.id,razon_social:t.razon,cuit:t.cuit||null,tipo:t.tipo});
 const toCentro=c=>({id:c.id,codigo:c.codigo,nombre:c.nombre,tipo_id:c.tipo,cliente_id:c.clienteId||null,valor_contrato:num(c.contrato)>0?num(c.contrato):null,activo:c.activo!==false,marca:c.marca||null,modelo:c.modelo||null,anio:c.anio>0?c.anio:null,patente:c.patente||null,notas:c.notas||null});
 const toCheque=c=>({id:c.id,tipo:c.tipo,origen:c.origen,numero:c.numero,banco:c.banco||null,librador:c.librador||null,fecha_pago:c.fechaPago,importe:num(c.importe),estado:c.estado});
-const toFactura=f=>({id:f.id,tercero_id:f.terceroId,lado:f.lado,tipo:f.tipo,punto_venta:f.pv,numero:f.nro,fecha:f.fecha,neto_gravado:num(f.neto),iva:num(f.iva),otros_tributos:num(f.otros),no_gravado:0,total:num(f.total)});
+const toFactura=f=>({id:f.id,tercero_id:f.terceroId,lado:f.lado,tipo:f.tipo,punto_venta:f.pv,numero:f.nro,fecha:f.fecha,neto_gravado:num(f.neto),iva:num(f.iva),otros_tributos:num(f.otros),no_gravado:0,total:num(f.total),periodo_iva:f.per||null});
 const srt=a=>a.map(x=>[JSON.stringify(x),x]).sort((p,q)=>p[0]<q[0]?-1:p[0]>q[0]?1:0).map(p=>p[1]);
 const toTx=t=>({id:t.id,tipo:t.tipo,fecha:t.fecha,concepto:t.concepto,tercero_id:t.terceroId||null,centro_costo_id:t.ccId,moneda:t.moneda||'ARS',tipo_cambio:+t.tc||1,total:num(t.total),observaciones:t.obs||null,estado:t.estado,auto_tipo:t.auto==='idc'?'impuesto_dc':null,padre_id:t.padreId||null,
   pagos:srt(t.pagos.map(p=>({medio:p.medio,cuenta_origen_id:p.origen||null,cuenta_destino_id:p.destino||null,cheque_id:p.chequeId||null,importe:num(p.importe),referencia:p.ref||null}))),
@@ -1786,9 +1790,9 @@ const EDIT={
   borrar:c=>{S.cheques=S.cheques.filter(x=>x.id!==c.id)}},
  facturas:{un:'factura',pl:'facturas',f:1,get:id=>factura(id),
   rot:f=>nroFact(f)+' · '+(tercero(f.terceroId)?.razon||''),idc:f=>nroFact(f),
-  cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'tipo',l:'Tipo',t:'sel',o:()=>TIPOS_F.map(t=>[t,tipoFTxt(t)])},{k:'pv',l:'Pto. venta',t:'text',n:1,w:70},{k:'nro',l:'Número',t:'text',n:1,w:110},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:f=>tercOpts(f.lado,f.terceroId)},{k:'neto',l:'Neto',t:'money'},{k:'iva',l:'IVA',t:'money'},{k:'otros',l:'No gravado',t:'money'}],
+  cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'tipo',l:'Tipo',t:'sel',o:()=>TIPOS_F.map(t=>[t,tipoFTxt(t)])},{k:'pv',l:'Pto. venta',t:'text',n:1,w:70},{k:'nro',l:'Número',t:'text',n:1,w:110},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:f=>tercOpts(f.lado,f.terceroId)},{k:'neto',l:'Neto',t:'money'},{k:'iva',l:'IVA',t:'money'},{k:'otros',l:'No gravado',t:'money'},{k:'off',l:'Imputa a (IVA)',t:'sel',o:()=>[['0','Mes de la factura'],['1','Mes siguiente'],['2','2 meses después']]}],
   ro:(f,c)=>c.k==='terceroId'&&imputado(f.id)>0.005,
-  init:f=>({fecha:f.fecha,tipo:f.tipo,pv:String(f.pv).padStart(4,'0'),nro:String(f.nro).padStart(8,'0'),terceroId:f.terceroId,neto:toIn(f.neto),iva:toIn(f.iva),otros:toIn(f.otros||0)}),
+  init:f=>({fecha:f.fecha,tipo:f.tipo,pv:String(f.pv).padStart(4,'0'),nro:String(f.nro).padStart(8,'0'),terceroId:f.terceroId,neto:toIn(f.neto),iva:toIn(f.iva),otros:toIn(f.otros||0),off:String(Math.max(0,Math.min(2,(()=>{const [a,b]=f.fecha.slice(0,7).split('-').map(Number),[c,d]=perF(f).split('-').map(Number);return (c-a)*12+(d-b)})())))}),
   valida:(f,v)=>{const e=[];
     if(!v.fecha)e.push('Falta la fecha.');if(!v.terceroId)e.push('Falta elegir '+(f.lado==='debito'?'el cliente':'el proveedor')+'.');
     if(!(parseInt(v.pv,10)>0)||!(parseInt(v.nro,10)>0))e.push('Faltan el punto de venta y el número.');
@@ -1804,7 +1808,7 @@ const EDIT={
     recs.forEach(r=>{const v=efs[r.id],pv=parseInt(v.pv,10),nro=parseInt(v.nro,10);const k=clave(r.lado,v.tipo,pv,nro,v.terceroId);
       if(vistas.has(k))e.push('Factura repetida: '+tipoFTxt(v.tipo)+' '+String(pv).padStart(4,'0')+'-'+String(nro).padStart(8,'0')+' ya está cargada del mismo cliente o proveedor.');else vistas.set(k,1)});
     return e},
-  aplica:(f,v)=>{f.fecha=v.fecha;f.tipo=v.tipo;f.pv=parseInt(v.pv,10);f.nro=parseInt(v.nro,10);f.terceroId=v.terceroId;f.neto=num(v.neto);f.iva=num(v.iva);f.otros=num(v.otros);f.total=r2(f.neto+f.iva+f.otros)},
+  aplica:(f,v)=>{f.fecha=v.fecha;f.tipo=v.tipo;f.pv=parseInt(v.pv,10);f.nro=parseInt(v.nro,10);f.terceroId=v.terceroId;f.neto=num(v.neto);f.iva=num(v.iva);f.otros=num(v.otros);f.total=r2(f.neto+f.iva+f.otros);{let m=v.fecha.slice(0,7);for(let i=0;i<(+v.off||0);i++)m=mesSig(m);f.per=m===v.fecha.slice(0,7)?'':m}},
   noBorrar:f=>{const tx=S.trans.filter(t=>t.facts.some(x=>x.facturaId===f.id));return tx.length?'Tiene pagos asociados en '+plural(tx.length,'la transacción ','las transacciones ')+tx.map(t=>'Nº '+t.numero).join(', ')+'. Eliminá primero esas transacciones.':''},
   borrar:f=>{S.facturas=S.facturas.filter(x=>x.id!==f.id)}},
  centros:{un:'centro de costo',pl:'centros de costo',get:id=>centro(id),
@@ -1989,7 +1993,7 @@ const EXPORTS={
     if(ids&&list.length){const r=new Array(21).fill('');r[4]='Movimiento neto en la cuenta · saldo final';r[19]=sum(list,t=>t._mov||0);r[20]=list[list.length-1]._run||0;rows.push(r)}
     return {name:ids?'Libro '+ctaNombre():'Transacciones',sheets:[{name:ids?ctaNombre():'Transacciones',rows},...transHojas(list)]}},
   centros(){return {name:'Centros de costo',sheets:[{name:'Centros de costo',rows:[['Código','Nombre','Tipo','Cliente','Estado','Movimientos','Valor de contrato','Ingresos','Egresos','Resultado','Saldo pendiente']].concat(S.centros.map(c=>{const st=ccStats(c.id);const k=ccContrato(c);return [c.codigo,c.nombre,CC_TIPOS[c.tipo]||c.tipo,c.clienteId?tercero(c.clienteId).razon:'',c.activo===false?'Inactivo':'Activo',st.n,k?k.contrato:'',st.i,st.e,st.i-st.e,k?k.pendiente:'']}))}]}},
-  facturas(){const rows=[['Mes','Emitida/Recibida','Fiscal','Comprobante','Fecha','Cliente / Proveedor','CUIT','Neto','IVA','No gravado/otros','Total','Imputado','Saldo','Estado','Usuario']].concat(factList().map(f=>{const t=tercero(f.terceroId);return [mesTxt(f.fecha.slice(0,7)).replace(/^./,c=>c.toUpperCase()),f.lado==='debito'?'Emitida':'Recibida',f.lado==='debito'?'Débito fiscal':'Crédito fiscal',nroFact(f),fd(f.fecha),t.razon,t.cuit,f.neto,f.iva,f.otros,f.total,isNC(f)?0:imputado(f.id),saldoFact(f),factEstado(f)[0],f.user]}));
+  facturas(){const rows=[['Mes','Emitida/Recibida','Fiscal','Comprobante','Fecha','Cliente / Proveedor','CUIT','Neto','IVA','No gravado/otros','Total','Imputado','Saldo','Estado','Usuario']].concat(factList().map(f=>{const t=tercero(f.terceroId);return [mesTxt(perF(f)).replace(/^./,c=>c.toUpperCase()),f.lado==='debito'?'Emitida':'Recibida',f.lado==='debito'?'Débito fiscal':'Crédito fiscal',nroFact(f),fd(f.fecha),t.razon,t.cuit,f.neto,f.iva,f.otros,f.total,isNC(f)?0:imputado(f.id),saldoFact(f),factEstado(f)[0],f.user]}));
     return {name:'Facturas',sheets:[{name:'Facturas',rows}]}},
   iva(){const rows=posicionIVA();const cap=m=>mesTxt(m).replace(/^./,c=>c.toUpperCase());const res=[['Mes','Débito fiscal','Crédito fiscal','Saldo a favor anterior','Ret./perc. IVA','Resultado','Situación','Pasa al mes siguiente']].concat(rows.map(r=>[cap(r.mes),r.df,r.cf,r.arrastre,r.rp,r.resultado,r.pagar?'IVA A PAGAR':'IVA A FAVOR',r.arrastreSig]));
     const det=[['Mes','Emitida/Recibida','Comprobante','Fecha','Cliente / Proveedor','Débito fiscal','Crédito fiscal']];rows.forEach(r=>r.fs.forEach(f=>det.push([cap(r.mes),f.lado==='debito'?'Emitida':'Recibida',nroFact(f),fd(f.fecha),tercero(f.terceroId).razon,f.lado==='debito'?sgn(f)*f.iva:0,computaCF(f)?sgn(f)*f.iva:0])));
@@ -2477,6 +2481,7 @@ document.addEventListener('click',e=>{
   const cp=e.target.closest('[data-cvper]');if(cp){const [y,m]=TODAY.split('-').map(Number);const pad=n=>String(n).padStart(2,'0');const last=(y,m)=>new Date(y,m,0).getDate();const k=cp.dataset.cvper;if(k==='mes'){S.cv.desde=`${y}-${pad(m)}-01`;S.cv.hasta=`${y}-${pad(m)}-${last(y,m)}`}else if(k==='ant'){const py=m===1?y-1:y,pm=m===1?12:m-1;S.cv.desde=`${py}-${pad(pm)}-01`;S.cv.hasta=`${py}-${pad(pm)}-${last(py,pm)}`}else{S.cv.desde='';S.cv.hasta=TODAY}render();return}
   const sc=e.target.closest('[data-scroll]');if(sc){document.getElementById(sc.dataset.scroll)?.scrollIntoView({behavior:'smooth',block:'start'});return}
   const x=e.target.closest('[data-xls]');if(x){exportar(x.dataset.xls);return}
+  const np=e.target.closest('[data-nfper]');if(np){const Fm=np.dataset.ctx==='tx'?D.nf:S.nfFac;if(Fm){Fm.per=np.dataset.nfper;render()}return}
   const ccg=e.target.closest('[data-ccg]');if(ccg){S.ccCerr=S.ccCerr||{};S.ccCerr[ccg.dataset.ccg]=!S.ccCerr[ccg.dataset.ccg];render();return}
   const sc2=e.target.closest('[data-sec]');if(sc2){const k=sc2.dataset.sec;S.navCerr[k]=!S.navCerr[k];try{localStorage.setItem('navCerr',JSON.stringify(S.navCerr))}catch(_){}renderNav();return}
   const gm=e.target.closest('[data-igmaq]');if(gm){const F=S[gm.dataset.igmaq];if(F){F.maqId=gm.dataset.id;F.ok='';render()}return}
@@ -2599,6 +2604,7 @@ main.addEventListener('change',e=>{
   if(el.dataset.grava&&!esDueno())return;
   if(el.dataset.grava){cuenta(el.dataset.grava).gravaIdc=el.checked;toast(cuenta(el.dataset.grava).nombre+(el.checked?' paga':' no paga')+' impuesto D/C');return}
   if(el.dataset.res){if(el.value||el.dataset.res==='rCc'){S[el.dataset.res]=el.value;render()}return}
+  if(el.dataset.nf==='fecha'&&el.tagName==='INPUT'){const Fm=el.dataset.ctx==='tx'?D.nf:S.nfFac;if(Fm){Fm.fecha=el.value;Fm.per='';Fm.err='';render()}return}
   if(el.dataset.nf&&el.tagName==='SELECT'){const Fm=el.dataset.ctx==='tx'?D.nf:S.nfFac;const k=el.dataset.nf;Fm[k]=el.value;
     if(k==='terceroId'&&el.value==='__nuevo__'){Fm.ntRazon='';Fm.ntCuit='';render();setTimeout(()=>{const x=document.getElementById('nf-fac-ntRazon');if(x)x.focus()},0);return}
     if(k==='lado')Fm.terceroId='';if(k==='tipo'&&['B','C'].includes(el.value)&&Fm.lado==='credito')Fm.alic='0';if(k==='alic'||k==='tipo')factCalc(Fm);Fm.dup=null;render();return}
@@ -2615,7 +2621,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 12:00';
+const BUILD='7-oct 13:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

@@ -187,3 +187,8 @@ create policy adjuntos_obra_delete on storage.objects for delete to authenticate
 -- tablas public.backups (metadatos: lee admin) y public.backups_datos (JSON completo: lee solo el dueño)
 -- funciones hacer_backup_interno(tipo) (solo cron/servidor) y hacer_backup_manual() (solo dueño)
 -- select cron.schedule('backup-semanal','0 6 * * 0',$$select public.hacer_backup_interno('automatico')$$);  -- domingos 03:00 Argentina
+
+-- v5: imputación de facturas viejas a un mes de IVA (aplicado en producción)
+alter table public.facturas add column if not exists periodo_iva text;
+alter table public.facturas add constraint facturas_periodo_iva_formato check (periodo_iva is null or periodo_iva ~ '^[0-9]{4}-(0[1-9]|1[0-2])$');
+-- null = se imputa al mes de la fecha de la factura

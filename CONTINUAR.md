@@ -59,3 +59,6 @@
 - Resumen: "Resultado por centro de costo" sin máquinas. Centros de costo agrupados por tipo y plegables. Tabla de obras con la columna Obra ancha.
 - Combustible agrupado por obra, con filtro por máquina y por fecha (desde/hasta).
 - Backup semanal automático (pg_cron, domingos 3:00 Argentina) con cartel en la app; el dueño puede hacer uno manual y descargarlos desde Usuarios → Copias de seguridad. No hay borrado automático de backups viejos (la app muestra los últimos 10).
+
+## v5 (7-oct 13:00)
+- Al cargar una factura con fecha de un mes anterior, el formulario avisa y obliga a elegir el mes de IVA: mes de la factura o mes siguiente (y "este mes" si pasó más de un mes). Se guarda en `facturas.periodo_iva`. La posición de IVA y la lista de Facturas agrupan por ese mes; en Modificar facturas hay una columna "Imputa a (IVA)".
