@@ -1100,7 +1100,8 @@ function vFacturas(){
 const fromRecop=r=>({id:r.id,recibida:r.recibida_at||'',remit:r.remitente||'',asunto:r.asunto||'',mailUrl:r.mail_url||'',adj:r.adjunto||'',cuit:r.emisor_cuit||'',razon:r.emisor_razon||'',rcuit:r.receptor_cuit||'',tipo:r.tipo||'',pv:r.punto_venta||0,nro:r.numero||0,fecha:r.fecha||'',neto:+r.neto_gravado||0,iva:+r.iva||0,otros:+r.otros||0,total:+r.total||0,cae:r.cae||'',pdf:r.pdf_path||'',obs:r.observaciones||'',estado:r.estado,facturaId:r.factura_id||''});
 const recop=id=>S.recop.find(x=>x.id===id);
 /* Misma factura recibida en varios mails: mismo CUIT del emisor + punto de venta + número */
-const rcKey=r=>r.cuit&&r.nro&&r.pv?[r.cuit,r.pv,r.nro].join('|'):'';
+const rcEmail=r=>((/<([^>]+)>/.exec(r.remit||'')||[,r.remit||''])[1]||'').trim().toLowerCase();
+const rcKey=r=>(r.cuit||rcEmail(r))&&r.nro&&r.pv?[r.cuit||('@'+rcEmail(r)),r.pv,r.nro].join('|'):'';
 const rcHermanas=r=>{const k=rcKey(r);return k?S.recop.filter(x=>x!==r&&rcKey(x)===k):[]};
 const RC_EST={pendiente:['Pendiente','p-warn'],cargada:['Cargada','p-ok'],descartada:['Descartada','p-mute']};
 /* Qué le falta a una recopilada para poder cargarla sin revisar */
@@ -1140,7 +1141,7 @@ function vRecop(){
     const dup=r.estado==='pendiente'&&!falta.length?S.facturas.find(f=>f.lado==='credito'&&f.tipo===r.tipo&&f.pv===r.pv&&f.nro===r.nro&&tercero(f.terceroId)?.cuit===r.cuit):null;
     return `<tr class="rec ${S.recopSel[r.id]?'picked':''}"><td>${r.estado==='pendiente'?`<input type="checkbox" data-act="rc-sel" data-id="${r.id}" ${S.recopSel[r.id]?'checked':''} aria-label="Seleccionar"> `:''}<span class="pill ${e[1]}">${e[0]}</span></td>
     <td class="mono">${r.recibida?fd(r.recibida.slice(0,10)):''}</td>
-    <td><b>${esc(r.razon||'(sin razón social)')}</b><span class="sub">${esc(r.cuit||'sin CUIT')}</span></td>
+    <td><b>${esc(r.razon||(rcTercero(r)||{}).razon||'(sin razón social)')}</b><span class="sub">${esc(r.cuit||'sin CUIT')}</span></td>
     <td class="mono">${r.nro?tipoFTxt(r.tipo)+' '+String(r.pv).padStart(4,'0')+'-'+String(r.nro).padStart(8,'0'):'—'}<span class="sub">${r.fecha?fd(r.fecha):'sin fecha'}</span></td>
     <td class="num">${money(r.neto)}</td><td class="num">${money(r.iva)}</td><td class="num"><b>${money(r.total)}</b></td>
     <td>${r.pdf?`<button type="button" class="rcthb" data-act="rc-pdf" data-id="${r.id}" data-th="${r.id}" title="Abrir el PDF" ${S.recopTh[r.id]?'':'hidden'}><img alt="Vista previa" src="${S.recopTh[r.id]||''}"></button>`:''}${repes[rcKey(r)]?`<span class="sub">Llegó también en ${repes[rcKey(r)]} mail${repes[rcKey(r)]===1?'':'s'} más (misma factura).</span>`:''}${falta.length?`<span class="pill p-bad">Revisar</span> <span class="sub">Falta: ${esc(falta.join(', '))}</span>`:''}${dup?`<span class="pill p-warn">Ya está en Facturas</span> `:''}${r.obs?`<span class="sub">${esc(r.obs)}</span>`:''}<span class="sub">${esc(r.remit)}${r.asunto?' · '+esc(r.asunto):''}</span></td>
@@ -1175,6 +1176,13 @@ async function rcThumbs(){
         document.querySelectorAll('button[data-th="'+id+'"]').forEach(b=>{const im=b.querySelector('img');if(im)im.src=du;b.hidden=false})
       }catch(e){console.warn('miniatura',e)}}
   }finally{RC_TH_BUSY=false}}
+/* El sistema aprende quién es el proveedor de cada casilla de mail: la primera vez se completa a mano, después se rellena solo */
+async function rcAprender(r){
+  const em=rcEmail(r);if(!em||!r.cuit)return;
+  S.remitMap=S.remitMap||{};S.remitMap[em]={cuit:r.cuit,razon:r.razon||''};
+  if(REAL){try{await sb.from('proveedor_remitentes').upsert({email:em,cuit:r.cuit,razon:r.razon||null,actualizado:new Date().toISOString()})}catch(e){console.warn(e)}}
+  S.recop.forEach(x=>{if(x.estado==='pendiente'&&!x.cuit&&rcEmail(x)===em){x.cuit=r.cuit;if(!x.razon)x.razon=r.razon||''}})}
+function rcRellenar(){const mp=S.remitMap||{};S.recop.forEach(x=>{if(x.estado!=='pendiente')return;const p=mp[rcEmail(x)];if(p){if(!x.cuit)x.cuit=p.cuit||'';if(!x.razon)x.razon=p.razon||''}})}
 async function rcMarcar(r,estado,facturaId){
   const ahora=new Date().toISOString();
   if(REAL){const {error}=await sb.from('facturas_recopiladas').update({estado,factura_id:facturaId||null,resuelta_at:estado==='pendiente'?null:ahora,resuelta_por:estado==='pendiente'?null:S.sesion}).eq('id',r.id);if(error)throw error}
@@ -1192,7 +1200,7 @@ async function rcCargar(ids,pers){
     const d=Fm.terceroId==='__nuevo__'?null:findDup(Fm);
     if(d){try{await rcMarcar(r,'cargada',d.id);dups++}catch(e){mal.push(msgErr(e))}continue}
     const f=crearFactura(Fm);if(!f){mal.push((Fm.err||'no se pudo cargar')+' ('+tipoFTxt(r.tipo)+' '+r.pv+'-'+r.nro+')');continue}
-    try{await rcMarcar(r,'cargada',f.id);ok++;S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Factura recopilada autorizada · '+nroFact(f),txId:null})}catch(e){mal.push(msgErr(e))}
+    try{await rcMarcar(r,'cargada',f.id);ok++;await rcAprender(r);S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:'Factura recopilada autorizada · '+nroFact(f),txId:null})}catch(e){mal.push(msgErr(e))}
     delete S.recopSel[id]}
   return {ok,dups,mal}}
 function rcResumen(x){return (x.ok?x.ok+' cargada'+(x.ok===1?'':'s')+' a Facturas. ':'')+(x.dups?x.dups+' ya estaba'+(x.dups===1?'':'n')+' en Facturas. ':'')+(x.mal.length?'Sin cargar: '+x.mal.join('; ')+'.':'')}
@@ -1208,7 +1216,7 @@ async function rcAct(act,a){
     if(E.cuit.trim()&&!cuit){E.err='El CUIT tiene que tener 11 números.';render();return}
     const pv=parseInt(E.pv,10)||0,nro=parseInt(E.nro,10)||0,neto=num(E.neto),iva=num(E.iva),otros=num(E.otros),total=r2(neto+iva+otros);
     if(REAL){const {error}=await sb.from('facturas_recopiladas').update({emisor_razon:E.razon.trim()||null,emisor_cuit:cuit||null,tipo:E.tipo,punto_venta:pv||null,numero:nro||null,fecha:E.fecha||null,neto_gravado:neto,iva,otros,total,observaciones:null}).eq('id',x.id);if(error){E.err='No se pudo guardar: '+msgErr(error);render();return}}
-    Object.assign(x,{obs:'',razon:E.razon.trim(),cuit,tipo:E.tipo,pv,nro,fecha:E.fecha,neto,iva,otros,total});S.recopEd=null;toast('Cambios guardados');render()}
+    Object.assign(x,{obs:'',razon:E.razon.trim(),cuit,tipo:E.tipo,pv,nro,fecha:E.fecha,neto,iva,otros,total});await rcAprender(x);S.recopEd=null;toast('Cambios guardados');render()}
   else if(act==='rc-uno'&&r){S.recopConf={ids:[r.id],per:{}};render();window.scrollTo(0,0)}
   else if(act==='rc-sel-cargar'){const ids=S.recop.filter(x=>x.estado==='pendiente'&&S.recopSel[x.id]).map(x=>x.id);if(!ids.length)return;S.recopConf={ids,per:{}};render();window.scrollTo(0,0)}
   else if(act==='rc-conf-cancel'){S.recopConf=null;render()}
@@ -1574,7 +1582,7 @@ async function cargarAuditTx(id){try{const {data,error}=await sb.from('auditoria
 async function cargarDatos(){
   SY.cargando=true;
   try{
-    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar,an,pr,pg,rcp]=await Promise.all([
+    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar,an,pr,pg,rcp,rmp]=await Promise.all([
       traer('cuentas','*',[['created_at',true],['id',true]]),traer('tipos_centro','*',[['created_at',true],['id',true]]),
       traer('terceros','*',[['created_at',true],['id',true]]),traer('centros_costo','*',[['created_at',true],['id',true]]),
       traer('cheques','*',[['created_at',true],['id',true]]),traer('facturas','*',[['created_at',true],['id',true]]),
@@ -1584,13 +1592,14 @@ async function cargarDatos(){
       traer('combustible_cargas','*',[['created_at',true],['id',true]]),traer('maquinaria_arreglos','*',[['created_at',true],['id',true]]),
       traer('anticipos_obra','*',[['created_at',true],['id',true]]),traer('precios_combustible','*',[['id',true]]),
       sb.rpc('pagos_contratistas').then(r=>r.error?[]:(r.data||[])),
-      sb.from('facturas_recopiladas').select('*').order('recibida_at',{ascending:false}).limit(500).then(r=>r.error?[]:(r.data||[]))]);
+      sb.from('facturas_recopiladas').select('id,recibida_at,remitente,asunto,mail_url,adjunto,emisor_cuit,emisor_razon,receptor_cuit,tipo,punto_venta,numero,fecha,neto_gravado,iva,otros,total,cae,pdf_path,observaciones,estado,factura_id').order('recibida_at',{ascending:false}).limit(500).then(r=>r.error?[]:(r.data||[])),
+      sb.from('proveedor_remitentes').select('*').then(r=>r.error?[]:(r.data||[]))]);
     await cargarPerfiles();
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
     S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);S.comb=cb.map(fromComb);S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios={nafta:0,diesel_500:0,diesel_premium:0};pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
-    S.recop=rcp.map(fromRecop);
+    S.remitMap={};rmp.forEach(x=>{S.remitMap[x.email]={cuit:x.cuit||'',razon:x.razon||''}});S.recop=rcp.map(fromRecop);rcRellenar();
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
     S.audTx={};await cargarAudit();await cargarBackups();
@@ -2754,7 +2763,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 17:00';
+const BUILD='7-oct 18:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

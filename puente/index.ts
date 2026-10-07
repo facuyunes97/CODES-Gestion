@@ -51,9 +51,17 @@ Deno.serve(async (req) => {
       const path = `${b.message_id}/${seguro || "factura.pdf"}`;
       await sb.storage.from("facturas-recopiladas").upload(path, bin, { contentType: "application/pdf", upsert: true });
       const d = r.datos;
-      // misma factura recibida en otro mail: no duplicar
-      if (!previa && d.numero && d.emisor_cuit) {
-        const dup = await sb.from("facturas_recopiladas").select("id").eq("emisor_cuit", d.emisor_cuit).eq("punto_venta", d.punto_venta).eq("numero", d.numero).limit(1);
+      // proveedor ya conocido por la dirección de mail que manda sus facturas
+      const em = (/<([^>]+)>/.exec(String(b.remitente || "")) || [, String(b.remitente || "")])[1].trim().toLowerCase();
+      if (em && (!d.emisor_cuit || !d.emisor_razon)) {
+        const pr = await sb.from("proveedor_remitentes").select("cuit,razon").eq("email", em).maybeSingle();
+        if (pr.data) { d.emisor_cuit = d.emisor_cuit || pr.data.cuit || ""; d.emisor_razon = d.emisor_razon || pr.data.razon || ""; }
+      }
+      // misma factura recibida en otro mail: no duplicar (mismo CUIT del emisor + punto de venta + número)
+      if (!previa && d.numero && d.punto_venta) {
+        let q = sb.from("facturas_recopiladas").select("id").eq("punto_venta", d.punto_venta).eq("numero", d.numero);
+        q = d.emisor_cuit ? q.eq("emisor_cuit", d.emisor_cuit) : q.ilike("remitente", "%" + em + "%");
+        const dup = await q.limit(1);
         if (dup.data && dup.data.length) return json({ ok: true, ignorada: "repetida" });
       }
       const fila = {

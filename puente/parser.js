@@ -43,7 +43,7 @@ export function cuitsEn(texto) {
 export const cuitFmt = d => d ? d.slice(0, 2) + '-' + d.slice(2, 10) + '-' + d.slice(10) : '';
 
 const fechaISO = s => {
-  const m = /(\d{2})\/(\d{2})\/(\d{4})/.exec(s || '');
+  const m = /(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s || '');
   if (!m) return '';
   const [d, mo, y] = [+m[1], +m[2], +m[3]];
   if (mo < 1 || mo > 12 || d < 1 || d > 31 || y < 2000 || y > 2100) return '';
@@ -53,7 +53,7 @@ const fechaISO = s => {
 // Nombre del emisor: por lo general está arriba a la izquierda del comprobante, sin etiqueta.
 const RUIDO = /^(original|duplicado|triplicado|factura|nota\b|comprobante|cod\b|c[oó]digo|fecha|punto|comp\b|cuit|ingresos|condici[oó]n|domicilio|raz[oó]n|n[°º]|p[aá]gina|\d|\W)/i;
 export function razonArriba(t) {
-  const ok = l => l.length >= 3 && l.length <= 80 && /[A-Za-zÁÉÍÓÚÑáéíóúñ]{3}/.test(l) && !/^[ABCME]$/.test(l) && !RUIDO.test(l) && !/CODES/i.test(l);
+  const ok = l => l.length >= 3 && l.length <= 80 && /[A-Za-zÁÉÍÓÚÑáéíóúñ]{3}/.test(l) && !/^[ABCME]$/.test(l) && !/\d{2}/.test(l) && !/c[oó]digo/i.test(l) && !RUIDO.test(l) && !/CODES/i.test(l);
   const lineas = String(t || '').split(/\n+/).map(x => x.trim()).filter(Boolean).slice(0, 14);
   for (const l of lineas) if (ok(l)) return l.slice(0, 90);
   // texto sin saltos de línea: tomar el comienzo hasta la primera palabra clave del encabezado
@@ -68,20 +68,20 @@ export function analizar(texto, nombreArchivo = '') {
   const tieneCAE = /\bCAE\b/i.test(t);
   const palabra = /(FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO|COMPROBANTE)/i.test(t);
   if (!tieneCAE && !palabra) return { esFactura: false, ignorar: true, motivo: 'no parece una factura' };
-  if (/\bRECIBO\b/i.test(t) && !/FACTURA|NOTA DE/i.test(t)) return { esFactura: false, ignorar: true, motivo: 'es un recibo' };
+  if (/\bRECIBO\b/i.test(t.slice(0, 80)) || (/\bRECIBO\b/i.test(t) && !/FACTURA|NOTA DE/i.test(t))) return { esFactura: false, ignorar: true, motivo: 'es un recibo' };
+  if (/ORIGINAL\s+CODES\s+S\.?\s*R\.?\s*L/i.test(t)) return { esFactura: true, ignorar: true, motivo: 'emitida por CODES SRL (no es una compra)' };
 
   // CUITs: el receptor tiene que ser CODES SRL
   const cuits = cuitsEn(t);
   let receptor = '';
   if (cuits.includes(CUIT_CODES)) receptor = CUIT_CODES;
   else if (/CODES\s*S\.?\s*R\.?\s*L/i.test(t)) obs.push('No se pudo leer el CUIT de CODES SRL en el comprobante: revisar que sea a nombre de la empresa.');
-  else if (cuits.length > 0) return { esFactura: true, ignorar: true, motivo: 'no está a nombre de CODES SRL' };
-  else obs.push('No se pudo leer ningún CUIT del comprobante: revisar que sea a nombre de CODES SRL.');
+  else return { esFactura: true, ignorar: true, motivo: 'no está a nombre de CODES SRL' };
   const emisor = cuits.find(c => c !== CUIT_CODES) || '';
 
   // Tipo
   let tipo = '';
-  const mc = /COD\.?\s*0*(\d{1,3})\b/i.exec(t);
+  const mc = /C[oó]d(?:igo|\.)?:?\s*0*(\d{1,3})\b/i.exec(t);
   if (mc && CODIGOS[+mc[1]]) tipo = CODIGOS[+mc[1]];
   if (!tipo) {
     const nc = /NOTA DE CR[EÉ]DITO/i.test(t), nd = /NOTA DE D[EÉ]BITO/i.test(t);
@@ -99,7 +99,7 @@ export function analizar(texto, nombreArchivo = '') {
   let m = /Punto de Venta:?\s*0*(\d{1,5})\s*(?:\n|\s)\s*Comp\.?\s*(?:Nro|N[°ºo]|Nº)\.?:?\s*0*(\d{1,8})/i.exec(t);
   if (m) { pv = +m[1]; nro = +m[2]; }
   if (!nro) {
-    const sinFechas = t.replace(/\d{2}\/\d{2}\/\d{4}/g, ' ').replace(/(20|23|24|27|30|33|34)[-\s]?\d{8}[-\s]?\d(?!\d)/g, ' ');
+    const sinFechas = t.replace(/\d{1,2}\/\d{1,2}\/\d{4}/g, ' ').replace(/(20|23|24|27|30|33|34)[-\s]?\d{8}[-\s]?\d(?!\d)/g, ' ');
     m = /(?<!\d)(\d{4,5})\s*[-–]\s*(\d{8})(?!\d)/.exec(sinFechas);
     if (m) { pv = +m[1]; nro = +m[2]; }
   }
@@ -107,19 +107,33 @@ export function analizar(texto, nombreArchivo = '') {
   if (!(pv > 0) || !(nro > 0)) obs.push('No se pudo leer el punto de venta y el número.');
 
   // Fecha
-  let fecha = fechaISO((/Fecha de Emisi[oó]n:?\s*(\d{2}\/\d{2}\/\d{4})/i.exec(t) || [])[1]);
-  if (!fecha) { fecha = fechaISO((/(\d{2}\/\d{2}\/\d{4})/.exec(t) || [])[1]); if (fecha) obs.push('La fecha de emisión se tomó de la primera fecha del comprobante: revisar.'); }
+  let fecha = fechaISO((/Fecha de Emisi[oó]n:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
+  if (!fecha) fecha = fechaISO((/(?:FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO)\s+\d{4,5}\s*-\s*\d{8}\s+(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
+  if (!fecha) { fecha = fechaISO((/(\d{1,2}\/\d{1,2}\/\d{4})/.exec(t) || [])[1]); if (fecha) obs.push('La fecha de emisión se tomó de la primera fecha del comprobante: revisar.'); }
   if (!fecha) obs.push('No se pudo leer la fecha.');
 
   // Importes
   const imp = (re) => { const x = re.exec(t); return x ? numero(x[1]) : 0; };
   let total = imp(/Importe Total:?\s*\$?\s*([\d.,]+)/i);
   let neto = imp(/Importe Neto Gravado:?\s*\$?\s*([\d.,]+)/i) || imp(/Subtotal:?\s*\$?\s*([\d.,]+)/i);
-  let iva = 0;
+  let iva = 0, otros = 0, especial = false;
+  // Formato combustibles (Emblema/YPF): "IVA 21%: IVA 10.5%: [iva21] [iva10,5] [neto] [imp1] [imp2] [imp3] [imp4] [total]"
+  const mE = /IVA\s*21\s*%:?\s*IVA\s*10[.,]5\s*%:?\s*((?:\d[\d.]*,\d{2}\s+){7}\d[\d.]*,\d{2})/i.exec(t);
+  if (mE) {
+    const n = mE[1].trim().split(/\s+/).map(numero);
+    iva = n[0] + n[1]; neto = n[2]; otros = n[3] + n[4] + n[5] + n[6]; total = n[7]; especial = true;
+  }
+  // Formato con punto decimal y fechas pegadas (ProHygiene): "NETO $ 58456.26 $ 12275.81I.V.A. $ 70732.0708/09/2026"
+  if (!especial) {
+    const pn = /NETO\s*\$?\s*(\d+\.\d{2})/i.exec(t), pi = /\$\s*(\d+\.\d{2})\s*I\.V\.A\./i.exec(t), pt = /I\.V\.A\.\s*\$\s*(\d+\.\d{2})(?=\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t);
+    if (pn && pt) { neto = numero(pn[1]); iva = pi ? numero(pi[1]) : 0; total = numero(pt[1]); especial = true; }
+  }
   const reIva = /IVA\s*(\d{1,2}(?:[.,]\d{1,2})?)\s*%:?\s*\$?\s*([\d.]+,\d{2}|[\d]+\.\d{2})/gi;
-  while ((m = reIva.exec(t))) iva += numero(m[2]);
-  if (!iva) iva = imp(/Importe IVA:?\s*\$?\s*([\d.,]+)/i);
-  let otros = imp(/Importe Otros Tributos:?\s*\$?\s*([\d.,]+)/i) + imp(/Importe No Gravado:?\s*\$?\s*([\d.,]+)/i) + imp(/Importe Exento:?\s*\$?\s*([\d.,]+)/i);
+  if (!especial) {
+    while ((m = reIva.exec(t))) iva += numero(m[2]);
+    if (!iva) iva = imp(/Importe IVA:?\s*\$?\s*([\d.,]+)/i);
+    otros = imp(/Importe Otros Tributos:?\s*\$?\s*([\d.,]+)/i) + imp(/Importe No Gravado:?\s*\$?\s*([\d.,]+)/i) + imp(/Importe Exento:?\s*\$?\s*([\d.,]+)/i);
+  }
   if (!total) {
     const todos = [...t.matchAll(/Total:?\s*\$?\s*([\d.]+,\d{2})/gi)].map(x => numero(x[1]));
     if (todos.length) total = Math.max(...todos);
@@ -141,6 +155,7 @@ export function analizar(texto, nombreArchivo = '') {
     const todas = [...t.matchAll(/Raz[oó]n Social:?\s*([^\n]+)/gi)].map(x => x[1].split(/\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto)/i)[0].trim()).filter(x => x && !/CODES/i.test(x));
     razon = (todas[0] || '').slice(0, 90);
   }
+  if (!razon) { const mn = /FACTURA\s+C[oó]digo:?\s*\d+\s+[ABCM]\s+(?:[A-Z]{1,3}\s+)?(.{3,70}?)\s+[A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d/.exec(t); if (mn) razon = mn[1].trim().slice(0, 90); }
   if (!razon) razon = razonArriba(t);
   if (!emisor) obs.push('No se pudo leer el CUIT del emisor.');
   if (!razon) obs.push('No se pudo leer la razón social del emisor.');
