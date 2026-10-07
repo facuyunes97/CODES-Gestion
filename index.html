@@ -353,7 +353,8 @@ tr.mesrow td{background:var(--surface-2);padding:7px 12px;font-size:13px}
 .rol-dueno{border-top:3px solid var(--brand)}.rolsel{padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface)}
 body.lector [data-act=cc-new],body.lector [data-act=tf-new],body.lector [data-act=nf-open],body.lector [data-act=nffac-open],body.lector [data-act=rc-sel],body.lector [data-act=rc-all],body.lector [data-act=rc-uno],body.lector [data-act=rc-edit],body.lector [data-act=rc-desc],body.lector [data-act=rc-rest],body.lector [data-act=rc-sel-cargar],body.lector [data-act=rc-sel-desc]{display:none!important}
 .rcthb{padding:0;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:zoom-in;line-height:0;overflow:hidden;float:right;margin:0 0 4px 10px}.rcthb[hidden]{display:none}.rcthb img{width:52px;height:70px;object-fit:cover;object-position:top;display:block}
-.rcthb.big{float:right;margin:0 0 8px 14px}.rcthb.big img{width:96px;height:128px}.rcc .sub{display:block;margin-top:2px}.rcc .pill{margin-top:4px}.rcprov{display:block;margin-top:6px;max-width:210px;font-size:.78rem;padding:4px 6px}
+.rcthb.big{float:right;margin:0 0 8px 14px}.rcthb.big img{width:96px;height:128px}.rcbtn{display:inline-flex;align-items:center;gap:8px;font-weight:600}.rcbtn .ic{width:16px;height:16px;color:#fff;fill:#fff;stroke:#fff}.rcn{background:var(--brand);color:var(--brand-ink);border-radius:999px;padding:1px 8px;font-size:.75rem;line-height:1.5}
+.rcc .sub{display:block;margin-top:2px}.rcc .pill{margin-top:4px}.rcprov{display:block;margin-top:6px;max-width:210px;font-size:.78rem;padding:4px 6px}
 .rcacts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;min-width:176px}.rcacts .btn{text-decoration:none}
 /* Estado de guardado */
 .sync{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
@@ -675,14 +676,14 @@ async function exportar(k){
 window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
-const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['recop','Facturas recopiladas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
+const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
 const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
 const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
   const yo=usuarioActual();document.getElementById('who').innerHTML=yo?`<span class="av">${esc(yo.iniciales)}</span><span class="nm"><b>${esc(yo.nombre+' '+yo.apellido)}</b><span>${ROL_TXT(yo.rol)}</span><span style="font-size:10px;opacity:.55">versión ${BUILD}</span></span><button data-act="logout">Salir</button>`:'';
-  const act=v=>S.view===v||(v==='facturas'&&S.view==='iva')||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist');
+  const act=v=>S.view===v||(v==='facturas'&&(S.view==='iva'||S.view==='recop'))||(v==='inicio'&&S.view==='cuenta')||(v==='trans'&&S.view==='exist');
   const btn=([v,l,ic])=>`<button data-view="${v}" ${act(v)?'aria-current="page"':''}><span>${icon(ic)}${l}</span>${cnt[v]!=null?`<span class="count">${cnt[v]}</span>`:''}</button>`;
   const sec=(k,t,items)=>{const ab=!S.navCerr[k];return `<button class="navsec" data-sec="${k}" aria-expanded="${ab}" aria-controls="grp-${k}"><span>${t}</span><span class="car" aria-hidden="true">▾</span></button><div class="navgrp" id="grp-${k}" ${ab?'':'hidden'}>${items.filter(([v])=>vistaPermitida(v)).map(btn).join('')}</div>`};
   document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()?sec('ing','Ingeniería / Obras',NAV_ING):'')+(veIng()||soloMaq()?sec('ope','Operario',NAV_OPE):'')+(veAdm()?`<div class="navbot">${btn(['ingres','Resumen operativo','plano'])}</div>`:'');
@@ -1088,7 +1089,7 @@ function vFacturas(){
   const row=f=>{const st=factEstado(f);return `<tr class="${f.lado==='debito'?'em':'rec'} ${isPicked('facturas',f.id)?'picked':''}">${pkCell('facturas',f.id)}<td><span class="pill ${f.lado==='debito'?'p-em':'p-rec'}">${f.lado==='debito'?'Emitida':'Recibida'}</span></td><td class="mono">${nroFact(f)}</td><td class="mono">${fd(f.fecha)}${perF(f)!==f.fecha.slice(0,7)?`<br><span class="pill p-warn" title="Se imputa a otro mes de IVA">IVA ${mesTxt(perF(f))}</span>`:''}</td><td>${esc(tercero(f.terceroId).razon)}</td><td class="num">${money(f.neto)}</td><td class="num">${money(f.iva)}</td><td class="num">${money(f.total)}</td><td class="num">${isNC(f)?'—':money(saldoFact(f))}</td><td><span class="pill ${st[1]}">${st[0]}</span></td><td class="mono">${f.user}</td></tr>`};
   const body=meses.map(m=>{const fs=list.filter(f=>perF(f)===m);const df=sum(fs.filter(f=>f.lado==='debito'),f=>sgn(f)*f.iva),cf=sum(fs.filter(computaCF),f=>sgn(f)*f.iva);
     return `<tr class="mes"><td colspan="${pkCols(10)}"><span class="mt">${mesTxt(m)}</span><span class="ms">${fs.length} factura${fs.length===1?'':'s'}</span><span class="ms">Débito fiscal <b class="mono">${money(df)}</b></span><span class="ms">Crédito fiscal <b class="mono">${money(cf)}</b></span>${ivaPill(pos.find(r=>r.mes===m))}</td></tr>`+fs.map(row).join('')}).join('');
-  return head('Facturas','Emitidas y recibidas en una sola lista, separadas por mes.',`<button class="btn small dark" data-view="iva">Ver posición de IVA</button>${xlsBtn('facturas')}`)+
+  return head('Facturas','Emitidas y recibidas en una sola lista, separadas por mes.',`<button class="btn dark rcbtn" data-view="recop">${icon('factura')}Facturas recopiladas${rcPend()?`<span class="rcn">${rcPend()}</span>`:''}</button><button class="btn small" data-view="iva">Ver posición de IVA</button>${xlsBtn('facturas')}`)+
   (S.nfFac?`<section class="panel">${factFormHTML(S.nfFac,'fac')}</section>`:'')+
   `<section class="panel"><div class="toolbar" style="padding-top:14px"><div class="grp"><div class="chips">${chips}</div>${S.nfFac?'':'<button class="btn small" data-act="nffac-open">+ Cargar factura</button>'}</div><span class="sub">A cobrar: <b class="mono" style="color:var(--em)">${money(cob)}</b> · A pagar: <b class="mono" style="color:var(--rec)">${money(pag)}</b></span></div>
   <div class="legend" style="padding-top:0"><span><i style="background:var(--em)"></i>Emitida por CODES · débito fiscal</span><span><i style="background:var(--rec)"></i>Recibida de proveedor · crédito fiscal</span></div>
@@ -1104,6 +1105,7 @@ const recop=id=>S.recop.find(x=>x.id===id);
 const rcEmail=r=>((/<([^>]+)>/.exec(r.remit||'')||[,r.remit||''])[1]||'').trim().toLowerCase();
 const rcKey=r=>(r.cuit||rcEmail(r))&&r.nro&&r.pv?[r.cuit||('@'+rcEmail(r)),r.pv,r.nro].join('|'):'';
 const rcHermanas=r=>{const k=rcKey(r);return k?S.recop.filter(x=>x!==r&&rcKey(x)===k):[]};
+const rcPend=()=>{const v=new Set();let n=0;S.recop.forEach(r=>{if(r.estado!=='pendiente')return;const k=rcKey(r);if(k){if(v.has(k))return;v.add(k)}n++});return n};
 const RC_EST={pendiente:['Pendiente','p-warn'],cargada:['Cargada','p-ok'],descartada:['Descartada','p-mute']};
 /* Qué le falta a una recopilada para poder cargarla sin revisar */
 function rcFalta(r){const f=[];if(!r.cuit&&!rcTercero(r))f.push('CUIT del emisor');if(!TIPOS_F.includes(r.tipo))f.push('tipo');if(!(r.pv>0)||!(r.nro>0))f.push('número');if(!r.fecha)f.push('fecha');if(!(r.total>0))f.push('total');
@@ -1151,7 +1153,7 @@ function vRecop(){
     <td class="rcacts">${r.pdf?`<button class="btn small" data-act="rc-pdf" data-id="${r.id}">Ver PDF</button>`:''}${r.mailUrl?`<a class="btn small" href="${esc(r.mailUrl)}" target="_blank" rel="noopener">Ver mail</a>`:''}
     ${r.estado==='pendiente'?`<button class="btn small dark" data-act="rc-uno" data-id="${r.id}">Cargar</button><button class="btn small" data-act="rc-edit" data-id="${r.id}">Editar</button><button class="btn small" data-act="rc-desc" data-id="${r.id}">Descartar</button>`:r.estado==='descartada'?`<button class="btn small" data-act="rc-rest" data-id="${r.id}">Volver a pendiente</button>`:''}</td></tr>`};
   const sinPuente=!S.recop.length;
-  return head('Facturas recopiladas','Facturas que llegaron a codessrl.sgo@gmail.com a nombre de CODES SRL (CUIT 30-71700245-4). No entran al sistema hasta que las autorices.',`<button class="btn small" data-act="sync-refresh">Actualizar</button>`)+
+  return head('Facturas recopiladas','Facturas que llegaron a codessrl.sgo@gmail.com a nombre de CODES SRL (CUIT 30-71700245-4). No entran al sistema hasta que las autorices.',`<button class="btn small" data-view="facturas">← Volver a Facturas</button><button class="btn small" data-act="sync-refresh">Actualizar</button>`)+
   (S.recopEd?rcEditHTML(S.recopEd):'')+(S.recopConf?rcConfHTML(S.recopConf):'')+
   `<section class="panel"><div class="toolbar" style="padding-top:14px"><div class="grp"><div class="chips">${chips}</div></div>
   <div class="grp"><label class="sub"><input type="checkbox" data-act="rc-all" ${pend.length&&nSel===pend.length?'checked':''}> Seleccionar todas las pendientes</label><button class="btn small dark" data-act="rc-sel-cargar" ${nSel?'':'disabled'}>Cargar seleccionadas (${nSel})</button><button class="btn small" data-act="rc-sel-desc" ${nSel?'':'disabled'}>Descartar seleccionadas</button></div></div>
@@ -2777,7 +2779,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 19:00';
+const BUILD='7-oct 19:30';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
