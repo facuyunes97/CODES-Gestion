@@ -441,6 +441,7 @@ tr.picked td{background:var(--warn-soft)}
   <symbol id="i-excavadora" viewBox="0 0 24 24"><rect x="2" y="16" width="12" height="4.5" rx="2.25"/><path d="M3.5 16v-4.5h5l2 4.5"/><path d="M9.5 11.5l4.5-6.5 5 3.5"/><path d="M19 8.5l1.5 5h-3.5"/></symbol>
   <symbol id="i-oficina" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/><path d="M10.5 21v-3h3v3"/></symbol>
   <symbol id="i-llave" viewBox="0 0 24 24"><path d="M14.5 5.5a4.2 4.2 0 0 0-4.7 5.6L3.5 17.4l3.1 3.1 6.3-6.3a4.2 4.2 0 0 0 5.6-4.7l-2.6 2.6-2.4-.6-.6-2.4z"/></symbol>
+  <symbol id="i-gota" viewBox="0 0 24 24"><path d="M12 3.5c3.3 4.3 5.7 7.3 5.7 10.4a5.7 5.7 0 0 1-11.4 0C6.3 10.8 8.7 7.8 12 3.5z"/><path d="M9.4 14.2a2.7 2.7 0 0 0 2.2 2.4"/></symbol>
   <symbol id="i-surtidor" viewBox="0 0 24 24"><rect x="5" y="3" width="9" height="18" rx="1.5"/><path d="M8 7h3"/><path d="M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V9l-2.5-2.5"/><path d="M3.5 21h12"/></symbol>
   <symbol id="i-libreta" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 3v18"/><path d="M12.5 8h3.5"/><path d="M12.5 12h3.5"/></symbol>
 </svg>
@@ -516,7 +517,8 @@ const S={
   {id:'ct2',nombre:'Electricidad Ruiz (ejemplo)',cuit:'',tel:'',obraId:'cc3',terceroId:'t7',trabajo:'Instalación eléctrica',dias:20,monto:800000,estado:'activo',obs:'',ini:'LG'}],
  certifs:[{id:'ce1',contratistaId:'ct1',fecha:'2026-09-28',pct:40,monto:480000,desc:0,obs:'',ini:'LG'}],
  anticipos:[{id:'an1',contratistaId:'ct2',fecha:'2026-09-20',monto:100000,obs:'',ini:'LG'}],
- precios:{nafta:1200,diesel_500:1300,diesel_premium:1500},
+ precios:{nafta:1200,diesel_500:1300,diesel_premium:1500,aceite_hidraulico:4200,aceite_motor:5100,aceite_transmision:4800,aceite_super_30:3900},
+ ace:[],
  comb:[{id:'cb1',maqId:'cc4',obraId:'cc2',tipo:'diesel_500',fh:'2026-09-29T08:15:00-03:00',litros:80,precio:1300,ini:'MD'},{id:'cb2',maqId:'cc4',obraId:'cc3',tipo:'diesel_500',fh:'2026-09-30T07:50:00-03:00',litros:65,precio:1300,ini:'MD'}],
  arreglos:[{id:'ar1',maqId:'cc4',fh:'2026-09-25T16:30:00-03:00',desc:'Cambio de filtro de aceite',costo:35000,ini:'MD'}]
 };
@@ -678,7 +680,7 @@ window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 /* ---------- Navegación ---------- */
 const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
 const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
-const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor']];
+const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor'],['aceite','Aceite','gota']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
   const cnt={usuarios:AUTH&&esAdmin()?(S.usuarios.filter(u=>!u.activo).length||null):null,trans:S.trans.length,cheques:S.cheques.filter(c=>['en_cartera','emitido'].includes(c.estado)).length,facturas:S.facturas.filter(f=>saldoFact(f)>0.005).length};
@@ -1525,9 +1527,10 @@ const COLS=[
  {k:'contrat',tabla:'contratistas',arr:()=>S.contratistas,to:toContrat},
  {k:'certifs',tabla:'certificaciones',arr:()=>S.certifs,to:toCertif},
  {k:'comb',tabla:'combustible_cargas',arr:()=>S.comb,to:toComb},
+ {k:'ace',tabla:'combustible_cargas',arr:()=>S.ace,to:toComb},
  {k:'arreglos',tabla:'maquinaria_arreglos',arr:()=>S.arreglos,to:toArreglo},
  {k:'antic',tabla:'anticipos_obra',arr:()=>S.anticipos,to:toAntic},
- {k:'precios',tabla:'precios_combustible',arr:()=>Object.keys(COMB_T).map(id=>({id,precio:S.precios[id]||0})),to:p=>({id:p.id,precio:num(p.precio)}),noDel:true}];
+ {k:'precios',tabla:'precios_combustible',arr:()=>Object.keys(ALL_T).map(id=>({id,precio:S.precios[id]||0})),to:p=>({id:p.id,precio:num(p.precio)}),noDel:true}];
 const snap=()=>{const o={};COLS.forEach(c=>{o[c.k]=snap1(c)});return o};
 function diff(){
   const out={add:[],mod:[],del:[]};if(!SY.sh)return out;
@@ -1546,7 +1549,7 @@ const must=r=>{if(r.error)throw r.error;return r};
 const unaFila=r=>{must(r);if(!r.data||!r.data.length){const e=new Error('SIN_PERMISO');throw e}};
 async function aplicar(d){
   let hubo=false;
-  const orden=['tipos','terceros','centros','precios','contrat','certifs','antic','comb','arreglos','facturas','cheques','cuentas','params'];
+  const orden=['tipos','terceros','centros','precios','contrat','certifs','antic','comb','ace','arreglos','facturas','cheques','cuentas','params'];
   for(const k of orden){
     for(const o of d.add.filter(x=>x.c.k===k&&!x.c.fijo)){must(await sb.from(o.c.tabla).insert(o.p));SY.sh[k].set(o.id,{p:o.p,j:o.j});if(k==='contrat')hubo=true}
     for(const o of d.mod.filter(x=>x.c.k===k)){
@@ -1565,7 +1568,7 @@ async function aplicar(d){
       if(r.error){await sb.rpc('guardar_transaccion',{p:o.antes});throw r.error}}
     SY.sh.trans.set(o.id,{p:o.p,j:o.j})}
   for(const o of d.del.filter(x=>x.c.k==='trans').sort((a,b)=>(b.antes.padre_id?1:0)-(a.antes.padre_id?1:0))){unaFila(await sb.from('transacciones').delete().eq('id',o.id).select('id'));SY.sh.trans.delete(o.id)}
-  for(const k of ['certifs','antic','contrat','comb','arreglos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
+  for(const k of ['certifs','antic','contrat','comb','ace','arreglos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
   return hubo}
 function progSync(){if(!AUTH||!S.sesion||SY.cargando||!SY.sh)return;clearTimeout(SY.t);SY.t=setTimeout(correrSync,200)}
 async function correrSync(){
@@ -1597,9 +1600,9 @@ function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||
    case 'tipos_centro':det=d.nombre;break;
    case 'contratistas':det=d.nombre+' · '+money(d.monto);break;
    case 'certificaciones':det='Avance '+d.avance_pct+'% · '+money(d.monto);break;
-   case 'combustible_cargas':det=lts(d.litros)+(d.tipo_combustible?' '+(COMB_T[d.tipo_combustible]||''):'');break;
+   case 'combustible_cargas':det=lts(d.litros)+(d.tipo_combustible?' '+(ALL_T[d.tipo_combustible]||''):'');break;
    case 'anticipos_obra':det=money(d.monto);break;
-   case 'precios_combustible':det=(COMB_T[d.id]||d.id)+' '+money(d.precio);break;
+   case 'precios_combustible':det=(ALL_T[d.id]||d.id)+' '+money(d.precio);break;
    case 'maquinaria_arreglos':det=d.descripcion;break;
    case 'perfiles':det=(d.nombre||'')+' '+(d.apellido||'')+' · '+d.iniciales;acc='Modificación de usuario';break;
    default:return null}
@@ -1631,7 +1634,7 @@ async function cargarDatos(){
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
-    S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);S.comb=cb.map(fromComb);S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios={nafta:0,diesel_500:0,diesel_premium:0};pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
+    S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);{const cbA=cb.map(fromComb);S.comb=cbA.filter(x=>!ACE_T[x.tipo]);S.ace=cbA.filter(x=>ACE_T[x.tipo])}S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]));pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
     S.remitMap={};rmp.forEach(x=>{S.remitMap[x.email]={cuit:x.cuit||'',razon:x.razon||''}});S.recop=rcp.map(fromRecop);rcRellenar();
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
@@ -1654,7 +1657,7 @@ function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
   ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
   SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
 function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
-  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.contratistas=[];S.certifs=[];S.comb=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios={nafta:0,diesel_500:0,diesel_premium:0}}}
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.contratistas=[];S.certifs=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -2195,8 +2198,12 @@ const manejaIng=()=>['dueno','ingeniero'].includes(rolDe());
 const veIng=()=>veAdm()||rolDe()==='ingeniero';
 const soloMaq=()=>rolDe()==='operario';
 const cargaMaq=()=>['dueno','ingeniero','operario'].includes(rolDe());
-const ING_VIEWS=['obras','contrat','certif','gasto'],OPE_VIEWS=['maq','arreglos','comb'];
+const ING_VIEWS=['obras','contrat','certif','gasto'],OPE_VIEWS=['maq','arreglos','comb','aceite'];
 const COMB_T={nafta:'Nafta',diesel_500:'Diésel 500',diesel_premium:'Diésel Premium'};
+const ACE_T={aceite_hidraulico:'Aceite hidráulico',aceite_motor:'Aceite de motor',aceite_transmision:'Aceite de transmisión',aceite_super_30:'Aceite Súper 30'};
+const ALL_T={...COMB_T,...ACE_T};
+/* Combustible y aceite comparten tabla y pantalla; cada familia tiene sus tipos, su precio por litro y su lista */
+const FAM={comb:{k:'comb',arr:'comb',T:COMB_T,nom:'combustible',Nom:'Combustible',art:'el',ic:'surtidor',pref:'cb'},ace:{k:'ace',arr:'ace',T:ACE_T,nom:'aceite',Nom:'Aceite',art:'el',ic:'gota',pref:'ac'}};
 const veContrato=()=>!['ingeniero','operario'].includes(rolDe());
 const vistaPermitida=v=>v==='ingres'?veAdm():OPE_VIEWS.includes(v)?(veIng()||soloMaq()):ING_VIEWS.includes(v)?veIng():(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
 const vistaInicial=r=>{r=r||rolDe();return ['dueno','contador','lector'].includes(r)?'inicio':r==='operario'?'comb':'obras'};
@@ -2217,7 +2224,7 @@ const certDe=cid=>S.certifs.filter(k=>k.contratistaId===cid);
 const certMonto=cid=>sum(certDe(cid),k=>k.monto);
 const certPct=cid=>certDe(cid).reduce((m,k)=>Math.max(m,k.pct),0);
 const ctDe=oid=>S.contratistas.filter(c=>c.obraId===oid);
-const combDe=mid=>S.comb.filter(x=>x.maqId===mid);
+const combDe=(mid,fam='comb')=>S[FAM[fam].arr].filter(x=>x.maqId===mid);
 const arrDe=mid=>S.arreglos.filter(x=>x.maqId===mid);
 const maqNom=id=>{const m=centro(id);return m?m.codigo+' · '+m.nombre:'—'};
 const maqDesc=m=>[m.marca,m.modelo,m.anio?m.anio:'',m.patente].filter(Boolean).join(' · ');
@@ -2240,7 +2247,7 @@ function maqBotones(fk,sel){
   return `<div class="maqbtns" role="group" aria-label="Máquina">${ms.map(m=>`<button type="button" class="maqbtn" data-igmaq="${fk}" data-id="${m.id}" aria-pressed="${sel===m.id}">${icon('excavadora')}<b>${esc(m.nombre)}</b><span>${esc(m.codigo)}</span></button>`).join('')}</div>`}
 function obraBotones(fk,sel){const os=obras().filter(o=>o.activo!==false);if(!os.length)return '<div class="empty">Todavía no hay obras cargadas.</div>';
   return `<div class="maqbtns" role="group" aria-label="Obra">${os.map(o=>`<button type="button" class="maqbtn" data-igobra="${fk}" data-id="${o.id}" aria-pressed="${sel===o.id}">${icon('cono')}<b>${esc(o.nombre)}</b><span>${esc(o.codigo)}</span></button>`).join('')}</div>`}
-function tipoBotones(fk,sel){return `<div class="maqbtns" role="group" aria-label="Tipo de combustible">${Object.entries(COMB_T).map(([k,l])=>`<button type="button" class="maqbtn" data-igtipo="${fk}" data-id="${k}" aria-pressed="${sel===k}">${icon('surtidor')}<b>${l}</b></button>`).join('')}</div>`}
+function tipoBotones(fk,sel,fam='comb'){const F=FAM[fam];return `<div class="maqbtns" role="group" aria-label="Tipo de ${F.nom}">${Object.entries(F.T).map(([k,l])=>`<button type="button" class="maqbtn" data-igtipo="${fk}" data-id="${k}" aria-pressed="${sel===k}">${icon(F.ic)}<b>${l}</b></button>`).join('')}</div>`}
 function igDelBox(k){
   const D=S.igDel;if(!D||D.k!==k)return '';
   let msg,ok=true;
@@ -2448,46 +2455,49 @@ function arSave(){
 
 /* --- Combustible --- */
 const cbAgrupa=(arr,kf)=>{const m=new Map();arr.forEach(x=>{const k=kf(x);const o=m.get(k)||{l:0,c:0};o.l+=x.litros;o.c+=cbCosto(x);m.set(k,o)});return m};
-function vComb(){
+const vAceite=()=>vComb('ace');
+function vComb(fam='comb'){
+  const FM=FAM[fam],TT=FM.T,LS=S[FM.arr];
   const big=soloMaq(),edita=puedeCargar();
   const B=cargaMaq()?(S.bf||(S.bf=newBf())):null;
-  const PF=S.pf||(S.pf=Object.fromEntries(Object.keys(COMB_T).map(k=>[k,S.precios[k]?toIn(S.precios[k]):''])));
-  const precios=`<section class="panel"><h2>Precio por litro <small>${edita?'lo cargan el dueño y los contadores':'lo carga el administrador'}</small></h2><div class="fields">${Object.entries(COMB_T).map(([k,l])=>edita?fld('pf-'+k,l,mny('pf-'+k,'pf.'+k,PF[k])):`<div class="f"><label>${l}</label><b class="mono">${S.precios[k]?money(S.precios[k]):'Sin precio'}</b></div>`).join('')}</div>${edita?'<div class="actions" style="padding:0 16px 16px"><button type="button" class="btn dark" data-act="pr-save">Guardar precios</button></div>':''}<div class="legend">Cada carga queda con el precio vigente al momento de cargarla: si el precio cambia después, lo ya cargado no se modifica.</div></section>`;
-  const form=B?`<section class="panel"><h2>Cargar combustible</h2><div class="opform ${big?'xl':''}">${errBox(B)}${B.ok?`<div class="ok-box" role="status"><b>✔ ${esc(B.ok)}</b></div>`:''}
+  const PF=S.pf||(S.pf=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,S.precios[k]?toIn(S.precios[k]):''])));
+  const precios=`<section class="panel"><h2>Precio por litro <small>${edita?'lo cargan el dueño y los contadores':'lo carga el administrador'}</small></h2><div class="fields">${Object.entries(TT).map(([k,l])=>edita?fld('pf-'+k,l,mny('pf-'+k,'pf.'+k,PF[k])):`<div class="f"><label>${l}</label><b class="mono">${S.precios[k]?money(S.precios[k]):'Sin precio'}</b></div>`).join('')}</div>${edita?'<div class="actions" style="padding:0 16px 16px"><button type="button" class="btn dark" data-act="pr-save" data-fam="'+fam+'">Guardar precios</button></div>':''}<div class="legend">Cada carga queda con el precio vigente al momento de cargarla: si el precio cambia después, lo ya cargado no se modifica.</div></section>`;
+  const form=B?`<section class="panel"><h2>Cargar ${FM.nom}</h2><div class="opform ${big?'xl':''}">${errBox(B)}${B.ok?`<div class="ok-box" role="status"><b>✔ ${esc(B.ok)}</b></div>`:''}
     <div class="f"><label>¿A qué máquina?</label>${maqBotones('bf',B.maqId)}</div>
     <div class="f"><label>¿Para qué obra?</label>${obraBotones('bf',B.obraId)}</div>
-    <div class="f"><label>¿Qué combustible?</label>${tipoBotones('bf',B.tipo)}</div>
+    <div class="f"><label>¿Qué ${FM.nom}?</label>${tipoBotones('bf',B.tipo,fam)}</div>
     <div class="f"><label for="bf-fh">Fecha y hora</label><input id="bf-fh" type="datetime-local" data-ig="bf.fh" value="${esc(B.fh)}"></div>
     <div class="f"><label for="bf-litros">¿Cuántos litros?</label><input id="bf-litros" data-ig="bf.litros" value="${esc(B.litros)}" inputmode="decimal" placeholder="Ej: 80"></div>
-    <div class="actions"><button type="button" class="btn ${big?'big':''} primary" data-act="cb-save">Guardar carga</button></div></div></section>`:'';
-  const dd=x=>fhDia(x.fh),FL=S.comb.filter(x=>(!S.maqF||x.maqId===S.maqF)&&(!S.cbD0||dd(x)>=S.cbD0)&&(!S.cbD1||dd(x)<=S.cbD1));
+    <div class="actions"><button type="button" class="btn ${big?'big':''} primary" data-act="cb-save" data-fam="${fam}">Guardar carga</button></div></div></section>`:'';
+  const dd=x=>fhDia(x.fh),FL=LS.filter(x=>(!S.maqF||x.maqId===S.maqF)&&(!S.cbD0||dd(x)>=S.cbD0)&&(!S.cbD1||dd(x)<=S.cbD1));
   const filtrado=!!(S.maqF||S.cbD0||S.cbD1);
   const todos=FL,tl=sum(todos,x=>x.litros),tc=sum(todos,cbCosto);
   const pm=cbAgrupa(todos,x=>x.maqId),pt=cbAgrupa(todos,x=>x.tipo||'');
   const resumen=`<section class="panel"><h2>Resumen <small>${filtrado?'según el filtro':'todas las cargas'}</small></h2><div style="padding:0 16px 8px"><div class="kpis"><div class="kpi"><small>Litros cargados</small><b>${lts(tl)}</b></div><div class="kpi"><small>Gasto total</small><b>${money(tc)}</b></div><div class="kpi"><small>Cargas</small><b>${todos.length}</b></div></div></div>
    <div class="grid2" style="padding:0 16px 16px"><div class="tw"><table><thead><tr><th>Por máquina</th><th class="num">Litros</th><th class="num">Total</th></tr></thead><tbody>${[...pm].map(([id,o])=>`<tr><td>${esc(maqNom(id))}</td><td class="num">${lts(o.l)}</td><td class="num">${money(o.c)}</td></tr>`).join('')||'<tr><td colspan="3" class="sub">Sin cargas</td></tr>'}</tbody></table></div>
-   <div class="tw"><table><thead><tr><th>Por tipo de combustible</th><th class="num">Litros</th><th class="num">Total</th></tr></thead><tbody>${[...pt].map(([k,o])=>`<tr><td>${esc(COMB_T[k]||'Sin tipo')}</td><td class="num">${lts(o.l)}</td><td class="num">${money(o.c)}</td></tr>`).join('')||'<tr><td colspan="3" class="sub">Sin cargas</td></tr>'}</tbody></table></div></div></section>`;
+   <div class="tw"><table><thead><tr><th>Por tipo de ${FM.nom}</th><th class="num">Litros</th><th class="num">Total</th></tr></thead><tbody>${[...pt].map(([k,o])=>`<tr><td>${esc(TT[k]||'Sin tipo')}</td><td class="num">${lts(o.l)}</td><td class="num">${money(o.c)}</td></tr>`).join('')||'<tr><td colspan="3" class="sub">Sin cargas</td></tr>'}</tbody></table></div></div></section>`;
   const sel=`<select id="igMaqF" aria-label="Filtrar por máquina" class="rolsel"><option value="">Todas las máquinas</option>${maquinas().map(m=>opt(m.id,m.codigo+' · '+m.nombre,S.maqF)).join('')}</select>`;
   const filtros=`<section class="panel"><div class="toolbar" style="padding-top:14px"><h2 style="margin:0;padding:0">Filtrar cargas</h2>${sel}<span class="grp"><label class="lbl" for="igCbD0">Desde</label><input type="date" id="igCbD0" value="${esc(S.cbD0)}" aria-label="Desde"></span><span class="grp"><label class="lbl" for="igCbD1">Hasta</label><input type="date" id="igCbD1" value="${esc(S.cbD1)}" aria-label="Hasta"></span>${filtrado?'<button type="button" class="btn small" data-act="cb-limpiar">Quitar filtros</button>':''}<span class="sub">${FL.length} carga${FL.length===1?'':'s'} · <b>${lts(tl)}</b> · <b>${money(tc)}</b></span></div></section>`;
   const ids=[...new Set(FL.map(x=>x.obraId||''))].sort((a,b)=>(a===''?1:0)-(b===''?1:0)||obraNom(a).localeCompare(obraNom(b)));
   const secs=ids.map(id=>{const g=FL.filter(x=>(x.obraId||'')===id).sort((a,b)=>b.fh.localeCompare(a.fh));
-    const rows=g.slice(0,400).map(x=>`<tr><td>${esc(maqNom(x.maqId))}</td><td class="mono">${fhTxt(x.fh)}</td><td class="num"><b>${lts(x.litros)}</b></td><td>${esc(COMB_T[x.tipo]||'—')}</td><td class="num">${x.precio?money(cbCosto(x)):'—'}</td>${big?'':`<td class="mono">${esc(x.ini||'—')}</td>`}<td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="comb" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`).join('');
-    return `<section class="panel"><h2>${esc(id?obraNom(id):'Sin obra')} <small>${g.length} carga${g.length===1?'':'s'} · ${lts(sum(g,x=>x.litros))} · ${money(sum(g,cbCosto))}</small></h2><div class="tw"><table><thead><tr><th>Máquina</th><th>Fecha y hora</th><th class="num">Litros</th><th>Combustible</th><th class="num">Total</th>${big?'':'<th>Cargó</th>'}<th></th></tr></thead><tbody>${rows}</tbody></table></div></section>`}).join('');
-  return head('Combustible','Cada carga suma al combustible de la máquina y de la obra.',big?'':xlsBtn('comb'))+(big?'':filtros+resumen)+precios+form+igDelBox('comb')+(big?filtros:'')+
-  (secs||`<section class="panel"><div class="empty">${S.comb.length?'No hay cargas con ese filtro.':'Todavía no hay cargas de combustible.'}</div></section>`)}
-function cbSave(){
+    const rows=g.slice(0,400).map(x=>`<tr><td>${esc(maqNom(x.maqId))}</td><td class="mono">${fhTxt(x.fh)}</td><td class="num"><b>${lts(x.litros)}</b></td><td>${esc(TT[x.tipo]||'—')}</td><td class="num">${x.precio?money(cbCosto(x)):'—'}</td>${big?'':`<td class="mono">${esc(x.ini||'—')}</td>`}<td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="${FM.k}" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`).join('');
+    return `<section class="panel"><h2>${esc(id?obraNom(id):'Sin obra')} <small>${g.length} carga${g.length===1?'':'s'} · ${lts(sum(g,x=>x.litros))} · ${money(sum(g,cbCosto))}</small></h2><div class="tw"><table><thead><tr><th>Máquina</th><th>Fecha y hora</th><th class="num">Litros</th><th>${FM.Nom}</th><th class="num">Total</th>${big?'':'<th>Cargó</th>'}<th></th></tr></thead><tbody>${rows}</tbody></table></div></section>`}).join('');
+  return head(FM.Nom,fam==='ace'?'Cada carga de aceite suma al gasto de la máquina y de la obra.':'Cada carga suma al combustible de la máquina y de la obra.',big?'':xlsBtn(FM.k))+(big?'':filtros+resumen)+precios+form+igDelBox(FM.k)+(big?filtros:'')+
+  (secs||`<section class="panel"><div class="empty">${LS.length?'No hay cargas con ese filtro.':'Todavía no hay cargas de '+FM.nom+'.'}</div></section>`)}
+function cbSave(fam='comb'){
+  const FM=FAM[fam],TT=FM.T,LS=S[FM.arr];
   const B=S.bf;B.err='';B.ok='';const fail=m=>{B.err=m;render()};
   const l=num(B.litros);
   if(!B.maqId)return fail('Tocá la máquina a la que se le cargó.');
   if(obras().some(o=>o.activo!==false)&&!B.obraId)return fail('Tocá la obra para la que se cargó.');
-  if(!B.tipo)return fail('Tocá el tipo de combustible.');
+  if(!B.tipo||!TT[B.tipo])return fail('Tocá el tipo de '+FM.nom+'.');
   if(!B.fh)return fail('Cargá la fecha y la hora.');
   if(!(l>0))return fail('Escribí cuántos litros se cargaron.');
   const m=centro(B.maqId),precio=S.precios[B.tipo]||0;
-  S.comb.push({id:nid('cb'),maqId:B.maqId,obraId:B.obraId||'',tipo:B.tipo,fh:fhISO(B.fh),litros:l,precio,ini:S.user});
-  aud('Alta','Combustible · '+m.codigo+' · '+lts(l)+' '+COMB_T[B.tipo]);
-  const mine=combDe(B.maqId),tl=sum(mine,x=>x.litros),tc=sum(mine,cbCosto);
-  S.bf=newBf();S.bf.ok='Guardado: '+lts(l)+' de '+COMB_T[B.tipo]+(precio?' · '+money(l*precio):'')+' en '+m.nombre+'. Total de la máquina: '+lts(tl)+(tc?' · '+money(tc):'');render();toast('Carga guardada')}
+  LS.push({id:nid('cb'),maqId:B.maqId,obraId:B.obraId||'',tipo:B.tipo,fh:fhISO(B.fh),litros:l,precio,ini:S.user});
+  aud('Alta',FM.Nom+' · '+m.codigo+' · '+lts(l)+' '+TT[B.tipo]);
+  const mine=combDe(B.maqId,fam),tl=sum(mine,x=>x.litros),tc=sum(mine,cbCosto);
+  S.bf=newBf();S.bf.ok='Guardado: '+lts(l)+' de '+TT[B.tipo]+(precio?' · '+money(l*precio):'')+' en '+m.nombre+'. Total de la máquina: '+lts(tl)+(tc?' · '+money(tc):'');render();toast('Carga guardada')}
 
 /* --- Resumen de Ingeniería --- */
 function irRango(){const [y,m]=TODAY.split('-').map(Number),pad=n=>String(n).padStart(2,'0'),last=(y,m)=>new Date(y,m,0).getDate();
@@ -2536,11 +2546,11 @@ function igAct(act,a){
    case 'an-new':if(!manejaIng())return true;S.anf={contratistaId:'',fecha:TODAY,monto:'',obs:'',err:''};render();window.scrollTo(0,0);return true;
    case 'an-cancel':S.anf=null;render();return true;
    case 'an-save':if(!manejaIng())return true;anSave();return true;
-   case 'pr-save':{if(!puedeCargar())return true;const PF=S.pf;if(!PF)return true;Object.keys(COMB_T).forEach(k=>{S.precios[k]=num(PF[k])});aud('Modificación','Precios de combustible · '+Object.entries(COMB_T).map(([k,l])=>l+' '+money(S.precios[k])).join(' · '));S.pf=null;render();toast('Precios guardados');return true}
+   case 'pr-save':{if(!puedeCargar())return true;const PF=S.pf;if(!PF)return true;const FM=FAM[a.dataset.fam||'comb'];Object.keys(FM.T).forEach(k=>{S.precios[k]=num(PF[k])});aud('Modificación','Precios de '+FM.nom+' · '+Object.entries(FM.T).map(([k,l])=>l+' '+money(S.precios[k])).join(' · '));S.pf=null;render();toast('Precios guardados');return true}
    case 'ar-new':if(!cargaMaq())return true;S.af=newAr();render();return true;
    case 'ar-cancel':S.af=null;render();return true;
    case 'ar-save':if(!cargaMaq())return true;arSave();return true;
-   case 'cb-save':if(!cargaMaq())return true;cbSave();return true;
+   case 'cb-save':if(!cargaMaq())return true;cbSave(a.dataset.fam||'comb');return true;
    case 'ig-del':if(!manejaIng())return true;S.igDel={k:a.dataset.k,id:a.dataset.id,i:a.dataset.i};render();window.scrollTo(0,0);return true;
    case 'ig-del-no':S.igDel=null;render();return true;
    case 'cb-limpiar':S.maqF='';S.cbD0='';S.cbD1='';render();return true;
@@ -2550,7 +2560,7 @@ function igAct(act,a){
      const b=S.backups.find(x=>x.id===id),url=URL.createObjectURL(new Blob([JSON.stringify(d.datos)],{type:'application/json'})),l=document.createElement('a');l.href=url;l.download='CODES - Backup - '+(b?new Date(b.creado).toLocaleDateString('sv-SE',{timeZone:TZ}):'copia')+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Backup descargado')})();return true}
    case 'ig-del-ok':{if(!manejaIng()||!S.igDel)return true;const {k,id,i}=S.igDel;S.igDel=null;
      if(k==='adj'){const c=by(S.certifs,id),x=c&&(c.adj||[])[+i];if(x){c.adj=c.adj.filter((_,j)=>j!==+i);if(REAL&&x.p)sb.storage.from('adjuntos-obra').remove([x.p]).catch(()=>{});aud('Eliminación','Adjunto '+x.n+' de certificación');toast('Adjunto quitado')}render();return true}
-     const T={contrat:['contratistas',x=>'Contratista '+x.nombre],certif:['certifs',x=>'Certificación '+money(x.monto)],antic:['anticipos',x=>'Anticipo de obra '+money(x.monto)],comb:['comb',x=>'Combustible '+lts(x.litros)],arreglo:['arreglos',x=>'Arreglo '+x.desc]}[k];
+     const T={contrat:['contratistas',x=>'Contratista '+x.nombre],certif:['certifs',x=>'Certificación '+money(x.monto)],antic:['anticipos',x=>'Anticipo de obra '+money(x.monto)],comb:['comb',x=>'Combustible '+lts(x.litros)],ace:['ace',x=>'Aceite '+lts(x.litros)],arreglo:['arreglos',x=>'Arreglo '+x.desc]}[k];
      if(!T)return true;const x=by(S[T[0]],id);if(!x)return render(),true;
      if(k==='contrat'&&(certDe(id).length||S.anticipos.some(y=>y.contratistaId===id)))return render(),true;
      if(k==='antic'&&antTot(x.contratistaId)-x.monto<antDesc(x.contratistaId)-0.005)return render(),true;
@@ -2564,6 +2574,7 @@ Object.assign(EXPORTS,{
     {name:'Anticipos',rows:[['Fecha','Contratista','Obra','Monto','Observaciones','Cargó']].concat([...S.anticipos].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(a=>{const c=by(S.contratistas,a.contratistaId),o=c&&centro(c.obraId);return [fd(a.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',a.monto,a.obs||'',a.ini||'']}))}]}},
   maq(){return {name:'Maquinaria',sheets:[{name:'Máquinas',rows:[['Código','Máquina','Marca','Modelo','Año','Patente / serie','Otros datos']].concat(maquinas().map(m=>[m.codigo,m.nombre,m.marca||'',m.modelo||'',m.anio||'',m.patente||'',m.notas||'']))}]}},
   arreglos(){return {name:'Arreglos de maquinaria',sheets:[{name:'Arreglos',rows:[['Fecha','Hora','Máquina','Qué se arregló','Costo','Cargó']].concat([...S.arreglos].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[fd(fhDia(x.fh)),fhHora(x.fh),maqNom(x.maqId),x.desc,x.costo||'',x.ini||'']))}]}},
+  ace(){return {name:'Aceite',sheets:[{name:'Aceite',rows:[['Máquina','Fecha','Hora','Litros','Aceite','Obra','Precio por litro','Total','Cargó']].concat([...S.ace].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,ACE_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),x.ini||'']))}]}},
   comb(){return {name:'Combustible',sheets:[{name:'Combustible',rows:[['Máquina','Fecha','Hora','Litros','Combustible','Obra','Precio por litro','Total','Cargó']].concat([...S.comb].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,COMB_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),x.ini||'']))}]}},
   gasto(){const os=obras().filter(o=>!S.obraF||o.id===S.obraF);return {name:'Resumen de gasto',sheets:[{name:'Gasto por contratista',rows:[['Obra','Contratista','Presupuesto','Certificado','Cobrado','Avance %','Falta certificar','Falta cobrar']].concat(os.flatMap(o=>ctDe(o.id).map(x=>{const cm=certMonto(x.id),pg=pagadoCt(x);return [o.codigo+' · '+o.nombre,x.nombre,x.monto,cm,pg,x.monto>0?Math.round(cm/x.monto*1000)/10:0,x.monto-cm,x.monto-pg]})))}]}},
   ingres(){const R=irDatos();return {name:'Resumen operativo',sheets:[
@@ -2633,7 +2644,7 @@ function render(){
   if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,recop:vRecop,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(S.view==='recop')setTimeout(rcThumbs,50);if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -2797,7 +2808,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='7-oct 20:30';
+const BUILD='13-oct 11:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
