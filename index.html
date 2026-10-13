@@ -181,6 +181,7 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
 .chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 16px 12px;align-items:center}
 .toolbar .grp{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar input[type=date]{min-width:152px;width:auto;box-sizing:border-box}
 .toolbar .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
 .search,.sel{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:6px 10px;min-width:0;max-width:100%}
 .search{width:240px}
@@ -2826,7 +2827,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='13-oct 12:00';
+const BUILD='13-oct 14:10';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
