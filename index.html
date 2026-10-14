@@ -1502,7 +1502,7 @@ const iniDe=id=>{const u=S.usuarios.find(x=>x.id===id);return u?u.iniciales:'—
 const hhmm=d=>d?new Date(d).toLocaleTimeString('es-AR',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):'';
 /* base → pantalla */
 const fromCuenta=r=>({id:r.id,nombre:r.nombre,tipo:r.tipo,moneda:r.moneda,gravaIdc:!!r.grava_idc});
-const fromTercero=r=>({id:r.id,razon:r.razon_social,cuit:r.cuit||'',tipo:r.tipo,sistema:r.cuit===ARCA_CUIT});
+const fromTercero=r=>({id:r.id,razon:r.razon_social,cuit:r.cuit||'',tipo:r.tipo,sistema:r.cuit===ARCA_CUIT,estacion:!!r.es_estacion});
 const fromCentro=r=>({id:r.id,codigo:r.codigo,nombre:r.nombre,tipo:r.tipo_id,clienteId:r.cliente_id||'',contrato:r.valor_contrato==null?0:+r.valor_contrato,activo:r.activo,fin:!!r.finalizado,finAt:r.finalizado_at||'',finPor:r.finalizado_por||'',cierre:r.cierre||null,marca:r.marca||'',modelo:r.modelo||'',anio:r.anio||0,patente:r.patente||'',notas:r.notas||''});
 const fromContrat=r=>({id:r.id,nombre:r.nombre,cuit:r.cuit||'',tel:r.telefono||'',obraId:r.obra_id,terceroId:r.tercero_id||'',trabajo:r.trabajo||'',dias:r.tiempo_estimado_dias||0,monto:+r.monto,estado:r.estado,obs:r.observaciones||'',ini:r.iniciales||''});
 const toContrat=c=>({id:c.id,nombre:c.nombre,cuit:c.cuit||null,telefono:c.tel||null,obra_id:c.obraId,tercero_id:c.terceroId||null,trabajo:c.trabajo||null,tiempo_estimado_dias:c.dias>0?c.dias:null,monto:num(c.monto),estado:c.estado,observaciones:c.obs||null});
@@ -1510,8 +1510,8 @@ const fromCertif=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,pct:+
 const fromAntic=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,monto:+r.monto,obs:r.observaciones||'',ini:r.iniciales||''});
 const toAntic=a=>({id:a.id,contratista_id:a.contratistaId,fecha:a.fecha,monto:num(a.monto),observaciones:a.obs||null});
 const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),descuento_anticipo:num(k.desc),observaciones:k.obs||null,adjuntos:k.adj||[]});
-const fromComb=r=>({id:r.id,maqId:r.maquina_id,obraId:r.obra_id||'',tipo:r.tipo_combustible||'',fh:r.fecha_hora,litros:+r.litros,precio:+r.precio_litro||0,ini:r.iniciales||''});
-const toComb=x=>({id:x.id,maquina_id:x.maqId,obra_id:x.obraId||null,tipo_combustible:x.tipo||null,fecha_hora:x.fh,litros:num(x.litros)});
+const fromComb=r=>({id:r.id,maqId:r.maquina_id,obraId:r.obra_id||'',tipo:r.tipo_combustible||'',fh:r.fecha_hora,litros:+r.litros,precio:+r.precio_litro||0,ini:r.iniciales||'',by:r.created_by||'',reg:r.created_at||'',estId:r.estacion_id||''});
+const toComb=x=>({id:x.id,maquina_id:x.maqId,obra_id:x.obraId||null,tipo_combustible:x.tipo||null,fecha_hora:x.fh,litros:num(x.litros),estacion_id:x.estId||null});
 const fromArreglo=r=>({id:r.id,maqId:r.maquina_id,fh:r.fecha_hora,desc:r.descripcion,costo:r.costo==null?0:+r.costo,ini:r.iniciales||''});
 const toArreglo=x=>({id:x.id,maquina_id:x.maqId,fecha_hora:x.fh,descripcion:x.desc,costo:num(x.costo)>0?num(x.costo):null});
 const fromCheque=r=>({id:r.id,tipo:r.tipo,origen:r.origen,numero:r.numero,banco:r.banco||'',librador:r.librador||'',fechaPago:r.fecha_pago,importe:+r.importe,estado:r.estado});
@@ -1523,7 +1523,7 @@ const fromTx=r=>({id:r.id,numero:+r.numero,tipo:r.tipo,fecha:r.fecha,concepto:r.
   facts:(r.transaccion_facturas||[]).map(x=>({facturaId:x.factura_id,importe:+x.importe_imputado}))});
 /* pantalla → base */
 const toTipo=x=>x;
-const toTercero=t=>({id:t.id,razon_social:t.razon,cuit:t.cuit||null,tipo:t.tipo});
+const toTercero=t=>({id:t.id,razon_social:t.razon,cuit:t.cuit||null,tipo:t.tipo,es_estacion:!!t.estacion&&t.tipo!=='cliente'});
 const toCentro=c=>({id:c.id,codigo:c.codigo,nombre:c.nombre,tipo_id:c.tipo,cliente_id:c.clienteId||null,valor_contrato:num(c.contrato)>0?num(c.contrato):null,activo:c.activo!==false,marca:c.marca||null,modelo:c.modelo||null,anio:c.anio>0?c.anio:null,patente:c.patente||null,notas:c.notas||null});
 const toCheque=c=>({id:c.id,tipo:c.tipo,origen:c.origen,numero:c.numero,banco:c.banco||null,librador:c.librador||null,fecha_pago:c.fechaPago,importe:num(c.importe),estado:c.estado});
 const toFactura=f=>({id:f.id,tercero_id:f.terceroId,lado:f.lado,tipo:f.tipo,punto_venta:f.pv,numero:f.nro,fecha:f.fecha,neto_gravado:num(f.neto),iva:num(f.iva),otros_tributos:num(f.otros),no_gravado:0,total:num(f.total),periodo_iva:f.per||null});
@@ -1649,6 +1649,7 @@ async function cargarDatos(){
       sb.from('facturas_recopiladas').select('id,recibida_at,remitente,asunto,mail_url,adjunto,emisor_cuit,emisor_razon,receptor_cuit,tipo,punto_venta,numero,fecha,neto_gravado,iva,otros,total,cae,pdf_path,observaciones,estado,factura_id').order('recibida_at',{ascending:false}).limit(500).then(r=>r.error?[]:(r.data||[])),
       sb.from('proveedor_remitentes').select('*').then(r=>r.error?[]:(r.data||[]))]);
     await cargarPerfiles();
+    {const r=await sb.rpc('estaciones_servicio');S.estaciones=r.error?[]:(r.data||[]).map(x=>({id:x.id,razon:x.razon_social}))}
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
@@ -1842,8 +1843,8 @@ function validarTercero(razon,cuitRaw,excluirId){
   if(dup)return {err:'Ese CUIT ya está cargado: '+dup.razon+'.'};
   return {razon:r,cuit};
 }
-function nuevoTercero(v,tipo){
-  const t={id:nid('t'),razon:v.razon,cuit:v.cuit,tipo};S.terceros.push(t);
+function nuevoTercero(v,tipo,est){
+  const t={id:nid('t'),razon:v.razon,cuit:v.cuit,tipo,estacion:!!est};S.terceros.push(t);
   S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Alta',detalle:(tipo==='cliente'?'Cliente ':tipo==='proveedor'?'Proveedor ':'Cliente y proveedor ')+t.razon+(t.cuit?' · CUIT '+t.cuit:''),txId:null});
   return t;
 }
@@ -1855,10 +1856,11 @@ function vTerceros(){
     <div class="f" style="grid-column:span 2"><label for="tf-razon">Nombre o razón social <em>*</em></label><input id="tf-razon" data-tf="razon" value="${esc(F.razon)}" placeholder="Ej: Hormigonera del Norte SRL"></div>
     <div class="f"><label for="tf-cuit">CUIT</label><input id="tf-cuit" data-tf="cuit" inputmode="numeric" value="${esc(F.cuit)}" placeholder="30-12345678-9"><span class="hint">Opcional.</span></div>
     <div class="f"><label for="tf-tipo">Es</label><select id="tf-tipo" data-tf="tipo">${Object.entries(TERC_TIPOS).map(([k,l])=>opt(k,l,F.tipo)).join('')}</select></div>
+    ${F.tipo!=='cliente'?`<div class="f"><label for="tf-est">¿Es estación de servicio?</label><select id="tf-est" data-tf="estacion">${opt('no','No',F.estacion)}${opt('si','Sí (aparece al cargar combustible y aceite)',F.estacion)}</select></div>`:''}
    </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="tf-cancel">Cancelar</button><button type="button" class="btn dark" data-act="tf-save">Guardar</button></div></section>`:'';
   const pill={cliente:'p-in',proveedor:'p-out',ambos:'p-int'};
   const rows=list.map(t=>{const u=terceroUso(t.id);
-    return `<tr class="${isPicked('terceros',t.id)?'picked':''}">${pkCell('terceros',t.id)}<td><b>${esc(t.razon)}</b></td><td class="mono">${esc(t.cuit||'—')}</td><td><span class="pill ${pill[t.tipo]}">${TERC_TIPOS[t.tipo]}</span></td><td class="mono">${u.tx.length}</td><td class="mono">${u.fa.length}</td><td class="mono">${u.ce.length||'—'}</td></tr>`}).join('');
+    return `<tr class="${isPicked('terceros',t.id)?'picked':''}">${pkCell('terceros',t.id)}<td><b>${esc(t.razon)}</b></td><td class="mono">${esc(t.cuit||'—')}</td><td><span class="pill ${pill[t.tipo]}">${TERC_TIPOS[t.tipo]}</span>${t.estacion?' <span class="pill p-int">Estación</span>':''}</td><td class="mono">${u.tx.length}</td><td class="mono">${u.fa.length}</td><td class="mono">${u.ce.length||'—'}</td></tr>`}).join('');
   return head('Clientes y proveedores','Las personas y empresas a las que cobrás o pagás. Se pueden crear acá o directamente al cargar una transacción u obra.',`${F?'':'<button class="btn small primary" data-act="tf-new">+ Nuevo cliente o proveedor</button>'}${xlsBtn('terceros')}`)+form+
   `<section class="panel"><div class="toolbar" style="padding-top:14px"><div class="chips">${chips}</div><span class="sub">${list.length} registro${list.length===1?'':'s'}${esDueno()?' · marcá uno o varios para modificarlos o eliminarlos':''}</span></div>
   ${list.length?`<div class="tw"><table><thead><tr>${pkHead('terceros',list.map(t=>t.id))}<th>Nombre</th><th>CUIT</th><th>Es</th><th>Transacciones</th><th>Facturas</th><th>Obras</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">Todavía no hay nadie cargado con ese filtro.</div>'}</section>`;
@@ -2019,9 +2021,9 @@ const EDIT={
   borrar:c=>{S.centros=S.centros.filter(x=>x.id!==c.id)}},
  terceros:{un:'cliente o proveedor',pl:'clientes y proveedores',get:id=>tercero(id),
   rot:t=>t.razon,idc:t=>TERC_TIPOS[t.tipo],
-  cols:[{k:'razon',l:'Nombre o razón social',t:'text',w:240},{k:'cuit',l:'CUIT',t:'text',n:1,w:130},{k:'tipo',l:'Es',t:'sel',o:()=>Object.entries(TERC_TIPOS)}],
+  cols:[{k:'razon',l:'Nombre o razón social',t:'text',w:240},{k:'cuit',l:'CUIT',t:'text',n:1,w:130},{k:'tipo',l:'Es',t:'sel',o:()=>Object.entries(TERC_TIPOS)},{k:'estacion',l:'Estación de servicio',t:'sel',o:()=>[['no','No'],['si','Sí']]}],
   ro:()=>false,
-  init:t=>({razon:t.razon,cuit:t.cuit||'',tipo:t.tipo}),
+  init:t=>({razon:t.razon,cuit:t.cuit||'',tipo:t.tipo,estacion:t.estacion?'si':'no'}),
   valida:(t,v)=>{const e=[];if(!v.razon.trim())e.push('Falta el nombre.');
     if(v.cuit.trim()&&!normCuit(v.cuit))e.push('El CUIT tiene que tener 11 números.');
     const u=terceroUso(t.id);if(v.tipo==='cliente'&&u.comoProv)e.push('Ya se usó como proveedor: dejalo como proveedor o como cliente y proveedor.');
@@ -2029,7 +2031,7 @@ const EDIT={
   lote:(recs,efs)=>{const e=[];const ids=new Set(recs.map(r=>r.id)),usados=new Map();
     S.terceros.filter(x=>!x.sistema&&!ids.has(x.id)&&x.cuit).forEach(x=>usados.set(x.cuit,x.razon));
     recs.forEach(r=>{const c=normCuit(efs[r.id].cuit);if(!c)return;if(usados.has(c))e.push('El CUIT '+c+' ya está cargado'+(usados.get(c)===1?' en otra fila.':': '+usados.get(c)+'.'));else usados.set(c,1)});return e},
-  aplica:(t,v)=>{t.razon=v.razon.trim();t.cuit=v.cuit.trim()?normCuit(v.cuit):'';t.tipo=v.tipo},
+  aplica:(t,v)=>{t.razon=v.razon.trim();t.cuit=v.cuit.trim()?normCuit(v.cuit):'';t.tipo=v.tipo;t.estacion=v.estacion==='si'&&v.tipo!=='cliente'},
   noBorrar:t=>{const u=terceroUso(t.id);if(!u.n)return '';const p=[];if(u.tx.length)p.push(u.tx.length+' transacción'+plural(u.tx.length,'','es'));if(u.fa.length)p.push(u.fa.length+' factura'+plural(u.fa.length,'','s'));if(u.ce.length)p.push(u.ce.length+' obra'+plural(u.ce.length,'','s'));return 'Se usa en '+p.join(', ')+'.'},
   borrar:t=>{S.terceros=S.terceros.filter(x=>x.id!==t.id)}}
 };
@@ -2142,10 +2144,10 @@ function accionPk(act,a,e){
    case 'ini-save':guardarInicial();return true;
    case 'tx-modificar':abrirEditar('trans',[S.sel]);return true;
    case 'eliminar':abrirEliminar('trans',[S.sel]);return true;
-   case 'tf-new':S.tForm={razon:'',cuit:'',tipo:'cliente',err:''};render();return true;
+   case 'tf-new':S.tForm={razon:'',cuit:'',tipo:'cliente',estacion:'no',err:''};render();return true;
    case 'tf-cancel':S.tForm=null;render();return true;
    case 'tf-save':{const F=S.tForm,v=validarTercero(F.razon,F.cuit);if(v.err){F.err=v.err;render();return true}
-     const t=nuevoTercero(v,F.tipo);S.tForm=null;render();toast(t.razon+' guardado');return true}
+     const t=nuevoTercero(v,F.tipo,F.estacion==='si'&&F.tipo!=='cliente');S.tForm=null;render();toast(t.razon+' guardado');return true}
    case 'nt-cancel':D.nt=null;render();return true;
    case 'nt-save':{const N=D.nt,v=validarTercero(N.razon,N.cuit);if(v.err){N.err=v.err;render();return true}
      const t=nuevoTercero(v,D.tipo==='entrada'?'cliente':'proveedor');D.terceroId=t.id;D.facts={};D.nt=null;render();toast(t.razon+' creado y elegido');return true}
@@ -2246,7 +2248,12 @@ const combDe=(mid,fam='comb')=>S[FAM[fam].arr].filter(x=>x.maqId===mid);
 const arrDe=mid=>S.arreglos.filter(x=>x.maqId===mid);
 const maqNom=id=>{const m=centro(id);return m?m.codigo+' · '+m.nombre:'—'};
 const maqDesc=m=>[m.marca,m.modelo,m.anio?m.anio:'',m.patente].filter(Boolean).join(' · ');
-const newBf=()=>({maqId:'',obraId:'',tipo:'',fh:ahoraLocal(),litros:'',err:'',ok:S.bf?S.bf.ok:''});
+const estaciones=()=>{const m=new Map();(S.estaciones||[]).forEach(e=>m.set(e.id,e));S.terceros.filter(t=>t.estacion&&t.tipo!=='cliente').forEach(t=>m.set(t.id,{id:t.id,razon:t.razon}));return [...m.values()].sort((a,b)=>a.razon.localeCompare(b.razon,'es'))};
+const estNom=id=>{if(!id)return '';const e=estaciones().find(x=>x.id===id);return e?e.razon:'(estación)'};
+const quienCargo=x=>{const u=S.usuarios.find(u=>x.by&&u.id===x.by)||S.usuarios.find(u=>u.iniciales===x.ini);return u?((u.nombre||'')+' '+(u.apellido||'')).trim():(x.ini||'—')};
+function estBotones(fk,sel){const es=estaciones();if(!es.length)return '<div class="empty">Todavía no hay estaciones de servicio. Las carga el dueño o un contador en Clientes y proveedores (proveedor marcado como estación de servicio).</div>';
+  return `<div class="maqbtns" role="group" aria-label="Estación de servicio">${es.map(e=>`<button type="button" class="maqbtn" data-igest="${fk}" data-id="${e.id}" aria-pressed="${sel===e.id}">${icon('surtidor')}<b>${esc(e.razon)}</b></button>`).join('')}</div>`}
+const newBf=()=>({maqId:'',obraId:'',tipo:'',estId:'',fh:ahoraLocal(),litros:'',err:'',ok:S.bf?S.bf.ok:''});
 const cbCosto=x=>x.litros*(x.precio||0);
 const obraNom=id=>{const o=id&&centro(id);return o?o.codigo+' · '+o.nombre:'Sin obra'};
 const antTot=cid=>sum(S.anticipos.filter(a=>a.contratistaId===cid),a=>a.monto);
@@ -2484,6 +2491,7 @@ function vComb(fam='comb'){
     <div class="f"><label>¿A qué máquina?</label>${maqBotones('bf',B.maqId)}</div>
     <div class="f"><label>¿Para qué obra?</label>${obraBotones('bf',B.obraId)}</div>
     <div class="f"><label>¿Qué ${FM.nom}?</label>${tipoBotones('bf',B.tipo,fam)}</div>
+    <div class="f"><label>Estación de servicio</label>${estBotones('bf',B.estId)}</div>
     <div class="f"><label for="bf-fh">Fecha y hora</label><input id="bf-fh" type="datetime-local" data-ig="bf.fh" value="${esc(B.fh)}"></div>
     <div class="f"><label for="bf-litros">¿Cuántos litros?</label><input id="bf-litros" data-ig="bf.litros" value="${esc(B.litros)}" inputmode="decimal" placeholder="Ej: 80"></div>
     <div class="actions"><button type="button" class="btn ${big?'big':''} primary" data-act="cb-save" data-fam="${fam}">Guardar carga</button></div></div></section>`:'';
@@ -2498,8 +2506,8 @@ function vComb(fam='comb'){
   const filtros=`<section class="panel"><div class="toolbar" style="padding-top:14px"><h2 style="margin:0;padding:0">Filtrar cargas</h2>${sel}<span class="grp"><label class="lbl" for="igCbD0">Desde</label><input type="date" id="igCbD0" value="${esc(S.cbD0)}" aria-label="Desde"></span><span class="grp"><label class="lbl" for="igCbD1">Hasta</label><input type="date" id="igCbD1" value="${esc(S.cbD1)}" aria-label="Hasta"></span>${filtrado?'<button type="button" class="btn small" data-act="cb-limpiar">Quitar filtros</button>':''}<span class="sub">${FL.length} carga${FL.length===1?'':'s'} · <b>${lts(tl)}</b> · <b>${money(tc)}</b></span></div></section>`;
   const ids=[...new Set(FL.map(x=>x.obraId||''))].sort((a,b)=>(a===''?1:0)-(b===''?1:0)||obraNom(a).localeCompare(obraNom(b)));
   const secs=ids.map(id=>{const g=FL.filter(x=>(x.obraId||'')===id).sort((a,b)=>b.fh.localeCompare(a.fh));
-    const rows=g.slice(0,400).map(x=>`<tr><td>${esc(maqNom(x.maqId))}</td><td class="mono">${fhTxt(x.fh)}</td><td class="num"><b>${lts(x.litros)}</b></td><td>${esc(TT[x.tipo]||'—')}</td><td class="num">${x.precio?money(cbCosto(x)):'—'}</td>${big?'':`<td class="mono">${esc(x.ini||'—')}</td>`}<td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="${FM.k}" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`).join('');
-    return `<section class="panel"><h2>${esc(id?obraNom(id):'Sin obra')} <small>${g.length} carga${g.length===1?'':'s'} · ${lts(sum(g,x=>x.litros))} · ${money(sum(g,cbCosto))}</small></h2><div class="tw"><table><thead><tr><th>Máquina</th><th>Fecha y hora</th><th class="num">Litros</th><th>${FM.Nom}</th><th class="num">Total</th>${big?'':'<th>Cargó</th>'}<th></th></tr></thead><tbody>${rows}</tbody></table></div></section>`}).join('');
+    const rows=g.slice(0,400).map(x=>`<tr><td>${esc(maqNom(x.maqId))}</td><td class="mono">${fhTxt(x.fh)}</td><td class="num"><b>${lts(x.litros)}</b></td><td>${esc(TT[x.tipo]||'—')}</td><td class="num">${x.precio?money(cbCosto(x)):'—'}</td><td>${esc(estNom(x.estId)||'—')}</td><td><b>${esc(quienCargo(x))}</b>${x.reg?`<div class="sub">${esc(x.ini||'')} · ${fhTxt(x.reg)}</div>`:''}</td><td>${manejaIng()?`<button class="btn small danger" data-act="ig-del" data-k="${FM.k}" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`).join('');
+    return `<section class="panel"><h2>${esc(id?obraNom(id):'Sin obra')} <small>${g.length} carga${g.length===1?'':'s'} · ${lts(sum(g,x=>x.litros))} · ${money(sum(g,cbCosto))}</small></h2><div class="tw"><table><thead><tr><th>Máquina</th><th>Fecha y hora</th><th class="num">Litros</th><th>${FM.Nom}</th><th class="num">Total</th><th>Estación</th><th>Cargó (usuario)</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></section>`}).join('');
   return head(FM.Nom,fam==='ace'?'Cada carga de aceite suma al gasto de la máquina y de la obra.':'Cada carga suma al combustible de la máquina y de la obra.',big?'':xlsBtn(FM.k))+(big?'':filtros+resumen)+precios+form+igDelBox(FM.k)+(big?filtros:'')+
   (secs||`<section class="panel"><div class="empty">${LS.length?'No hay cargas con ese filtro.':'Todavía no hay cargas de '+FM.nom+'.'}</div></section>`)}
 function cbSave(fam='comb'){
@@ -2509,10 +2517,11 @@ function cbSave(fam='comb'){
   if(!B.maqId)return fail('Tocá la máquina a la que se le cargó.');
   if(obras().some(o=>o.activo!==false&&!o.fin)&&!B.obraId)return fail('Tocá la obra para la que se cargó.');
   if(!B.tipo||!TT[B.tipo])return fail('Tocá el tipo de '+FM.nom+'.');
+  if(estaciones().length&&!B.estId)return fail('Tocá la estación de servicio donde se cargó.');
   if(!B.fh)return fail('Cargá la fecha y la hora.');
   if(!(l>0))return fail('Escribí cuántos litros se cargaron.');
   const m=centro(B.maqId),precio=S.precios[B.tipo]||0;
-  LS.push({id:nid('cb'),maqId:B.maqId,obraId:B.obraId||'',tipo:B.tipo,fh:fhISO(B.fh),litros:l,precio,ini:S.user});
+  LS.push({id:nid('cb'),maqId:B.maqId,obraId:B.obraId||'',tipo:B.tipo,fh:fhISO(B.fh),litros:l,precio,ini:S.user,estId:B.estId||'',reg:new Date().toISOString()});
   aud('Alta',FM.Nom+' · '+m.codigo+' · '+lts(l)+' '+TT[B.tipo]);
   const mine=combDe(B.maqId,fam),tl=sum(mine,x=>x.litros),tc=sum(mine,cbCosto);
   S.bf=newBf();S.bf.ok='Guardado: '+lts(l)+' de '+TT[B.tipo]+(precio?' · '+money(l*precio):'')+' en '+m.nombre+'. Total de la máquina: '+lts(tl)+(tc?' · '+money(tc):'');render();toast('Carga guardada')}
@@ -2592,8 +2601,8 @@ Object.assign(EXPORTS,{
     {name:'Anticipos',rows:[['Fecha','Contratista','Obra','Monto','Observaciones','Cargó']].concat([...S.anticipos].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(a=>{const c=by(S.contratistas,a.contratistaId),o=c&&centro(c.obraId);return [fd(a.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',a.monto,a.obs||'',a.ini||'']}))}]}},
   maq(){return {name:'Maquinaria',sheets:[{name:'Máquinas',rows:[['Código','Máquina','Marca','Modelo','Año','Patente / serie','Otros datos']].concat(maquinas().map(m=>[m.codigo,m.nombre,m.marca||'',m.modelo||'',m.anio||'',m.patente||'',m.notas||'']))}]}},
   arreglos(){return {name:'Arreglos de maquinaria',sheets:[{name:'Arreglos',rows:[['Fecha','Hora','Máquina','Qué se arregló','Costo','Cargó']].concat([...S.arreglos].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[fd(fhDia(x.fh)),fhHora(x.fh),maqNom(x.maqId),x.desc,x.costo||'',x.ini||'']))}]}},
-  ace(){return {name:'Aceite',sheets:[{name:'Aceite',rows:[['Máquina','Fecha','Hora','Litros','Aceite','Obra','Precio por litro','Total','Cargó']].concat([...S.ace].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,ACE_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),x.ini||'']))}]}},
-  comb(){return {name:'Combustible',sheets:[{name:'Combustible',rows:[['Máquina','Fecha','Hora','Litros','Combustible','Obra','Precio por litro','Total','Cargó']].concat([...S.comb].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,COMB_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),x.ini||'']))}]}},
+  ace(){return {name:'Aceite',sheets:[{name:'Aceite',rows:[['Máquina','Fecha','Hora','Litros','Aceite','Obra','Precio por litro','Total','Estación de servicio','Cargó']].concat([...S.ace].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,ACE_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),estNom(x.estId),quienCargo(x)]))}]}},
+  comb(){return {name:'Combustible',sheets:[{name:'Combustible',rows:[['Máquina','Fecha','Hora','Litros','Combustible','Obra','Precio por litro','Total','Estación de servicio','Cargó']].concat([...S.comb].sort((a,b)=>a.fh.localeCompare(b.fh)).map(x=>[maqNom(x.maqId),fd(fhDia(x.fh)),fhHora(x.fh),x.litros,COMB_T[x.tipo]||'',x.obraId?obraNom(x.obraId):'',x.precio||'',cbCosto(x),estNom(x.estId),quienCargo(x)]))}]}},
   gasto(){const os=obras().filter(o=>!S.obraF||o.id===S.obraF);return {name:'Resumen de gasto',sheets:[{name:'Gasto por contratista',rows:[['Obra','Contratista','Presupuesto','Certificado','Cobrado','Avance %','Falta certificar','Falta cobrar']].concat(os.flatMap(o=>ctDe(o.id).map(x=>{const cm=certMonto(x.id),pg=pagadoCt(x);return [o.codigo+' · '+o.nombre,x.nombre,x.monto,cm,pg,x.monto>0?Math.round(cm/x.monto*1000)/10:0,x.monto-cm,x.monto-pg]})))}]}},
   ingres(){const R=irDatos();return {name:'Resumen operativo',sheets:[
     {name:'Por obra',rows:[['Obra','Litros','Total']].concat([...R.po].map(([id,o])=>[id?obraNom(id):'Sin obra',o.l,o.c]))},
@@ -2684,7 +2693,7 @@ document.addEventListener('click',e=>{
   const ccg=e.target.closest('[data-ccg]');if(ccg){S.ccCerr=S.ccCerr||{};S.ccCerr[ccg.dataset.ccg]=!S.ccCerr[ccg.dataset.ccg];render();return}
   const sc2=e.target.closest('[data-sec]');if(sc2){const k=sc2.dataset.sec;S.navCerr[k]=!S.navCerr[k];try{localStorage.setItem('navCerr',JSON.stringify(S.navCerr))}catch(_){}renderNav();return}
   const gm=e.target.closest('[data-igmaq]');if(gm){const F=S[gm.dataset.igmaq];if(F){F.maqId=gm.dataset.id;F.ok='';render()}return}
-  const g2=e.target.closest('[data-igobra],[data-igtipo]');if(g2){const k=g2.dataset.igobra||g2.dataset.igtipo,F=S[k];if(F){if(g2.dataset.igobra)F.obraId=g2.dataset.id;else F.tipo=g2.dataset.id;F.ok='';render()}return}
+  const g2=e.target.closest('[data-igobra],[data-igtipo],[data-igest]');if(g2){const k=g2.dataset.igobra||g2.dataset.igtipo||g2.dataset.igest,F=S[k];if(F){if(g2.dataset.igobra)F.obraId=g2.dataset.id;else if(g2.dataset.igest)F.estId=g2.dataset.id;else F.tipo=g2.dataset.id;F.ok='';render()}return}
   const ip=e.target.closest('[data-irper]');if(ip){S.irPer=ip.dataset.irper;render();return}
   const b=e.target.closest('[data-view]');if(b){e.preventDefault();if(b.dataset.view!=='trans')S.sel=null;go(b.dataset.view);return}
   const ay=e.target.closest('[data-audy]');if(ay){S.audY=ay.dataset.audy;cambiaAudit();return}
@@ -2805,7 +2814,7 @@ main.addEventListener('change',e=>{
   if(el.id==='ccF'){S.ccF=el.value;render();return}
   if(el.dataset.cv&&el.dataset.cv!=='q'){S.cv[el.dataset.cv]=el.value;render();return}
   if(el.dataset.e&&S.edit){S.edit.v[el.dataset.id][el.dataset.e]=el.value;if(S.edit.k==='centros'&&el.dataset.e==='tipo')render();if(S.edit.k==='trans'&&el.dataset.e==='pmedio'){const t=by(S.trans,el.dataset.id);if(t&&pagoEditable(t)){ajustaPago(t,S.edit.v[t.id]);render()}}return}
-  if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;return}
+  if(el.dataset.tf&&S.tForm){S.tForm[el.dataset.tf]=el.value;if(el.dataset.tf==='tipo')render();return}
   if(el.dataset.cc&&S.ccForm){S.ccForm[el.dataset.cc]=el.type==='checkbox'?el.checked:el.value;S.ccForm.confirm=false;if(['tipo','clienteId','nuevoTipoObra'].includes(el.dataset.cc))render();return}
   if(el.dataset.grava&&!esDueno())return;
   if(el.dataset.grava){cuenta(el.dataset.grava).gravaIdc=el.checked;toast(cuenta(el.dataset.grava).nombre+(el.checked?' paga':' no paga')+' impuesto D/C');return}
@@ -2827,7 +2836,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='13-oct 14:10';
+const BUILD='14-oct 11:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

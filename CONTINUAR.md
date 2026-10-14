@@ -72,3 +72,8 @@
 - (7-oct 20:00) Auto-descarte: triggers rc_auto_descartar_t / rc_auto_descartar_f (sql/09): recopilada con mismo CUIT+tipo+PV+nro+total que una factura cargada pasa sola a Descartadas con nota. Mismo nro con otro importe queda pendiente con aviso.
 - (7-oct 20:30) rcAutoProv/rcPorNombre: recopilada sin CUIT toma el proveedor cuyo nombre (todas sus palabras) está en el nombre del remitente del mail (si hay uno solo); completa CUIT/razón, guarda en la base y aprende el mail.
 - (13-oct) Operario > Aceite (4 tipos, reusa combustible_cargas/precios_combustible; S.ace). Obras: botón Finalizado (dueño/ingeniero) con aviso, resultado fijo por triggers (sql: obra_finalizada), solo el dueño reabre (RPC finalizar_obra/reabrir_obra).
+
+## 14-oct 11:00 — Estación de servicio + usuario en cargas
+- BD: `terceros.es_estacion`, `combustible_cargas.estacion_id`, RPC `estaciones_servicio()` (la leen todos los usuarios activos; el operario no lee terceros).
+- Estaciones = proveedores marcados "¿Es estación de servicio?" (dueño/contadores, en Clientes y proveedores; también en edición en lote).
+- Combustible/Aceite: botón de estación obligatorio si hay estaciones cargadas; la lista muestra Estación y el usuario (nombre completo + iniciales + fecha de registro). Excel con ambas columnas.
