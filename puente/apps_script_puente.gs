@@ -15,8 +15,8 @@ var DIAS_ATRAS = 45; // primera vez: cuánto mirar hacia atrás
 
 function instalar() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
-  ScriptApp.newTrigger('ciclo').timeBased().everyMinutes(10).create();
-  ScriptApp.newTrigger('soloCalendario').timeBased().everyMinutes(1).create(); // el calendario se actualiza cada minuto (el resto cada 10)
+  ScriptApp.newTrigger('ciclo').timeBased().everyMinutes(5).create(); // facturas del correo cada 5 min
+  ScriptApp.newTrigger('soloCalendario').timeBased().everyMinutes(1).create(); // calendario y avisos de Telegram cada minuto
   ciclo();
 }
 
@@ -36,18 +36,18 @@ function ciclo() {
     // primero lo liviano (calendario y avisos); las facturas al final porque pueden tardar
     try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
     try { eventos_(); } catch (e) { console.error('eventos: ' + e); }
-    try { avisos_(); } catch (e) { console.error('avisos: ' + e); }
     try { facturas_(); } catch (e) { console.error('facturas: ' + e); }
   } finally { lock.releaseLock(); }
 }
 
-// Solo calendario (cheques + eventos), cada 5 min
+// Calendario (cheques + eventos) y avisos de Telegram, cada minuto
 function soloCalendario() {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return; // si hay otro ciclo en marcha, cede el turno
   try {
     try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
     try { eventos_(); } catch (e) { console.error('eventos: ' + e); }
+    try { avisos_(); } catch (e) { console.error('avisos: ' + e); }
   } finally { lock.releaseLock(); }
 }
 
