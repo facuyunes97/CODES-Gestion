@@ -31,7 +31,7 @@ function reprocesar() {
 
 function ciclo() {
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(5000)) return; // ya hay un ciclo corriendo
+  if (!lock.tryLock(90000)) return; // espera hasta 90 s: el calendario corre cada minuto y no debe dejar sin turno a los avisos y las facturas
   try {
     // primero lo liviano (calendario y avisos); las facturas al final porque pueden tardar
     try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
@@ -44,7 +44,7 @@ function ciclo() {
 // Solo calendario (cheques + eventos), cada 5 min
 function soloCalendario() {
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(5000)) return;
+  if (!lock.tryLock(1000)) return; // si hay otro ciclo en marcha, cede el turno
   try {
     try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
     try { eventos_(); } catch (e) { console.error('eventos: ' + e); }
