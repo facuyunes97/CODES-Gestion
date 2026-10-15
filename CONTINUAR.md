@@ -93,3 +93,8 @@
 - BD: `facturas.dup_autorizada` (true = cargada a propósito pese a repetida). La unicidad ahora es un índice parcial `facturas_unica_no_dup` (where not dup_autorizada) en vez de la constraint vieja.
 - Recopiladas: el descarte automático (misma factura y mismo total) se mantiene; si el total difiere, aparece la alerta.
 - Test: scratchpad `test36.js`.
+
+## Versiones del programa
+- Esta entrega es **Codes 0.1**. Se sube de a una por entrega: 0.1 → 0.2 → … → 0.9 → 1.0 → 1.1 → … hasta 100.
+- Se cambia `const VERSION` en index.html (se ve en el menú, debajo del usuario). Además cambiar `BUILD` para que los usuarios reciban el aviso "Hay una versión nueva".
+- Anotar en `CAMBIOS.md` qué trae cada versión.
