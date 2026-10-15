@@ -6,9 +6,12 @@ Qué hace (corre dentro de la cuenta **codessrl.sgo@gmail.com**, cada 10 minutos
 
 3. **Eventos del Calendario**: lo que se carga en la pestaña Calendario del sistema (recordatorios, anuncios, reuniones, vencimientos, visitas de obra) se crea en el mismo calendario compartido; lo que se crea o edita directamente en Google entra al sistema. Cada título lleva un prefijo por tipo (🔔 recordatorio, 📢 anuncio, 👥 reunión, ⚠ vencimiento, 🏗 visita, ✔ hecho). Eventos que se repiten en Google quedan solo en Google. Si se edita en los dos lados a la vez gana el sistema.
 
+4. **Subir facturas a mano**: botón "Subir facturas (PDF)" en Facturas (dueño y contadores). Cada PDF va a la Edge Function `leer_factura` (valida la sesión), se lee con el mismo lector y queda como *Pendiente* en Facturas recopiladas (remitente "Subida a mano"). Si ya estaba o ya está cargada, no se duplica.
+
 ## Piezas
 - `parser.js` – lector de facturas ARCA/AFIP (probado con Node).
 - `index.ts` – Edge Function `puente` de Supabase (se llama con cabecera `x-clave`; en la base solo se guarda el hash en `ingesta_claves`).
+- `leer_factura.ts` – Edge Function `leer_factura` (PDFs subidos desde la app; usa `parser.js`; despliega sin verificación JWT porque valida la sesión adentro).
 - `calendario.ts` – Edge Function `calendario` (eventos del Calendario ⇄ Google; se despliega sin verificación JWT).
 - `apps_script_puente.gs` – script de Google.
 - Tablas: `facturas_recopiladas`, `cheques_calendario`, `ingesta_claves`; bucket privado `facturas-recopiladas`.

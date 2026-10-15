@@ -82,3 +82,8 @@
 - Pantalla `calendario`: mes con eventos + cheques, filtro Todo/Solo eventos/Solo cheques, anuncios vigentes arriba, próximos 30 días, formulario (tipo, título, fecha, hasta, hora inicio/fin, detalle, hecho, eliminar). Dueño/contador editan; lector solo ve; ingeniero/operario no la ven.
 - BD: `calendario_eventos` (+ `calendario_borrados`, trigger), realtime. Edge Function `calendario` (v1). Script de Google actualizado: `eventos_()` dentro de `ciclo` (hay que pegar el script nuevo en Apps Script y ejecutar `ciclo` una vez para autorizar; si pide permisos nuevos, aceptar).
 - Pendiente/ideas: eventos que se repiten (mensual: impuestos), aviso diario por Telegram con la agenda del día.
+
+## 15-oct 11:10 — Subir facturas (PDF) a mano
+- Facturas: botón "Subir facturas (PDF)" junto a Facturas recopiladas (solo dueño/contador). Varios PDF a la vez; resumen con leídas / ya estaban / no se pudieron usar. Quedan Pendientes en recopiladas con remitente "Subida a mano".
+- Edge Function `leer_factura` (v1): valida el token (perfiles.rol dueño/contador activo), lee con unpdf + parser.js, dedupe por CUIT+pv+número, guarda PDF en `facturas-recopiladas/manual/...`. El auto-descarte por factura ya cargada sigue funcionando (trigger).
+- No probado con un PDF real contra la función (desde el entorno no se llega a Supabase); probar con una factura real.
