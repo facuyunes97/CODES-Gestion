@@ -31,6 +31,12 @@ Deno.serve(async (req) => {
     const api = (m: string, body?: unknown) => fetch(`https://api.telegram.org/bot${token}/${m}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}) }).then((r) => r.json());
 
     let chat = await cfg("telegram_chat_id");
+    // Diagnóstico: guarda en config_secretos('telegram_estado') qué contesta Telegram (se lee desde la base).
+    try {
+      const me = await api("getMe");
+      const gc = chat ? await api("getChat", { chat_id: chat }) : null;
+      await setCfg("telegram_estado", new Date().toISOString() + " | bot: " + (me.ok ? "OK @" + me.result.username : "ERROR " + me.description) + " | grupo: " + (!chat ? "sin configurar" : gc?.ok ? "OK " + (gc.result.title || "") : "ERROR " + gc?.description));
+    } catch (e) { await setCfg("telegram_estado", new Date().toISOString() + " | sin conexión: " + String((e as Error).message || e)); }
     if (!chat) {
       const up = await api("getUpdates", { limit: 100, allowed_updates: ["message", "my_chat_member", "channel_post"] });
       const chats: any[] = [];
