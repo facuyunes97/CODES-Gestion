@@ -269,6 +269,18 @@ tr.mes .ms{font-size:13px;color:var(--ink-2);margin-right:14px}
 .ev.prop{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
 .ev.ter{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
 .ev.done{opacity:.55}
+.ev.ee{all:unset;display:block;box-sizing:border-box;width:100%;cursor:pointer;font-size:11.5px;line-height:1.25;padding:3px 5px;border-radius:4px;border-left:3px solid var(--c,var(--ink-3));background:color-mix(in srgb,var(--c,var(--ink-3)) 20%,transparent);font-family:var(--f-body);font-weight:600;overflow-wrap:anywhere}
+.ev.ee:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.ev.ee small{display:block;font-weight:400;font-family:var(--f-num);opacity:.85}
+.ev.ee.done{opacity:.5;text-decoration:line-through}
+.t-recordatorio{--c:#d69e2e}.t-anuncio{--c:#4299e1}.t-reunion{--c:#9f7aea}.t-vencimiento{--c:#e53e3e}.t-visita{--c:#38b2ac}.t-otro{--c:#a0aec0}
+.cal .day .d.btnd{all:unset;cursor:pointer;font-family:var(--f-num);font-size:12px;color:var(--ink-3);padding:0 5px;border-radius:4px}
+.cal .day .d.btnd:hover{background:var(--line)}
+.cal .day.today .d.btnd{background:var(--brand);color:var(--brand-ink)}
+.tipochips{display:flex;gap:8px;flex-wrap:wrap}
+.tipochips .chip.t{border-left:4px solid var(--c)}
+.anus{display:flex;flex-direction:column;gap:8px;padding:0 16px 16px}
+.anu-card{border-left:4px solid var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border-radius:6px;padding:10px 12px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);padding:10px 16px 14px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 
@@ -444,6 +456,7 @@ tr.picked td{background:var(--warn-soft)}
   <symbol id="i-llave" viewBox="0 0 24 24"><path d="M14.5 5.5a4.2 4.2 0 0 0-4.7 5.6L3.5 17.4l3.1 3.1 6.3-6.3a4.2 4.2 0 0 0 5.6-4.7l-2.6 2.6-2.4-.6-.6-2.4z"/></symbol>
   <symbol id="i-gota" viewBox="0 0 24 24"><path d="M12 3.5c3.3 4.3 5.7 7.3 5.7 10.4a5.7 5.7 0 0 1-11.4 0C6.3 10.8 8.7 7.8 12 3.5z"/><path d="M9.4 14.2a2.7 2.7 0 0 0 2.2 2.4"/></symbol>
   <symbol id="i-surtidor" viewBox="0 0 24 24"><rect x="5" y="3" width="9" height="18" rx="1.5"/><path d="M8 7h3"/><path d="M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V9l-2.5-2.5"/><path d="M3.5 21h12"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8 14h2"/><path d="M14 14h2"/></symbol>
   <symbol id="i-libreta" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 3v18"/><path d="M12.5 8h3.5"/><path d="M12.5 12h3.5"/></symbol>
 </svg>
 <div class="app">
@@ -483,7 +496,7 @@ const mesTxt=ym=>{const [y,m]=ym.split('-');return MESES[+m-1]+' '+y};
 /* ---------- Datos de ejemplo ---------- */
 const S={
  user:'FY',view:'inicio',filtro:'todas',q:'',sel:null,confirm:null,errors:[],
- audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,recop:[],recopF:'pendiente',recopSel:{},recopEd:null,recopConf:null,recopTh:{},calMes:TODAY.slice(0,7),calF:'todos',chqFiltro:'vigentes',ivaMes:null,
+ audY:TODAY.slice(0,4),audM:TODAY.slice(5,7),audTx:{},ctaF:'todas',ccTipo:'',ccF:'',agrup:false,bancoF:'',factF:'todas',nfFac:null,recop:[],recopF:'pendiente',recopSel:{},recopEd:null,recopConf:null,recopTh:{},calMes:TODAY.slice(0,7),calF:'todos',agMes:TODAY.slice(0,7),agF:'todos',ef:null,eventos:[],chqFiltro:'vigentes',ivaMes:null,
  rDesde:(()=>{const [y,m]=TODAY.split('-').map(Number);const py=m===1?y-1:y,pm=m===1?12:m-1;return py+'-'+String(pm).padStart(2,'0')+'-01'})(),rHasta:TODAY,rCc:'',ccForm:null,ccWarn:null,finConf:null,idcRate:0.6,cv:null,sesion:null,reg:null,uForm:null,auth:{modo:'cargando',f:{}},
  usuarios:[
   {id:'u1',nombre:'Facundo',apellido:'Yunes',iniciales:'FY',email:'',rol:'dueno',activo:true,alta:'2026-09-01'},
@@ -520,6 +533,7 @@ const S={
  anticipos:[{id:'an1',contratistaId:'ct2',fecha:'2026-09-20',monto:100000,obs:'',ini:'LG'}],
  precios:{nafta:1200,diesel_500:1300,diesel_premium:1500,aceite_hidraulico:4200,aceite_motor:5100,aceite_transmision:4800,aceite_super_30:3900},
  ace:[],
+ eventos:[{id:'ev1',tipo:'anuncio',titulo:'Cierre de oficina por feriado',fecha:'2026-10-12',fin:'2026-10-12',hora:'',horaFin:'',desc:'',hecho:false,origen:'app',gid:'',by:''},{id:'ev2',tipo:'vencimiento',titulo:'Vencimiento seguro de la retroexcavadora',fecha:'2026-10-20',fin:'',hora:'',horaFin:'',desc:'Renovar con la aseguradora',hecho:false,origen:'app',gid:'',by:''},{id:'ev3',tipo:'reunion',titulo:'Reunión con el cliente de Obra Uno',fecha:'2026-10-07',fin:'',hora:'10:00',horaFin:'11:00',desc:'',hecho:false,origen:'app',gid:'',by:''}],
  comb:[{id:'cb1',maqId:'cc4',obraId:'cc2',tipo:'diesel_500',fh:'2026-09-29T08:15:00-03:00',litros:80,precio:1300,ini:'MD'},{id:'cb2',maqId:'cc4',obraId:'cc3',tipo:'diesel_500',fh:'2026-09-30T07:50:00-03:00',litros:65,precio:1300,ini:'MD'}],
  arreglos:[{id:'ar1',maqId:'cc4',fh:'2026-09-25T16:30:00-03:00',desc:'Cambio de filtro de aceite',costo:35000,ini:'MD'}]
 };
@@ -679,7 +693,7 @@ async function exportar(k){
 window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
-const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
+const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['calendario','Calendario','calendario'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
 const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
 const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor'],['aceite','Aceite','gota']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -691,7 +705,7 @@ function renderNav(){
   const sec=(k,t,items)=>{const ab=!S.navCerr[k];return `<button class="navsec" data-sec="${k}" aria-expanded="${ab}" aria-controls="grp-${k}"><span>${t}</span><span class="car" aria-hidden="true">▾</span></button><div class="navgrp" id="grp-${k}" ${ab?'':'hidden'}>${items.filter(([v])=>vistaPermitida(v)).map(btn).join('')}</div>`};
   document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()?sec('ing','Ingeniería / Obras',NAV_ING):'')+(veIng()||soloMaq()?sec('ope','Operario',NAV_OPE):'')+(veAdm()?`<div class="navbot">${btn(['ingres','Resumen operativo','plano'])}</div>`:'');
 }
-function go(v){KF_FILES=[];S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.finConf=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
+function go(v){KF_FILES=[];S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.finConf=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.ef=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
@@ -1051,6 +1065,79 @@ function anular(id){
   S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Anulación',detalle:'Transacción Nº '+t.numero+' anulada',txId:id});
   S.confirm=null;render();toast('Transacción Nº '+t.numero+' anulada');
 }
+
+/* ---------- Calendario: eventos de CODES + cheques, enlazado con el Google Calendar compartido ---------- */
+const EV_T={recordatorio:'Recordatorio',anuncio:'Anuncio',reunion:'Reunión',vencimiento:'Vencimiento',visita:'Visita de obra',otro:'Otro'};
+const CAL_ID='1aa1b0e83c5cd779e17d303c7014ea125e1bd24aa709e6b0444309e6550a0c4d@group.calendar.google.com';
+const masHora=h=>{const [a,m]=String(h).split(':').map(Number);return a>=23?'23:59':String(a+1).padStart(2,'0')+':'+String(m||0).padStart(2,'0')};
+const evFin=e=>e.fin&&e.fin>=e.fecha?e.fin:e.fecha;
+const evEnDia=(e,ds)=>e.fecha<=ds&&ds<=evFin(e);
+const evHora=e=>e.hora?e.hora+(e.horaFin?'–'+e.horaFin:''):'Todo el día';
+const evRango=e=>fd(e.fecha)+(evFin(e)!==e.fecha?' al '+fd(evFin(e)):'');
+const evSync=e=>!AUTH?'':e.origen==='google'?'Creado en Google Calendar':e.gid?'Sincronizado con Google':'Se enviará a Google en unos minutos';
+const newEf=f=>({id:'',tipo:'recordatorio',titulo:'',fecha:f||TODAY,fin:'',hora:'',horaFin:'',desc:'',hecho:false,err:'',del:false});
+const evPorId=id=>S.eventos.find(e=>e.id===id);
+function vCalendario(){
+  const edita=puedeCargar(),[y,m]=S.agMes.split('-').map(Number);
+  const first=new Date(y,m-1,1),start=(first.getDay()+6)%7,days=new Date(y,m,0).getDate();
+  const vEv=S.agF!=='cheques',vCh=S.agF!=='eventos';
+  const chMes=vCh?S.cheques.filter(c=>c.fechaPago.startsWith(S.agMes)&&c.estado!=='anulado'):[];
+  let cells=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(d=>`<div class="dow">${d}</div>`).join('');
+  for(let i=0;i<start;i++)cells+='<div class="day out"></div>';
+  const evBtn=e=>`<button type="button" class="ev ee t-${e.tipo} ${e.hecho?'done':''}" data-act="ev-edit" data-id="${e.id}" title="${esc(EV_T[e.tipo]+' · '+e.titulo)}">${esc(e.titulo)}<small>${e.hora?esc(e.hora):'Todo el día'}</small></button>`;
+  for(let d=1;d<=days;d++){const ds=S.agMes+'-'+String(d).padStart(2,'0');
+    const evs=(vEv?S.eventos.filter(e=>evEnDia(e,ds)).sort((a,b)=>(a.hora||'').localeCompare(b.hora||'')):[]).map(evBtn).join('');
+    const chs=chMes.filter(c=>c.fechaPago===ds).map(c=>`<div class="ev ${c.origen==='propio'?'prop':'ter'} ${['en_cartera','emitido'].includes(c.estado)?'':'done'}" title="${esc(c.librador+' · '+c.banco+' · '+estChq[c.estado][0])}"><b>${c.tipo==='echeq'?'Echeq':'Cheque'} ${esc(c.numero)}</b>${short(c.importe)}</div>`).join('');
+    const num=edita?`<button type="button" class="d btnd" data-act="ev-day" data-d="${ds}" aria-label="Agregar evento el ${d}">${d}</button>`:`<span class="d">${d}</span>`;
+    cells+=`<div class="day ${ds===TODAY?'today':''}">${num}${evs}${chs}</div>`}
+  const rest=(7-(start+days)%7)%7;for(let i=0;i<rest;i++)cells+='<div class="day out"></div>';
+  const chips=[['todos','Todo'],['eventos','Solo eventos'],['cheques','Solo cheques']].map(([k,l])=>`<button class="chip" data-agf="${k}" aria-pressed="${S.agF===k}">${l}</button>`).join('');
+  // anuncios vigentes
+  const anus=S.eventos.filter(e=>e.tipo==='anuncio'&&!e.hecho&&e.fecha<=TODAY&&TODAY<=evFin(e));
+  const anuP=anus.length?`<section class="panel"><h2>Anuncios vigentes <small>${anus.length}</small></h2><div class="anus">${anus.map(e=>`<div class="anu-card t-anuncio"><b>${esc(e.titulo)}</b><div class="sub">${evRango(e)}${e.desc?' · '+esc(e.desc):''}</div></div>`).join('')}</div></section>`:'';
+  // formulario
+  const F=S.ef;let form='';
+  if(F){
+    const ro=!edita;
+    const tp=Object.entries(EV_T).map(([k,l])=>ro?(F.tipo===k?`<span class="chip t t-${k}" aria-pressed="true">${l}</span>`:''):`<button type="button" class="chip t t-${k}" data-act="ev-tipo" data-v="${k}" aria-pressed="${F.tipo===k}">${l}</button>`).join('');
+    const quien=F.id&&F.origen!=='google'?(F.by?iniDe(F.by):''):'';
+    form=`<section class="panel"><h2>${ro?'Evento':F.id?'Editar evento':'Nuevo evento'}${F.id&&F.hecho?' <small>marcado como hecho</small>':''}</h2>${errBox(F)}<div class="fields">
+      <div class="f" style="grid-column:1/-1"><label>Tipo</label><div class="tipochips">${tp}</div></div>
+      ${fld('ef-titulo','Título <em>*</em>',`<input id="ef-titulo" data-ig="ef.titulo" value="${esc(F.titulo)}" placeholder="Ej: Vence el seguro de la camioneta" ${ro?'disabled':''}>`,'',2)}
+      ${fld('ef-fecha','Fecha <em>*</em>',`<input id="ef-fecha" type="date" data-ig="ef.fecha" value="${esc(F.fecha)}" ${ro?'disabled':''}>`)}
+      ${fld('ef-fin','Hasta (opcional)',`<input id="ef-fin" type="date" data-ig="ef.fin" value="${esc(F.fin)}" ${ro?'disabled':''}>`,'Para eventos de varios días.')}
+      ${fld('ef-hora','Hora de inicio',`<input id="ef-hora" type="time" data-ig="ef.hora" value="${esc(F.hora)}" ${ro?'disabled':''}>`,'Vacío = todo el día.')}
+      ${fld('ef-horaFin','Hora de fin',`<input id="ef-horaFin" type="time" data-ig="ef.horaFin" value="${esc(F.horaFin)}" ${ro?'disabled':''}>`,'Si no la ponés, dura 1 hora.')}
+      ${fld('ef-desc','Detalle (opcional)',`<textarea id="ef-desc" rows="3" data-ig="ef.desc" ${ro?'disabled':''}>${esc(F.desc)}</textarea>`,'',2)}
+    </div>
+    <div class="legend" style="padding-top:0">${[evSync(F),quien?'Cargó '+esc(quien):''].filter(Boolean).join(' · ')}</div>
+    <div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="ev-cancel">${ro?'Cerrar':'Cancelar'}</button>${ro?'':`<button type="button" class="btn dark" data-act="ev-save">Guardar</button>`}${!ro&&F.id?`<button type="button" class="btn" data-act="ev-hecho">${F.hecho?'Volver a pendiente':'Marcar como hecho'}</button>${F.del?'<button type="button" class="btn danger" data-act="ev-del-ok">Sí, eliminar</button>':'<button type="button" class="btn danger" data-act="ev-del">Eliminar</button>'}`:''}</div></section>`}
+  // próximos 30 días
+  const lim=new Date(TODAY+'T12:00:00');lim.setDate(lim.getDate()+30);const hasta=lim.toLocaleDateString('en-CA');
+  const prox=[];
+  if(vEv)S.eventos.forEach(e=>{if(!e.hecho&&evFin(e)>=TODAY&&e.fecha<=hasta)prox.push({f:e.fecha<TODAY?TODAY:e.fecha,hora:e.hora||'',e})});
+  if(vCh)S.cheques.forEach(c=>{if(['en_cartera','emitido'].includes(c.estado)&&c.fechaPago>=TODAY&&c.fechaPago<=hasta)prox.push({f:c.fechaPago,hora:'~',c})});
+  prox.sort((a,b)=>a.f.localeCompare(b.f)||a.hora.localeCompare(b.hora));
+  const filas=prox.map(x=>x.e?`<tr><td class="mono">${fd(x.f)}${x.e.fecha!==x.f||evFin(x.e)!==x.e.fecha?`<br><span class="sub">${evRango(x.e)}</span>`:''}</td><td><span class="pill t-${x.e.tipo}" style="background:color-mix(in srgb,var(--c) 22%,transparent);color:var(--ink)">${EV_T[x.e.tipo]}</span></td><td><b>${esc(x.e.titulo)}</b>${x.e.desc?`<div class="sub">${esc(x.e.desc)}</div>`:''}</td><td class="mono">${esc(evHora(x.e))}</td><td><button type="button" class="btn small" data-act="ev-edit" data-id="${x.e.id}">${edita?'Editar':'Ver'}</button></td></tr>`
+    :`<tr><td class="mono">${fd(x.f)}</td><td><span class="pill ${x.c.origen==='propio'?'p-out':'p-in'}">${x.c.tipo==='echeq'?'Echeq':'Cheque'}</span></td><td><b>${x.c.origen==='propio'?'A pagar':'A cobrar'} ${money(x.c.importe)}</b><div class="sub">${esc(x.c.librador||x.c.banco||'')} · Nº ${esc(x.c.numero)}</div></td><td class="mono">Todo el día</td><td><button type="button" class="btn small link" data-view="cheques">Ver</button></td></tr>`).join('');
+  const gUrl='https://calendar.google.com/calendar/u/0/r?cid='+encodeURIComponent(btoa(CAL_ID));
+  const right=(edita&&!F?'<button class="btn small primary" data-act="ev-new">+ Nuevo evento</button>':'')+(AUTH?`<a class="btn small" href="${gUrl}" target="_blank" rel="noopener">Abrir en Google Calendar</a>`:'');
+  return head('Calendario','Cheques y Echeqs, recordatorios, anuncios y vencimientos de CODES. Lo que se carga acá aparece en el calendario compartido de Google "CODES SRL" y lo que se carga allá aparece acá (demora hasta 10 minutos).',right)+anuP+form+
+  `<section class="panel"><div class="cal-head"><div class="cal-nav"><button class="btn small" data-agmes="-1" aria-label="Mes anterior">‹</button><h2>${mesTxt(S.agMes)}</h2><button class="btn small" data-agmes="1" aria-label="Mes siguiente">›</button><button class="btn small link" data-agmes="0">Hoy</button></div><div class="chips">${chips}</div></div>
+   <div class="tw"><div class="cal">${cells}</div></div>
+   <div class="legend">${Object.entries(EV_T).map(([k,l])=>`<span><i class="t-${k}" style="background:var(--c)"></i>${l}</span>`).join('')}<span><i style="background:var(--brand)"></i>Cheque emitido</span><span><i style="background:var(--ok)"></i>Cheque de tercero</span>${edita?'<span>Tocá el número de un día para agregar un evento.</span>':''}</div></section>
+  <section class="panel"><h2>Próximos 30 días <small>${prox.length} ${prox.length===1?'evento':'eventos'}</small></h2>${prox.length?`<div class="tw"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Qué</th><th>Hora</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`:'<div class="empty">No hay nada para los próximos 30 días.</div>'}</section>`}
+function evGuardar(){
+  const F=S.ef,fail=m=>{F.err=m;render()};F.err='';
+  if(!String(F.titulo||'').trim())return fail('Escribí el título.');
+  if(!F.fecha)return fail('Elegí la fecha.');
+  if(F.fin&&F.fin<F.fecha)return fail('La fecha "hasta" no puede ser anterior a la fecha de inicio.');
+  if(F.horaFin&&!F.hora)return fail('Para poner hora de fin, poné también la hora de inicio.');
+  if(F.hora&&F.horaFin&&(!F.fin||F.fin===F.fecha)&&F.horaFin<=F.hora)return fail('La hora de fin tiene que ser posterior a la de inicio.');
+  const d={tipo:F.tipo,titulo:F.titulo.trim(),fecha:F.fecha,fin:F.fin&&F.fin!==F.fecha?F.fin:'',hora:F.hora||'',horaFin:F.hora?(F.horaFin||masHora(F.hora)):'',desc:String(F.desc||'').trim(),hecho:!!F.hecho};
+  if(F.id){const e=evPorId(F.id);if(e)Object.assign(e,d);aud('Modificación','Evento · '+d.titulo)}
+  else{S.eventos.push({id:nid('ev'),...d,origen:'app',gid:'',by:''});aud('Alta','Evento · '+d.titulo)}
+  S.ef=null;render();toast('Evento guardado')}
 
 /* ---------- Cheques: almanaque ---------- */
 function vCheques(){
@@ -1510,7 +1597,9 @@ const fromCertif=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,pct:+
 const fromAntic=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,monto:+r.monto,obs:r.observaciones||'',ini:r.iniciales||''});
 const toAntic=a=>({id:a.id,contratista_id:a.contratistaId,fecha:a.fecha,monto:num(a.monto),observaciones:a.obs||null});
 const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),descuento_anticipo:num(k.desc),observaciones:k.obs||null,adjuntos:k.adj||[]});
+const fromEvento=r=>({id:r.id,tipo:r.tipo,titulo:r.titulo,fecha:r.fecha,fin:r.fecha_fin||'',hora:(r.hora||'').slice(0,5),horaFin:(r.hora_fin||'').slice(0,5),desc:r.descripcion||'',hecho:!!r.hecho,origen:r.origen,gid:r.google_event_id||'',by:r.created_by||''});
 const fromComb=r=>({id:r.id,maqId:r.maquina_id,obraId:r.obra_id||'',tipo:r.tipo_combustible||'',fh:r.fecha_hora,litros:+r.litros,precio:+r.precio_litro||0,ini:r.iniciales||'',by:r.created_by||'',reg:r.created_at||'',estId:r.estacion_id||''});
+const toEvento=e=>({id:e.id,tipo:e.tipo,titulo:String(e.titulo||'').trim(),fecha:e.fecha,fecha_fin:e.fin&&e.fin!==e.fecha?e.fin:null,hora:e.hora||null,hora_fin:e.hora?(e.horaFin||masHora(e.hora)):null,descripcion:String(e.desc||'').trim()||null,hecho:!!e.hecho});
 const toComb=x=>({id:x.id,maquina_id:x.maqId,obra_id:x.obraId||null,tipo_combustible:x.tipo||null,fecha_hora:x.fh,litros:num(x.litros),estacion_id:x.estId||null});
 const fromArreglo=r=>({id:r.id,maqId:r.maquina_id,fh:r.fecha_hora,desc:r.descripcion,costo:r.costo==null?0:+r.costo,ini:r.iniciales||''});
 const toArreglo=x=>({id:x.id,maquina_id:x.maqId,fecha_hora:x.fh,descripcion:x.desc,costo:num(x.costo)>0?num(x.costo):null});
@@ -1543,6 +1632,7 @@ const COLS=[
  {k:'params',tabla:'parametros',arr:()=>[{id:'idc',valor:+S.idcRate}],to:x=>x,fijo:true},
  {k:'contrat',tabla:'contratistas',arr:()=>S.contratistas,to:toContrat},
  {k:'certifs',tabla:'certificaciones',arr:()=>S.certifs,to:toCertif},
+ {k:'eventos',tabla:'calendario_eventos',arr:()=>S.eventos,to:toEvento},
  {k:'comb',tabla:'combustible_cargas',arr:()=>S.comb,to:toComb},
  {k:'ace',tabla:'combustible_cargas',arr:()=>S.ace,to:toComb},
  {k:'arreglos',tabla:'maquinaria_arreglos',arr:()=>S.arreglos,to:toArreglo},
@@ -1567,7 +1657,7 @@ const must=r=>{if(r.error)throw r.error;return r};
 const unaFila=r=>{must(r);if(!r.data||!r.data.length){const e=new Error('SIN_PERMISO');throw e}};
 async function aplicar(d){
   let hubo=false;
-  const orden=['tipos','terceros','centros','precios','contrat','certifs','antic','comb','ace','arreglos','facturas','cheques','cuentas','params'];
+  const orden=['tipos','terceros','centros','precios','contrat','certifs','antic','comb','ace','arreglos','eventos','facturas','cheques','cuentas','params'];
   for(const k of orden){
     for(const o of d.add.filter(x=>x.c.k===k&&!x.c.fijo)){must(await sb.from(o.c.tabla).insert(o.p));SY.sh[k].set(o.id,{p:o.p,j:o.j});if(k==='contrat')hubo=true}
     for(const o of d.mod.filter(x=>x.c.k===k)){
@@ -1586,7 +1676,7 @@ async function aplicar(d){
       if(r.error){await sb.rpc('guardar_transaccion',{p:o.antes});throw r.error}}
     SY.sh.trans.set(o.id,{p:o.p,j:o.j})}
   for(const o of d.del.filter(x=>x.c.k==='trans').sort((a,b)=>(b.antes.padre_id?1:0)-(a.antes.padre_id?1:0))){unaFila(await sb.from('transacciones').delete().eq('id',o.id).select('id'));SY.sh.trans.delete(o.id)}
-  for(const k of ['certifs','antic','contrat','comb','ace','arreglos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
+  for(const k of ['certifs','antic','contrat','comb','ace','arreglos','eventos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
   return hubo}
 function progSync(){if(!AUTH||!S.sesion||SY.cargando||!SY.sh)return;clearTimeout(SY.t);SY.t=setTimeout(correrSync,200)}
 async function correrSync(){
@@ -1601,7 +1691,7 @@ async function correrSync(){
   if(hubo){try{await cargarDatos()}catch(e){}render()}else pintaChip();
 }
 async function traer(tabla,sel,ord){let out=[],desde=0;for(;;){let q=sb.from(tabla).select(sel);(ord||[]).forEach(([c,a])=>q=q.order(c,{ascending:a}));const {data,error}=await q.range(desde,desde+999);if(error)throw error;out=out.concat(data);if(data.length<1000)return out;desde+=1000}}
-const TL={transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina',anticipos_obra:'Anticipo de obra',precios_combustible:'Precio de combustible'};
+const TL={calendario_eventos:'Evento',transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina',anticipos_obra:'Anticipo de obra',precios_combustible:'Precio de combustible'};
 function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||{};
   let acc={INSERT:'Alta',UPDATE:'Modificación',DELETE:'Eliminación'}[a.accion]||a.accion,det='';
   switch(a.tabla){
@@ -1636,7 +1726,7 @@ async function cargarAuditTx(id){try{const {data,error}=await sb.from('auditoria
 async function cargarDatos(){
   SY.cargando=true;
   try{
-    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar,an,pr,pg,rcp,rmp]=await Promise.all([
+    const [cu,ti,te,ce,ch,fa,tx,pa,cn,cr,cb,ar,an,pr,pg,rcp,rmp,evs]=await Promise.all([
       traer('cuentas','*',[['created_at',true],['id',true]]),traer('tipos_centro','*',[['created_at',true],['id',true]]),
       traer('terceros','*',[['created_at',true],['id',true]]),traer('centros_costo','*',[['created_at',true],['id',true]]),
       traer('cheques','*',[['created_at',true],['id',true]]),traer('facturas','*',[['created_at',true],['id',true]]),
@@ -1647,14 +1737,15 @@ async function cargarDatos(){
       traer('anticipos_obra','*',[['created_at',true],['id',true]]),traer('precios_combustible','*',[['id',true]]),
       sb.rpc('pagos_contratistas').then(r=>r.error?[]:(r.data||[])),
       sb.from('facturas_recopiladas').select('id,recibida_at,remitente,asunto,mail_url,adjunto,emisor_cuit,emisor_razon,receptor_cuit,tipo,punto_venta,numero,fecha,neto_gravado,iva,otros,total,cae,pdf_path,observaciones,estado,factura_id').order('recibida_at',{ascending:false}).limit(500).then(r=>r.error?[]:(r.data||[])),
-      sb.from('proveedor_remitentes').select('*').then(r=>r.error?[]:(r.data||[]))]);
+      sb.from('proveedor_remitentes').select('*').then(r=>r.error?[]:(r.data||[])),
+      sb.from('calendario_eventos').select('*').order('fecha',{ascending:true}).limit(3000).then(r=>r.error?[]:(r.data||[]))]);
     await cargarPerfiles();
     {const r=await sb.rpc('estaciones_servicio');S.estaciones=r.error?[]:(r.data||[]).map(x=>({id:x.id,razon:x.razon_social}))}
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
     S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);{const cbA=cb.map(fromComb);S.comb=cbA.filter(x=>!ACE_T[x.tipo]);S.ace=cbA.filter(x=>ACE_T[x.tipo])}S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]));pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
-    S.remitMap={};rmp.forEach(x=>{S.remitMap[x.email]={cuit:x.cuit||'',razon:x.razon||''}});S.recop=rcp.map(fromRecop);rcRellenar();
+    S.eventos=evs.map(fromEvento);S.remitMap={};rmp.forEach(x=>{S.remitMap[x.email]={cuit:x.cuit||'',razon:x.razon||''}});S.recop=rcp.map(fromRecop);rcRellenar();
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
     S.audTx={};await cargarAudit();await cargarBackups();
@@ -1673,10 +1764,10 @@ function recargaRemota(){clearTimeout(SY.tRe);SY.tRe=setTimeout(async function i
   if(SY.corriendo||SY.cargando||hayCambios()||escribiendo){SY.tRe=setTimeout(intento,1500);return}
   try{await cargarDatos();render()}catch(e){console.error(e)}},700)}
 function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
-  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
+  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible','calendario_eventos'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
   SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
 function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
-  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.contratistas=[];S.certifs=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.eventos=[];S.contratistas=[];S.certifs=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -2144,6 +2235,15 @@ function accionPk(act,a,e){
    case 'ini-save':guardarInicial();return true;
    case 'tx-modificar':abrirEditar('trans',[S.sel]);return true;
    case 'eliminar':abrirEliminar('trans',[S.sel]);return true;
+   case 'ev-new':S.ef=newEf();render();return true;
+   case 'ev-day':S.ef=newEf(a.dataset.d);render();return true;
+   case 'ev-edit':{const e=evPorId(a.dataset.id);if(e){S.ef={...e,err:'',del:false};render();window.scrollTo(0,0)}return true}
+   case 'ev-tipo':S.ef.tipo=a.dataset.v;render();return true;
+   case 'ev-cancel':S.ef=null;render();return true;
+   case 'ev-save':evGuardar();return true;
+   case 'ev-hecho':{const e=evPorId(S.ef.id);if(e){e.hecho=!e.hecho;aud('Modificación','Evento '+(e.hecho?'hecho':'pendiente')+' · '+e.titulo)}S.ef=null;render();return true}
+   case 'ev-del':S.ef.del=true;render();return true;
+   case 'ev-del-ok':{const e=evPorId(S.ef.id);S.eventos=S.eventos.filter(x=>x.id!==S.ef.id);if(e)aud('Baja','Evento · '+e.titulo);S.ef=null;render();toast('Evento eliminado');return true}
    case 'tf-new':S.tForm={razon:'',cuit:'',tipo:'cliente',estacion:'no',err:''};render();return true;
    case 'tf-cancel':S.tForm=null;render();return true;
    case 'tf-save':{const F=S.tForm,v=validarTercero(F.razon,F.cuit);if(v.err){F.err=v.err;render();return true}
@@ -2671,7 +2771,7 @@ function render(){
   if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,calendario:vCalendario,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();if(S.view==='recop')setTimeout(rcThumbs,50);if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -2702,6 +2802,8 @@ document.addEventListener('click',e=>{
   const fl=e.target.closest('[data-filtro]');if(fl){S.filtro=fl.dataset.filtro;render();return}
   const ct=e.target.closest('[data-cta]');if(ct){S.ctaF=ct.dataset.cta;if(S.ctaF!=='bancos')S.bancoF='';render();return}
   const cq=e.target.closest('[data-chq]');if(cq){S.chqFiltro=cq.dataset.chq;render();return}
+  const agf=e.target.closest('[data-agf]');if(agf){S.agF=agf.dataset.agf;render();return}
+  const agm=e.target.closest('[data-agmes]');if(agm){const k=+agm.dataset.agmes;if(k===0)S.agMes=TODAY.slice(0,7);else{let [y,m]=S.agMes.split('-').map(Number);m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}S.agMes=y+'-'+String(m).padStart(2,'0')}render();return}
   const cf=e.target.closest('[data-calf]');if(cf){S.calF=cf.dataset.calf;render();return}
   const ms=e.target.closest('[data-mes]');if(ms){const k=+ms.dataset.mes;if(k===0)S.calMes=TODAY.slice(0,7);else{let [y,m]=S.calMes.split('-').map(Number);m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}S.calMes=y+'-'+String(m).padStart(2,'0')}render();return}
   const ff=e.target.closest('[data-factf]');if(ff){S.factF=ff.dataset.factf;render();return}
@@ -2836,7 +2938,7 @@ main.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
-const BUILD='14-oct 11:00';
+const BUILD='15-oct 10:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

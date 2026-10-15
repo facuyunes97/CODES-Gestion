@@ -1,0 +1,6 @@
+-- Ya aplicado en Supabase (migración calendario_eventos). Solo documentación.
+-- calendario_eventos: id, tipo (recordatorio|anuncio|reunion|vencimiento|visita|otro), titulo, fecha, fecha_fin, hora, hora_fin,
+--   descripcion, hecho, origen ('app'|'google'), google_event_id, google_firma, google_sync_at, created_by, created_at.
+--   RLS: lee es_admin_lectura(); inserta/modifica/borra puede_cargar() (dueño y contadores). En el realtime.
+-- calendario_borrados: eventos borrados en el sistema que el script debe borrar en Google (sin acceso desde la app; la llena un trigger).
+-- Edge Function "calendario" (puente/calendario.ts): acciones pendientes / sync_ok / borrado_ok / importar, con la misma clave x-clave que "puente".

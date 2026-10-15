@@ -77,3 +77,8 @@
 - BD: `terceros.es_estacion`, `combustible_cargas.estacion_id`, RPC `estaciones_servicio()` (la leen todos los usuarios activos; el operario no lee terceros).
 - Estaciones = proveedores marcados "¿Es estación de servicio?" (dueño/contadores, en Clientes y proveedores; también en edición en lote).
 - Combustible/Aceite: botón de estación obligatorio si hay estaciones cargadas; la lista muestra Estación y el usuario (nombre completo + iniciales + fecha de registro). Excel con ambas columnas.
+
+## 15-oct 10:00 — Calendario (Administración, debajo de Cheques)
+- Pantalla `calendario`: mes con eventos + cheques, filtro Todo/Solo eventos/Solo cheques, anuncios vigentes arriba, próximos 30 días, formulario (tipo, título, fecha, hasta, hora inicio/fin, detalle, hecho, eliminar). Dueño/contador editan; lector solo ve; ingeniero/operario no la ven.
+- BD: `calendario_eventos` (+ `calendario_borrados`, trigger), realtime. Edge Function `calendario` (v1). Script de Google actualizado: `eventos_()` dentro de `ciclo` (hay que pegar el script nuevo en Apps Script y ejecutar `ciclo` una vez para autorizar; si pide permisos nuevos, aceptar).
+- Pendiente/ideas: eventos que se repiten (mensual: impuestos), aviso diario por Telegram con la agenda del día.
