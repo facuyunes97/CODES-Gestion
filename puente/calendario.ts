@@ -84,10 +84,17 @@ Deno.serve(async (req) => {
       const cheques = new Set((ch.data || []).map((x: any) => x.evento_id));
       const porG = new Map((rs.data || []).filter((r: any) => r.google_event_id).map((r: any) => [r.google_event_id, r]));
       const vistos = new Set<string>();
+      // limpieza: copias de cheques/echeqs que entraron desde Google (los cheques ya se ven en el calendario del sistema)
+      for (const r of (rs.data || []) as any[]) {
+        if (r.origen === "google" && /^(✔ )?(cheque|echeq)\b/i.test(String(r.titulo || "").trim())) {
+          const d = await sb.from("calendario_eventos").delete().eq("id", r.id);
+          if (!d.error) { await sb.from("calendario_borrados").delete().eq("google_event_id", r.google_event_id); porG.delete(r.google_event_id); }
+        }
+      }
       let creados = 0, actualizados = 0, borrados = 0;
       for (const e of b.eventos.slice(0, 1000)) {
         if (!e || !e.id || !/^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha || ""))) continue;
-        if (cheques.has(e.id) || /^(✔ )?(Cheque|Echeq) (A PAGAR|A COBRAR)/.test(String(e.titulo || ""))) continue;
+        if (cheques.has(e.id) || /^(✔ )?(cheque|echeq)\b/i.test(String(e.titulo || "").trim())) continue;
         vistos.add(e.id);
         const p = parseTitulo(e.titulo);
         const g = { tipo: p.tipo, titulo: p.titulo, fecha: e.fecha, fecha_fin: /^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha_fin || "")) && e.fecha_fin >= e.fecha ? e.fecha_fin : e.fecha, hora: e.hora || null, hora_fin: e.hora_fin || null, descripcion: e.desc || null, hecho: p.hecho };
@@ -105,7 +112,7 @@ Deno.serve(async (req) => {
       // borrados en Google: solo los ya sincronizados hace más de 15 min, y de a pocos por vez (por seguridad)
       if (b.completo === true) {
         const lim = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-        const falt = (rs.data || []).filter((r: any) => r.google_event_id && !vistos.has(r.google_event_id) && r.fecha >= desde && r.fecha <= hasta && r.google_sync_at && r.google_sync_at < lim).slice(0, 10);
+        const falt = (rs.data || []).filter((r: any) => r.google_event_id && !vistos.has(r.google_event_id) && porG.has(r.google_event_id) && r.fecha >= desde && r.fecha <= hasta && r.google_sync_at && r.google_sync_at < lim).slice(0, 10);
         for (const r of falt) { const { error } = await sb.from("calendario_eventos").delete().eq("id", r.id); if (!error) borrados++; }
       }
       return json({ ok: true, creados, actualizados, borrados });
