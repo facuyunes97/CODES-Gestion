@@ -38,9 +38,12 @@ Deno.serve(async (req) => {
     const r = analizar(texto, nombre);
     if (r.ignorar) return json({ ok: true, ignorada: r.motivo });
     const d = r.datos;
+    // Si la misma factura ya estaba pendiente o descartada se vuelve a leer y se reactiva (así se puede subir de nuevo y configurar).
+    // Si ya estaba cargada en el sistema, se crea otra pendiente: la alerta de repetida aparece recién al cargarla.
+    let previa: any = null;
     if (d.numero && d.punto_venta && d.emisor_cuit) {
-      const dup = await sb.from("facturas_recopiladas").select("id,estado").eq("punto_venta", d.punto_venta).eq("numero", d.numero).eq("emisor_cuit", d.emisor_cuit).limit(1);
-      if (dup.data && dup.data.length) return json({ ok: true, duplicada: true, estado: dup.data[0].estado });
+      const ex = await sb.from("facturas_recopiladas").select("id,estado,pdf_path").eq("punto_venta", d.punto_venta).eq("numero", d.numero).eq("emisor_cuit", d.emisor_cuit).in("estado", ["pendiente", "descartada"]).limit(1);
+      if (ex.data && ex.data.length) previa = ex.data[0];
     }
     const uid = crypto.randomUUID();
     const seguro = nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\w.\-]+/g, "_");
@@ -55,6 +58,11 @@ Deno.serve(async (req) => {
       pdf_path: path, observaciones: r.observaciones.length ? r.observaciones.join(" ") : null,
       texto: String(texto).slice(0, 8000),
     };
+    if (previa) {
+      const up = await sb.from("facturas_recopiladas").update({ ...fila, gmail_message_id: undefined, estado: "pendiente", factura_id: null, resuelta_at: null, resuelta_por: null }).eq("id", previa.id).select("id,estado").single();
+      if (up.error) return json({ ok: false, error: up.error.message }, 500);
+      return json({ ok: true, id: up.data.id, estado: up.data.estado, releida: true, observaciones: r.observaciones });
+    }
     const ins = await sb.from("facturas_recopiladas").insert(fila).select("id,estado").single();
     if (ins.error) return json({ ok: false, error: ins.error.message }, 500);
     return json({ ok: true, id: ins.data.id, estado: ins.data.estado, observaciones: r.observaciones });
