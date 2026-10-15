@@ -16,7 +16,7 @@ var DIAS_ATRAS = 45; // primera vez: cuánto mirar hacia atrás
 function instalar() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('ciclo').timeBased().everyMinutes(10).create();
-  ScriptApp.newTrigger('soloCalendario').timeBased().everyMinutes(5).create(); // el calendario se actualiza más seguido que el resto
+  ScriptApp.newTrigger('soloCalendario').timeBased().everyMinutes(1).create(); // el calendario se actualiza cada minuto (el resto cada 10)
   ciclo();
 }
 
