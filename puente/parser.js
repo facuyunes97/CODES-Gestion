@@ -9,13 +9,56 @@ const CODIGOS = {
 
 export function numero(s) {
   if (s == null) return 0;
-  s = String(s).trim().replace(/[$\s]|ARS|USD/gi, '');
+  s = String(s).trim().replace(/[$\s]|ARS|USD|u\$s/gi, '');
   if (!s) return 0;
-  if (/,\d{1,2}$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
-  else if (/\.\d{1,2}$/.test(s) && !/,/.test(s) && (s.match(/\./g) || []).length === 1) s = s.replace(/,/g, '');
-  else s = s.replace(/[.,]/g, '');
-  const v = parseFloat(s);
-  return isNaN(v) ? 0 : v;
+  const neg = /^-/.test(s) || /^\(.*\)$/.test(s);
+  s = s.replace(/[^\d.,]/g, '');
+  const m = /^(.*?)([.,])(\d{1,2})$/.exec(s);
+  let v;
+  if (m) v = parseFloat(m[1].replace(/[.,]/g, '') + '.' + m[3]);
+  else v = parseFloat(s.replace(/[.,]/g, ''));
+  if (isNaN(v)) return 0;
+  return neg ? -v : v;
+}
+
+// Todos los importes con centavos que aparecen en el texto (formato 1.234,56 o 1,234.56 o 1234.56)
+export function importesEn(t) {
+  const out = [];
+  const re = /(?<![\d.,])(\d{1,3}(?:[.,]\d{3})+[.,]\d{2}|\d+[.,]\d{2})(?![\d])/g;
+  let m;
+  while ((m = re.exec(t))) { const v = numero(m[1]); if (v > 0 && !out.includes(v)) out.push(v); }
+  return out;
+}
+
+// Busca la combinación que cierra: neto + IVA (+ otros) = total, con IVA = neto × alícuota.
+// Devuelve null si no hay una combinación única y razonable.
+export function conciliar(t) {
+  const A = importesEn(t);
+  const tolI = n => Math.max(0.06, n * 0.0006);
+  const sol = [];
+  for (const T of A) for (const N of A) {
+    if (N >= T || N < T / 1.4) continue;
+    for (const r of [0.21, 0.105, 0.27, 0.05, 0.025]) {
+      const I = A.find(x => Math.abs(x - N * r) <= tolI(N));
+      if (I && Math.abs(N + I - T) <= 0.03) sol.push({ neto: N, iva: I, otros: 0, total: T });
+    }
+  }
+  if (!sol.length) {
+    for (const T of A) for (const N of A) {
+      if (N >= T) continue;
+      for (const r of [0.21, 0.105, 0.27]) {
+        const I = A.find(x => Math.abs(x - N * r) <= tolI(N));
+        if (!I) continue;
+        const X = A.find(x => Math.abs(N + I + x - T) <= 0.03 && x < T * 0.2);
+        if (X) sol.push({ neto: N, iva: I, otros: X, total: T });
+      }
+    }
+  }
+  if (!sol.length) return null;
+  // preferir el total que figura rotulado como TOTAL y, si no, el mayor
+  const rot = new Set([...t.matchAll(/(?:IMPORTE\s+)?TOTAL[^\d\n]{0,12}?(\d{1,3}(?:[.,]\d{3})*[.,]\d{2}|\d+[.,]\d{2})/gi)].map(x => numero(x[1])));
+  sol.sort((a, b) => (rot.has(b.total) - rot.has(a.total)) || (b.total - a.total) || (a.otros - b.otros));
+  return sol[0];
 }
 
 export function cuitValido(d) {
@@ -63,7 +106,7 @@ export function razonArriba(t) {
 
 // Devuelve { esFactura, ignorar, motivo, datos, observaciones }
 export function analizar(texto, nombreArchivo = '') {
-  const t = String(texto || '').replace(/ /g, ' ').replace(/[ \t]+/g, ' ');
+  const t = String(texto || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ');
   const obs = [];
   const tieneCAE = /\bCAE\b/i.test(t);
   const palabra = /(FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO|COMPROBANTE)/i.test(t);
@@ -83,6 +126,7 @@ export function analizar(texto, nombreArchivo = '') {
   let tipo = '';
   const mc = /C[oó]d(?:igo|\.)?:?\s*0*(\d{1,3})\b/i.exec(t);
   if (mc && CODIGOS[+mc[1]]) tipo = CODIGOS[+mc[1]];
+  if (!tipo) { const ml = /(?:^|\s)([ABCM])\s+C[oó]digo\s*(?:N[°ºro]*\.?:?\s*)?:?\s*0*(\d{1,3})?/m.exec(t); if (ml) tipo = ml[1].toUpperCase(); }
   if (!tipo) {
     const nc = /NOTA DE CR[EÉ]DITO/i.test(t), nd = /NOTA DE D[EÉ]BITO/i.test(t);
     const letra = (/\b(?:FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO)\s*(?:ELECTR[OÓ]NICA\s*)?(?:TIPO\s*)?([ABCME])\b/i.exec(t) || /(?:^|\s)([ABC])(?:\s+COD|\s*\n)/m.exec(t) || [])[1];
@@ -96,8 +140,9 @@ export function analizar(texto, nombreArchivo = '') {
 
   // Punto de venta y número
   let pv = 0, nro = 0;
-  let m = /Punto de Venta:?\s*0*(\d{1,5})\s*(?:\n|\s)\s*Comp\.?\s*(?:Nro|N[°ºo]|Nº)\.?:?\s*0*(\d{1,8})/i.exec(t);
+  let m = /Punto de Venta:?\s*0*(\d{1,5})\s*(?:\n|\s)\s*Comp\.?\s*(?:Nro|N[°ºro]|Nº)\.?:?\s*0*(\d{1,8})/i.exec(t);
   if (m) { pv = +m[1]; nro = +m[2]; }
+  if (!nro) { m = /N[úu]mero:?\s*0*(\d{1,5})\s*-\s*0*(\d{1,8})(?!\d)/i.exec(t); if (m) { pv = +m[1]; nro = +m[2]; } }
   if (!nro) {
     const sinFechas = t.replace(/\d{1,2}\/\d{1,2}\/\d{4}/g, ' ').replace(/(20|23|24|27|30|33|34)[-\s]?\d{8}[-\s]?\d(?!\d)/g, ' ');
     m = /(?<!\d)(\d{4,5})\s*[-–]\s*(\d{8})(?!\d)/.exec(sinFechas);
@@ -109,6 +154,7 @@ export function analizar(texto, nombreArchivo = '') {
   // Fecha
   let fecha = fechaISO((/Fecha de Emisi[oó]n:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
   if (!fecha) fecha = fechaISO((/(?:FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO)\s+\d{4,5}\s*-\s*\d{8}\s+(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
+  if (!fecha) fecha = fechaISO((/(?<![\w])Fecha:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
   if (!fecha) { fecha = fechaISO((/(\d{1,2}\/\d{1,2}\/\d{4})/.exec(t) || [])[1]); if (fecha) obs.push('La fecha de emisión se tomó de la primera fecha del comprobante: revisar.'); }
   if (!fecha) obs.push('No se pudo leer la fecha.');
 
@@ -138,16 +184,40 @@ export function analizar(texto, nombreArchivo = '') {
     const todos = [...t.matchAll(/Total:?\s*\$?\s*([\d.]+,\d{2})/gi)].map(x => numero(x[1]));
     if (todos.length) total = Math.max(...todos);
   }
-  if (total && neto) {
-    const resto = Math.round((total - neto - iva - otros) * 100) / 100;
-    if (Math.abs(resto) > 0.02) { otros += resto; obs.push('El total no coincide con neto + IVA: la diferencia se cargó en "otros". Revisar.'); }
-  } else if (total && !neto) {
-    obs.push('No se pudo leer el neto gravado: se cargó el total completo como neto sin IVA. Revisar.');
-    neto = total - iva - otros;
+  // Moneda: facturas en dólares (se pasan a pesos con el tipo de cambio que declara la propia factura)
+  const usd = /Son\s+D[oó]lares|\bu\$s\b|\bUSD\b|d[oó]lares?\s+estadounidenses?/i.test(t.replace(/Equivalente a:?\s*USD[\s\d.,]+/gi, '').replace(/cotizados al valor[^.]*\./gi, '').replace(/en billetes dolar[^.]*\./gi, ''))
+    && /Son\s+D[oó]lares|TOTAL\s*u\$s/i.test(t);
+  const coherente = (n, i, o, tt) => tt > 0 && n > 0 && i >= 0 && o >= 0 && i <= n && Math.abs(n + i + o - tt) <= 0.025 && o <= tt * 0.25;
+  let verificado = coherente(neto, iva, otros, total);
+  if (!verificado) {
+    const c = conciliar(t);
+    if (c) { neto = c.neto; iva = c.iva; otros = c.otros; total = c.total; verificado = true; if (especial) obs.push('Los importes se recalcularon porque los rotulados no cerraban: revisar.'); }
+  }
+  if (!verificado) {
+    // No hay combinación que cierre: no se inventa nada. Se deja solo lo rotulado como total, si es razonable.
+    const sano = total > 0 && total < 1e10 && neto >= 0 && iva >= 0 && otros >= 0 && neto <= total && Math.abs(neto + iva + otros - total) <= Math.max(1, total * 0.01);
+    if (!sano) { neto = 0; iva = 0; otros = 0; if (!(total > 0 && total < 1e10)) total = 0; }
+    obs.push('NO SE PUDIERON VERIFICAR LOS IMPORTES (neto + IVA ≠ total): completar neto, IVA y total a mano mirando el PDF.');
+  } else {
+    // Si hay varios conceptos de IVA (21% y 10,5%), no se fuerza una sola alícuota
+    const rate = neto ? iva / neto : 0;
+    if (!(Math.abs(rate - 0.21) < 0.003 || Math.abs(rate - 0.105) < 0.003 || Math.abs(rate - 0.27) < 0.003 || Math.abs(rate - 0.05) < 0.003 || Math.abs(rate - 0.025) < 0.003 || iva === 0))
+      obs.push('El IVA no coincide con una alícuota única (' + (rate * 100).toFixed(2) + '%): puede tener varias alícuotas o percepciones. Revisar.');
+  }
+  if (usd && verificado) {
+    const mt = /tipo de cambio de\s*\$?\s*([\d.,]+)/i.exec(t) || /([\d.]+,\d{4})\s*al tipo de cambio/i.exec(t);
+    let tc = mt ? numero(String(mt[1]).replace(/[^\d]+$/, '')) : 0;
+    if (mt && /\.\d{4}$|,\d{4}$/.test(String(mt[1]))) tc = numero(String(mt[1]).replace(/[.,]0+$/, ''));
+    if (!(tc > 100 && tc < 100000)) tc = 0;
+    if (tc) {
+      const f = x => Math.round(x * tc * 100) / 100;
+      const u = total; neto = f(neto); iva = f(iva); otros = f(otros); total = f(total);
+      obs.push('Factura en DÓLARES: USD ' + u.toLocaleString('es-AR', { minimumFractionDigits: 2 }) + ' convertidos a pesos a ' + tc.toLocaleString('es-AR') + ' (el tipo de cambio que figura en la factura). Revisar.');
+    } else obs.push('Factura en DÓLARES: los importes están en USD y no se encontró el tipo de cambio. Pasarlos a pesos a mano.');
   }
   if (!(total > 0)) obs.push('No se pudo leer el importe total.');
 
-  const cae = (/CAE\s*(?:N[°ºo.]*\s*)?:?\s*(\d{14})/i.exec(t) || [])[1] || '';
+  const cae = (/C\.?\s?A\.?\s?E\.?\s*(?:N[°ºro.]*\s*)?:?\s*(\d{14})/i.exec(t) || [])[1] || '';
   let razon = '';
   const mr = /Raz[oó]n Social:?\s*([^\n]+)/i.exec(t);
   if (mr) razon = mr[1].split(/\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto|Ingresos|Comp\.|Per[ií]odo)/i)[0].trim().slice(0, 90);
@@ -156,6 +226,14 @@ export function analizar(texto, nombreArchivo = '') {
     razon = (todas[0] || '').slice(0, 90);
   }
   if (!razon) { const mn = /FACTURA\s+C[oó]digo:?\s*\d+\s+[ABCM]\s+(?:[A-Z]{1,3}\s+)?(.{3,70}?)\s+[A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d/.exec(t); if (mn) razon = mn[1].trim().slice(0, 90); }
+  if (!razon) {
+    const pos = emisor ? Math.max(t.indexOf(cuitFmt(emisor)), t.indexOf(emisor)) : -1;
+    let zona = pos > 0 ? t.slice(Math.max(0, pos - 300), pos + 40) : t.slice(0, 400);
+    if (pos > 300) zona = zona.slice(zona.indexOf(' ') + 1);
+    const soc = [...zona.matchAll(/([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ0-9.&' -]{2,60}?\s(?:S\.?\s?R\.?\s?L\.?|S\.?\s?A\.?\s?S\.?|S\.?\s?A\.?|S\.?\s?H\.?))(?![A-Za-z])/g)].map(x => x[1].replace(/^(?:Concesionario Oficial|Hoja\s+\d+\s+de\s+\d+|N[úu]mero:?[\d\s-]*Hoja \d+ de \d+|Fecha:?\s*[\d/]+|ORIGINAL|DUPLICADO)\s*/i, '').trim()).filter(x => x.length > 4 && !/CODES/i.test(x));
+    if (soc.length) razon = soc[soc.length - 1].slice(0, 90);
+  }
+  if (!razon) { const mp = /\d{4,5}\s*-\s*\d{8}\s+([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ.' ]{3,50}?)\s+(?:CFNMN|FACTURA|CUIT)/.exec(t); if (mp && !/CODES/i.test(mp[1])) razon = mp[1].trim(); }
   if (!razon) razon = razonArriba(t);
   if (!emisor) obs.push('No se pudo leer el CUIT del emisor.');
   if (!razon) obs.push('No se pudo leer la razón social del emisor.');
