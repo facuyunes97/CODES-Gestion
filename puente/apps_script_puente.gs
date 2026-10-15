@@ -16,6 +16,7 @@ var DIAS_ATRAS = 45; // primera vez: cuánto mirar hacia atrás
 function instalar() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('ciclo').timeBased().everyMinutes(10).create();
+  ScriptApp.newTrigger('soloCalendario').timeBased().everyMinutes(5).create(); // el calendario se actualiza más seguido que el resto
   ciclo();
 }
 
@@ -37,6 +38,16 @@ function ciclo() {
     try { eventos_(); } catch (e) { console.error('eventos: ' + e); }
     try { avisos_(); } catch (e) { console.error('avisos: ' + e); }
     try { facturas_(); } catch (e) { console.error('facturas: ' + e); }
+  } finally { lock.releaseLock(); }
+}
+
+// Solo calendario (cheques + eventos), cada 5 min
+function soloCalendario() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return;
+  try {
+    try { cheques_(); } catch (e) { console.error('cheques: ' + e); }
+    try { eventos_(); } catch (e) { console.error('eventos: ' + e); }
   } finally { lock.releaseLock(); }
 }
 
@@ -174,5 +185,5 @@ function eventos_() {
     } catch (err) { completo = false; }
   });
   var r = llamarCal_({ action: 'importar', desde: desde, hasta: hasta, completo: completo, eventos: out });
-  if (r.creados || r.actualizados || r.borrados) console.log('Calendario: ' + r.creados + ' nuevos desde Google, ' + r.actualizados + ' editados, ' + r.borrados + ' borrados.');
+  console.log('Calendario: ' + p.ops.length + ' enviados a Google, ' + p.borrar.length + ' borrados en Google; desde Google: ' + r.creados + ' nuevos, ' + r.actualizados + ' editados, ' + r.borrados + ' borrados (' + out.length + ' eventos leídos).');
 }
