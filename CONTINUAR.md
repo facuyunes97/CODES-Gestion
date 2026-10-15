@@ -87,3 +87,9 @@
 - Facturas: botón "Subir facturas (PDF)" junto a Facturas recopiladas (solo dueño/contador). Varios PDF a la vez; resumen con leídas / ya estaban / no se pudieron usar. Quedan Pendientes en recopiladas con remitente "Subida a mano".
 - Edge Function `leer_factura` (v1): valida el token (perfiles.rol dueño/contador activo), lee con unpdf + parser.js, dedupe por CUIT+pv+número, guarda PDF en `facturas-recopiladas/manual/...`. El auto-descarte por factura ya cargada sigue funcionando (trigger).
 - No probado con un PDF real contra la función (desde el entorno no se llega a Supabase); probar con una factura real.
+
+## Alerta de factura repetida (15-oct)
+- Antes de guardar una factura (formulario manual, tx y Facturas, o "Cargar" desde Facturas recopiladas) si ya existe la misma (proveedor/CUIT + tipo + PV + número) sale una alerta con "Descartarla" o "Cargarla de todas formas".
+- BD: `facturas.dup_autorizada` (true = cargada a propósito pese a repetida). La unicidad ahora es un índice parcial `facturas_unica_no_dup` (where not dup_autorizada) en vez de la constraint vieja.
+- Recopiladas: el descarte automático (misma factura y mismo total) se mantiene; si el total difiere, aparece la alerta.
+- Test: scratchpad `test36.js`.
