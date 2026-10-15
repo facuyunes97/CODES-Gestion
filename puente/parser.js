@@ -204,6 +204,29 @@ export function analizar(texto, nombreArchivo = '') {
     if (!(Math.abs(rate - 0.21) < 0.003 || Math.abs(rate - 0.105) < 0.003 || Math.abs(rate - 0.27) < 0.003 || Math.abs(rate - 0.05) < 0.003 || Math.abs(rate - 0.025) < 0.003 || iva === 0))
       obs.push('El IVA no coincide con una alícuota única (' + (rate * 100).toFixed(2) + '%): puede tener varias alícuotas o percepciones. Revisar.');
   }
+  // Criterio contable: se detecta la alícuota (0 - 10,5 - 21 - 27 %) y el IVA es neto × alícuota.
+  // Lo que sobre hasta el total de la factura (percepciones, no gravado, impuestos internos) va a "otros".
+  let alicuota = 'otro';
+  if (verificado && neto > 0) {
+    const ALI = [0, 10.5, 21, 27];
+    const cerca = r => ALI.find(a => Math.abs(r * 100 - a) <= 0.35);
+    let a = cerca(neto ? iva / neto : 0);
+    if (a === undefined || (a === 0 && iva > 0.05)) {
+      const vistas = [...new Set([...t.matchAll(/IVA\s*(?:\([A-Z]\)\s*)?(\d{1,2}(?:[.,]\d{1,2})?)\s*%/gi)].map(x => numero(String(x[1]).replace(',', '.') + (/[.,]/.test(x[1]) ? '' : '.00'))).filter(v => ALI.includes(v) && v > 0))];
+      a = vistas.length === 1 ? vistas[0] : undefined;
+    }
+    if (a === undefined && iva === 0) a = 0;
+    if (a !== undefined) {
+      alicuota = String(a);
+      let calc = Math.round(neto * a) / 100;
+      if (Math.abs(calc - iva) <= 0.5) calc = iva; // diferencias de redondeo de la propia factura: vale el IVA impreso
+      const resto = Math.round((total - neto - calc) * 100) / 100;
+      if (Math.abs(calc - iva) > 0.02) obs.push('IVA calculado como neto × ' + String(a).replace('.', ',') + '% = ' + calc.toLocaleString('es-AR', { minimumFractionDigits: 2 }) + ' (la factura traía ' + iva.toLocaleString('es-AR', { minimumFractionDigits: 2 }) + '). Revisar.');
+      iva = calc; otros = Math.max(0, resto);
+      if (resto < -0.02) obs.push('El neto + IVA supera al total de la factura: revisar los importes.');
+      else if (otros > 0.02) obs.push('Hay ' + otros.toLocaleString('es-AR', { minimumFractionDigits: 2 }) + ' de percepciones / no gravado / otros sobre el neto + IVA (van en "otros").');
+    } else obs.push('No se pudo determinar una única alícuota de IVA (0 - 10,5 - 21 - 27 %): se dejó el IVA de la factura, revisar o cargarlo a mano ("Otros").');
+  }
   if (usd && verificado) {
     const mt = /tipo de cambio de\s*\$?\s*([\d.,]+)/i.exec(t) || /([\d.]+,\d{4})\s*al tipo de cambio/i.exec(t);
     let tc = mt ? numero(String(mt[1]).replace(/[^\d]+$/, '')) : 0;
@@ -244,7 +267,7 @@ export function analizar(texto, nombreArchivo = '') {
       emisor_cuit: cuitFmt(emisor), emisor_razon: razon, receptor_cuit: receptor ? cuitFmt(receptor) : '',
       tipo, punto_venta: pv || null, numero: nro || null, fecha: fecha || null,
       neto_gravado: Math.round(neto * 100) / 100, iva: Math.round(iva * 100) / 100, otros: Math.round(otros * 100) / 100,
-      total: Math.round(total * 100) / 100, cae
+      total: Math.round(total * 100) / 100, cae, alicuota
     },
     observaciones: obs
   };
