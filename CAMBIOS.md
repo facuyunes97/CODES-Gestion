@@ -21,3 +21,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 0.5 (15-oct-2026)
 - Calendario: cada recordatorio creado en la app muestra "Enlazando con Google…" hasta que el script de Google lo copia, y después "En Google".
 - Script de Google (Apps Script): el calendario se sincroniza cada 1 minuto (antes 5 o 10). Hay que pegar el script nuevo y ejecutar "instalar" una vez.
+
+## Codes 0.6 (17-oct-2026)
+- Combustible y aceite: cada tabla de obra termina con una fila de totales (litros y total en $), y al final hay un total general de todas las obras.
+- Avisos de Telegram por cada movimiento de calendario, cheques y combustible (ver cambios del 15-oct en el script de Google).
