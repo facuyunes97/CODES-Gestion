@@ -37,3 +37,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 0.8 (17-oct-2026)
 - Obras finalizadas: ya no aparecen como centro de costo en las listas y selectores (inicio, filtros y formularios de transacciones, resumen, Contratistas, Certificación, Resumen de gasto, Avance de obra). Quedan solo en Centro de costos (Administración) y en Centro de costos (obras) de Ingeniería, donde el dueño puede reabrirlas. Los resultados históricos del Resumen operativo siguen incluyéndolas.
 - Avance de obra: cada obra en curso se muestra como una tarjeta con su % de avance y, arriba, una solapa que abre el detalle: ítems con su incidencia, subcontratistas y la lista de certificaciones de cada uno con cuánto suma cada una al avance de la obra. Aviso si hay subcontratistas sin ítem asignado.
+
+## Codes 0.9 (17-oct-2026)
+- Avance de obra: en el bloque de cada subcontratista (dentro de la solapa de la obra) el dueño y el ingeniero anotan directamente su incidencia en % en la obra. No hace falta crear un ítem aparte: el sistema lo crea solo. Valida que no pase de 100 % entre todos. Con la incidencia cargada, cada certificación del subcontratista suma al avance de la obra.
