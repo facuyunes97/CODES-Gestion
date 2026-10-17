@@ -531,6 +531,7 @@ const S={
   {id:'ct1',nombre:'Hormigones Pérez (ejemplo)',cuit:'',tel:'',obraId:'cc2',terceroId:'t6',trabajo:'Estructura de hormigón',dias:45,monto:1200000,estado:'activo',obs:'',ini:'LG'},
   {id:'ct2',nombre:'Electricidad Ruiz (ejemplo)',cuit:'',tel:'',obraId:'cc3',terceroId:'t7',trabajo:'Instalación eléctrica',dias:20,monto:800000,estado:'activo',obs:'',ini:'LG'}],
  certifs:[{id:'ce1',contratistaId:'ct1',fecha:'2026-09-28',pct:40,monto:480000,desc:0,obs:'',ini:'LG'}],
+ items:[{id:'it1',obraId:'cc2',nombre:'Estructura de hormigón',inc:50,contratistaId:'ct1',avance:0,obs:'',ini:'LG'},{id:'it2',obraId:'cc2',nombre:'Mampostería y cerramientos',inc:30,contratistaId:'',avance:20,obs:'',ini:'LG'},{id:'it3',obraId:'cc2',nombre:'Terminaciones',inc:20,contratistaId:'',avance:0,obs:'',ini:'LG'}],
  anticipos:[{id:'an1',contratistaId:'ct2',fecha:'2026-09-20',monto:100000,obs:'',ini:'LG'}],
  precios:{nafta:1200,diesel_500:1300,diesel_premium:1500,aceite_hidraulico:4200,aceite_motor:5100,aceite_transmision:4800,aceite_super_30:3900},
  ace:[],
@@ -695,7 +696,7 @@ window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
 const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['calendario','Calendario','calendario'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
-const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
+const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['avance','Avance de obra','cono'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
 const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor'],['aceite','Aceite','gota']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 function renderNav(){
@@ -706,7 +707,7 @@ function renderNav(){
   const sec=(k,t,items)=>{const ab=!S.navCerr[k];return `<button class="navsec" data-sec="${k}" aria-expanded="${ab}" aria-controls="grp-${k}"><span>${t}</span><span class="car" aria-hidden="true">▾</span></button><div class="navgrp" id="grp-${k}" ${ab?'':'hidden'}>${items.filter(([v])=>vistaPermitida(v)).map(btn).join('')}</div>`};
   document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()?sec('ing','Ingeniería / Obras',NAV_ING):'')+(veIng()||soloMaq()?sec('ope','Operario',NAV_OPE):'')+(veAdm()?`<div class="navbot">${btn(['ingres','Resumen operativo','plano'])}</div>`:'');
 }
-function go(v){KF_FILES=[];S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.finConf=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.ef=null;S.recopDup=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
+function go(v){KF_FILES=[];S.itf=null;S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.finConf=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.ef=null;S.recopDup=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
@@ -1658,6 +1659,8 @@ const toContrat=c=>({id:c.id,nombre:c.nombre,cuit:c.cuit||null,telefono:c.tel||n
 const fromCertif=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,pct:+r.avance_pct,monto:+r.monto,desc:+r.descuento_anticipo||0,obs:r.observaciones||'',ini:r.iniciales||'',adj:Array.isArray(r.adjuntos)?r.adjuntos:[]});
 const fromAntic=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,monto:+r.monto,obs:r.observaciones||'',ini:r.iniciales||''});
 const toAntic=a=>({id:a.id,contratista_id:a.contratistaId,fecha:a.fecha,monto:num(a.monto),observaciones:a.obs||null});
+const fromItem=r=>({id:r.id,obraId:r.obra_id,nombre:r.nombre,inc:+r.incidencia_pct,contratistaId:r.contratista_id||'',avance:+r.avance_pct||0,obs:r.observaciones||'',ini:r.iniciales||''});
+const toItem=x=>({id:x.id,obra_id:x.obraId,nombre:x.nombre,incidencia_pct:+x.inc,contratista_id:x.contratistaId||null,avance_pct:x.contratistaId?0:+x.avance||0,observaciones:x.obs||null});
 const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),descuento_anticipo:num(k.desc),observaciones:k.obs||null,adjuntos:k.adj||[]});
 const fromEvento=r=>({id:r.id,tipo:r.tipo,titulo:r.titulo,fecha:r.fecha,fin:r.fecha_fin||'',hora:(r.hora||'').slice(0,5),horaFin:(r.hora_fin||'').slice(0,5),desc:r.descripcion||'',hecho:!!r.hecho,origen:r.origen,gid:r.google_event_id||'',by:r.created_by||''});
 const fromComb=r=>({id:r.id,maqId:r.maquina_id,obraId:r.obra_id||'',tipo:r.tipo_combustible||'',fh:r.fecha_hora,litros:+r.litros,precio:+r.precio_litro||0,ini:r.iniciales||'',by:r.created_by||'',reg:r.created_at||'',estId:r.estacion_id||''});
@@ -1694,6 +1697,7 @@ const COLS=[
  {k:'params',tabla:'parametros',arr:()=>[{id:'idc',valor:+S.idcRate}],to:x=>x,fijo:true},
  {k:'contrat',tabla:'contratistas',arr:()=>S.contratistas,to:toContrat},
  {k:'certifs',tabla:'certificaciones',arr:()=>S.certifs,to:toCertif},
+ {k:'items',tabla:'obra_items',arr:()=>S.items,to:toItem},
  {k:'eventos',tabla:'calendario_eventos',arr:()=>S.eventos,to:toEvento},
  {k:'comb',tabla:'combustible_cargas',arr:()=>S.comb,to:toComb},
  {k:'ace',tabla:'combustible_cargas',arr:()=>S.ace,to:toComb},
@@ -1719,7 +1723,7 @@ const must=r=>{if(r.error)throw r.error;return r};
 const unaFila=r=>{must(r);if(!r.data||!r.data.length){const e=new Error('SIN_PERMISO');throw e}};
 async function aplicar(d){
   let hubo=false;
-  const orden=['tipos','terceros','centros','precios','contrat','certifs','antic','comb','ace','arreglos','eventos','facturas','cheques','cuentas','params'];
+  const orden=['tipos','terceros','centros','precios','contrat','certifs','items','antic','comb','ace','arreglos','eventos','facturas','cheques','cuentas','params'];
   for(const k of orden){
     for(const o of d.add.filter(x=>x.c.k===k&&!x.c.fijo)){must(await sb.from(o.c.tabla).insert(o.p));SY.sh[k].set(o.id,{p:o.p,j:o.j});if(k==='contrat')hubo=true}
     for(const o of d.mod.filter(x=>x.c.k===k)){
@@ -1738,7 +1742,7 @@ async function aplicar(d){
       if(r.error){await sb.rpc('guardar_transaccion',{p:o.antes});throw r.error}}
     SY.sh.trans.set(o.id,{p:o.p,j:o.j})}
   for(const o of d.del.filter(x=>x.c.k==='trans').sort((a,b)=>(b.antes.padre_id?1:0)-(a.antes.padre_id?1:0))){unaFila(await sb.from('transacciones').delete().eq('id',o.id).select('id'));SY.sh.trans.delete(o.id)}
-  for(const k of ['certifs','antic','contrat','comb','ace','arreglos','eventos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
+  for(const k of ['items','certifs','antic','contrat','comb','ace','arreglos','eventos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
   return hubo}
 function progSync(){if(!AUTH||!S.sesion||SY.cargando||!SY.sh)return;clearTimeout(SY.t);SY.t=setTimeout(correrSync,200)}
 async function correrSync(){
@@ -1753,7 +1757,7 @@ async function correrSync(){
   if(hubo){try{await cargarDatos()}catch(e){}render()}else pintaChip();
 }
 async function traer(tabla,sel,ord){let out=[],desde=0;for(;;){let q=sb.from(tabla).select(sel);(ord||[]).forEach(([c,a])=>q=q.order(c,{ascending:a}));const {data,error}=await q.range(desde,desde+999);if(error)throw error;out=out.concat(data);if(data.length<1000)return out;desde+=1000}}
-const TL={calendario_eventos:'Evento',transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina',anticipos_obra:'Anticipo de obra',precios_combustible:'Precio de combustible'};
+const TL={calendario_eventos:'Evento',transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',obra_items:'Ítem de obra',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina',anticipos_obra:'Anticipo de obra',precios_combustible:'Precio de combustible'};
 function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||{};
   let acc={INSERT:'Alta',UPDATE:'Modificación',DELETE:'Eliminación'}[a.accion]||a.accion,det='';
   switch(a.tabla){
@@ -1769,6 +1773,7 @@ function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||
    case 'cuentas':det=d.nombre;break;
    case 'tipos_centro':det=d.nombre;break;
    case 'contratistas':det=d.nombre+' · '+money(d.monto);break;
+   case 'obra_items':det=d.nombre+' · incidencia '+d.incidencia_pct+'%';break;
    case 'certificaciones':det='Avance '+d.avance_pct+'% · '+money(d.monto);break;
    case 'combustible_cargas':det=lts(d.litros)+(d.tipo_combustible?' '+(ALL_T[d.tipo_combustible]||''):'');break;
    case 'anticipos_obra':det=money(d.monto);break;
@@ -1806,7 +1811,7 @@ async function cargarDatos(){
     Object.keys(CC_TIPOS).forEach(k=>delete CC_TIPOS[k]);CC_OBRA.clear();ti.forEach(t=>{CC_TIPOS[t.id]=t.nombre;if(t.lleva_contrato)CC_OBRA.add(t.id)});
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
-    S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);{const cbA=cb.map(fromComb);S.comb=cbA.filter(x=>!ACE_T[x.tipo]);S.ace=cbA.filter(x=>ACE_T[x.tipo])}S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]));pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
+    S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);S.items=(await traer('obra_items','*',[['orden',true],['created_at',true],['id',true]]).catch(()=>[])).map(fromItem);{const cbA=cb.map(fromComb);S.comb=cbA.filter(x=>!ACE_T[x.tipo]);S.ace=cbA.filter(x=>ACE_T[x.tipo])}S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]));pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
     S.eventos=evs.map(fromEvento);S.remitMap={};rmp.forEach(x=>{S.remitMap[x.email]={cuit:x.cuit||'',razon:x.razon||''}});S.recop=rcp.map(fromRecop);rcRellenar();
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
@@ -1826,10 +1831,10 @@ function recargaRemota(){clearTimeout(SY.tRe);SY.tRe=setTimeout(async function i
   if(SY.corriendo||SY.cargando||hayCambios()||escribiendo){SY.tRe=setTimeout(intento,1500);return}
   try{await cargarDatos();render()}catch(e){console.error(e)}},700)}
 function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
-  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible','calendario_eventos'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
+  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible','calendario_eventos','obra_items'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
   SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
 function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
-  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.eventos=[];S.contratistas=[];S.certifs=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.eventos=[];S.contratistas=[];S.certifs=[];S.items=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -1930,7 +1935,7 @@ function crearUsuario(F,porAdmin){
   S.usuarios.push(u);S.audit.push({fecha:nowStamp(),ini:porAdmin?S.user:ini,accion:'Alta de usuario',detalle:u.nombre+' '+u.apellido+' · '+ini+' · '+ROL_TXT(u.rol),txId:null});
   return u;
 }
-function entrar(u){S.sesion=u.id;S.pick={};S.edit=null;S.modal=null;S.user=u.iniciales;S.view=vistaInicial(u.rol);S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.reg=null;render();window.scrollTo(0,0);toast('Hola, '+u.nombre)}
+function entrar(u){S.sesion=u.id;S.pick={};S.edit=null;S.modal=null;S.user=u.iniciales;S.view=vistaInicial(u.rol);S.itf=S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.reg=null;render();window.scrollTo(0,0);toast('Hola, '+u.nombre)}
 function vLogin(){
   if(AUTH)return `<div class="lg-card"><div class="hazard" aria-hidden="true"></div><div class="in"><img class="logo-c" src="${LOGO_C}" alt="CODES Construcciones"><img class="logo-o" src="${LOGO_O}" alt="CODES Construcciones">${vLoginAuth()}</div></div>`;
   const act=S.usuarios.filter(u=>u.activo);
@@ -2386,7 +2391,7 @@ const manejaIng=()=>['dueno','ingeniero'].includes(rolDe());
 const veIng=()=>veAdm()||rolDe()==='ingeniero';
 const soloMaq=()=>rolDe()==='operario';
 const cargaMaq=()=>['dueno','ingeniero','operario'].includes(rolDe());
-const ING_VIEWS=['obras','contrat','certif','gasto'],OPE_VIEWS=['maq','arreglos','comb','aceite'];
+const ING_VIEWS=['obras','contrat','avance','certif','gasto'],OPE_VIEWS=['maq','arreglos','comb','aceite'];
 const COMB_T={nafta:'Nafta',diesel_500:'Diésel 500',diesel_premium:'Diésel Premium'};
 const ACE_T={aceite_hidraulico:'Aceite hidráulico',aceite_motor:'Aceite de motor',aceite_transmision:'Aceite de transmisión',aceite_super_30:'Aceite Súper 30'};
 const ALL_T={...COMB_T,...ACE_T};
@@ -2396,7 +2401,7 @@ const veContrato=()=>!['ingeniero','operario'].includes(rolDe());
 const vistaPermitida=v=>v==='ingres'?veAdm():OPE_VIEWS.includes(v)?(veIng()||soloMaq()):ING_VIEWS.includes(v)?veIng():(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
 const vistaInicial=r=>{r=r||rolDe();return ['dueno','contador','lector'].includes(r)?'inicio':r==='operario'?'comb':'obras'};
 S.navCerr=(()=>{try{return JSON.parse(localStorage.getItem('navCerr'))||{}}catch(e){return {}}})();
-S.cf=null;S.kf=null;S.af=null;S.bf=null;S.anf=null;S.pf=null;S.igDel=null;S.obraF='';S.maqF='';S.cbD0='';S.cbD1='';S.irPer='todo';
+S.itf=null;S.avObra='';S.cf=null;S.kf=null;S.af=null;S.bf=null;S.anf=null;S.pf=null;S.igDel=null;S.obraF='';S.maqF='';S.cbD0='';S.cbD1='';S.irPer='todo';
 const obras=()=>S.centros.filter(c=>c.tipo==='obra');
 const maquinas=()=>S.centros.filter(c=>c.tipo==='maquina');
 const ahoraLocal=()=>TODAY+'T'+new Date().toLocaleTimeString('sv-SE',{timeZone:TZ}).slice(0,5);
@@ -2446,6 +2451,7 @@ function igDelBox(k){
   let msg,ok=true;
   if(k==='contrat'){const n=certDe(D.id).length+S.anticipos.filter(y=>y.contratistaId===D.id).length;if(n){ok=false;msg=`Tiene ${n} certificación o anticipo cargado. Eliminalos primero, o marcá al contratista como finalizado.`}else msg='Se elimina el contratista y su monto deja de contar en la obra.'}
   else if(k==='antic'){const x=by(S.anticipos,D.id);if(x&&antTot(x.contratistaId)-x.monto<antDesc(x.contratistaId)-0.005){ok=false;msg='Ese anticipo ya se descontó en certificaciones. Eliminá primero esas certificaciones.'}else msg='Esto no se puede deshacer.'}
+  else if(k==='item')msg='Se elimina el ítem y su incidencia queda sin asignar. Las certificaciones del subcontratista no se tocan.';
   else if(k==='adj')msg='Se quita el archivo adjunto de esta certificación.';
   else msg='Esto no se puede deshacer.';
   return `<section class="panel" style="padding:0"><div class="alerta" role="alertdialog" style="margin:0;border:0"><b>¿Eliminar este registro?</b><span>${msg}</span><div class="actions"><button class="btn" data-act="ig-del-no">${ok?'Cancelar':'Entendido'}</button>${ok?`<button class="btn danger" data-act="ig-del-ok">Sí, eliminar</button>`:''}</div></div></section>`}
@@ -2515,6 +2521,51 @@ function ctSave(){
     S.contratistas.push({id:nid('ct'),nombre,cuit:F.cuit.trim(),tel:F.tel.trim(),obraId:F.obraId,terceroId,trabajo:F.trabajo.trim(),dias:dias>0?dias:0,monto,estado:'activo',obs:F.obs.trim(),ini:S.user});
     aud('Alta','Contratista '+nombre+' · '+money(monto));toast('Contratista cargado. Ya suma a la obra.')}
   S.cf=null;render()}
+
+/* --- Avance de obra: ítems de obra, incidencia y subcontratista --- */
+const itemsDe=oid=>S.items.filter(i=>i.obraId===oid);
+const itemAv=i=>Math.max(0,Math.min(100,i.contratistaId?certPct(i.contratistaId):(+i.avance||0)));
+const incSum=oid=>sum(itemsDe(oid),i=>i.inc);
+const obraAv=oid=>Math.min(100,sum(itemsDe(oid),i=>i.inc*itemAv(i)/100));
+const pctN=v=>parseFloat(String(v).replace(',','.'));
+const fp=n=>(Math.round(n*10)/10).toString().replace('.',',')+' %';
+function vAvance(){
+  const F=S.itf,os=obras().filter(o=>o.activo!==false||o.id===S.avObra);
+  if(!S.avObra||!by(S.centros,S.avObra))S.avObra=(os.find(o=>!o.fin)||os[0]||{}).id||'';
+  const oid=S.avObra,ob=oid&&centro(oid),its=itemsDe(oid),edit=manejaIng()&&!(ob&&ob.fin);
+  const si=incSum(oid),av=obraAv(oid);
+  const disp=x=>ctDe(oid).filter(c=>c.id===x.contratistaId||!S.items.some(y=>y.contratistaId===c.id));
+  const form=F&&edit?`<section class="panel"><h2>${F.id?'Editar ítem':'Nuevo ítem de obra'}</h2>${errBox(F)}<div class="fields">
+   ${fld('itf-nombre','Ítem <em>*</em>',txt('itf-nombre','itf.nombre',F.nombre,'Ej: Estructura de hormigón'),'',2)}
+   ${fld('itf-inc','Incidencia en la obra (%) <em>*</em>',`<input id="itf-inc" data-ig="itf.inc" value="${esc(F.inc)}" inputmode="decimal" placeholder="Ej: 25">`,`Cuánto pesa este ítem en toda la obra. Quedan libres ${fp(Math.max(0,100-si+(F.id?(by(S.items,F.id)||{}).inc||0:0)))}.`)}
+   ${fld('itf-ct','Subcontratista',`<select id="itf-ct" data-ig="itf.contratistaId">${opt('','Sin subcontratista (trabajo propio)',F.contratistaId)}${disp({contratistaId:F.contratistaId}).map(c=>opt(c.id,c.nombre,F.contratistaId)).join('')}</select>`,'Si lo asignás, el avance del ítem es el que se cargue en Certificación para ese subcontratista.',2)}
+   ${fld('itf-obs','Observaciones',txt('itf-obs','itf.obs',F.obs),'',2)}
+  </div><div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="av-cancel">Cancelar</button><button type="button" class="btn dark" data-act="av-save">${F.id?'Guardar cambios':'Crear ítem'}</button></div></section>`:'';
+  const rows=its.map(x=>{const a=itemAv(x),ct=x.contratistaId&&by(S.contratistas,x.contratistaId);
+    const ctCel=edit?`<select class="rolsel" data-avct="${x.id}" aria-label="Subcontratista de ${esc(x.nombre)}">${opt('','Sin subcontratista (trabajo propio)',x.contratistaId)}${disp(x).map(c=>opt(c.id,c.nombre,x.contratistaId)).join('')}</select>`:esc(ct?ct.nombre:'Trabajo propio');
+    const avCel=ct?`${barra(a)}<br><span class="sub">según la certificación de ${esc(ct.nombre)}</span>${edit?`<br><button type="button" class="btn small" data-act="ce-new" data-ct="${ct.id}">Cargar avance del subcontrato</button>`:''}`
+      :edit?`<input class="num" style="width:80px" data-avpct="${x.id}" value="${esc(String(a).replace('.',','))}" inputmode="decimal" aria-label="Avance de ${esc(x.nombre)} (%)"> % ${barra(a)}`:barra(a);
+    return `<tr><td><b>${esc(x.nombre)}</b>${x.obs?`<br><span class="sub">${esc(x.obs)}</span>`:''}</td><td class="num">${fp(x.inc)}</td><td>${ctCel}</td><td style="min-width:170px">${avCel}</td><td class="num"><b>${fp(x.inc*a/100)}</b></td><td>${edit?`<button class="btn small" data-act="av-edit" data-id="${x.id}">Editar</button> <button class="btn small danger" data-act="ig-del" data-k="item" data-id="${x.id}">Eliminar</button>`:''}</td></tr>`}).join('');
+  const sel=`<select id="igAvObra" aria-label="Obra" class="rolsel">${os.map(o=>opt(o.id,o.codigo+' · '+o.nombre+(o.fin?' (finalizada)':''),oid)).join('')}</select>`;
+  const falta=its.length&&Math.abs(si-100)>0.05;
+  return head('Avance de obra','Cada obra se divide en ítems con su incidencia (suman 100 %). El avance de cada ítem sube solo cuando se certifica al subcontratista asignado.',`${!edit||F||!oid?'':'<button class="btn small primary" data-act="av-new">+ Nuevo ítem</button>'}${xlsBtn('avance')}`)+form+igDelBox('item')+
+  `<section class="panel"><div class="toolbar" style="padding-top:14px">${sel}<span class="sub">${its.length} ítem${its.length===1?'':'s'}</span></div>
+   ${oid?`<div class="ctsum"><span>Avance de la obra <b>${fp(av)}</b></span><span class="ctbar">${barra(av)}</span><span>Incidencias cargadas <b>${fp(si)}</b></span></div>`:''}
+   ${falta?`<div class="alerta" role="status" style="margin:0 16px 12px"><b>Las incidencias suman ${fp(si)}, no 100 %.</b><span>${si<100?'Faltan '+fp(100-si)+' por asignar a algún ítem.':'Se pasan '+fp(si-100)+': bajá la incidencia de algún ítem.'} El avance de la obra se calcula con lo cargado.</span></div>`:''}
+   ${its.length?`<div class="tw"><table><thead><tr><th>Ítem</th><th class="num">Incidencia</th><th>Subcontratista</th><th>Avance del ítem</th><th class="num">Aporta a la obra</th><th></th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="ft"><td>Total de la obra</td><td class="num">${fp(si)}</td><td></td><td>${barra(av)}</td><td class="num">${fp(av)}</td><td></td></tr></tfoot></table></div>`:`<div class="empty">${oid?'Esta obra todavía no tiene ítems. Cargá el primero con "+ Nuevo ítem".':'Todavía no hay obras cargadas.'}</div>`}
+   <div class="legend">Aporta a la obra = incidencia × avance del ítem. Los ítems con subcontratista toman su avance de la última certificación (avance acumulado); los de trabajo propio se cargan acá a mano.</div></section>`}
+function itemSave(){
+  const F=S.itf;F.err='';const fail=m=>{F.err=m;render()};
+  const nombre=F.nombre.trim(),inc=pctN(F.inc),oid=S.avObra;
+  if(!oid)return fail('Elegí la obra.');
+  if(!nombre)return fail('Cargá el nombre del ítem.');
+  if(!(inc>0&&inc<=100))return fail('La incidencia tiene que ser un porcentaje entre 0 y 100.');
+  const otros=sum(itemsDe(oid).filter(x=>x.id!==F.id),x=>x.inc);
+  if(otros+inc>100.05)return fail('Con este ítem las incidencias pasarían de 100 % (los otros ítems ya suman '+fp(otros)+'; queda '+fp(Math.max(0,100-otros))+').');
+  if(F.contratistaId&&S.items.some(y=>y.id!==F.id&&y.contratistaId===F.contratistaId))return fail('Ese subcontratista ya está asignado a otro ítem.');
+  if(F.id){const x=by(S.items,F.id);if(x.contratistaId&&!F.contratistaId)x.avance=itemAv(x);Object.assign(x,{nombre,inc,contratistaId:F.contratistaId||'',obs:F.obs.trim()});aud('Modificación','Ítem de obra '+nombre+' · '+fp(inc));toast('Ítem actualizado')}
+  else{S.items.push({id:nid('it'),obraId:oid,nombre,inc,contratistaId:F.contratistaId||'',avance:0,obs:F.obs.trim(),ini:S.user});aud('Alta','Ítem de obra '+nombre+' · '+fp(inc));toast('Ítem cargado')}
+  S.itf=null;render()}
 
 /* --- Certificación y anticipos --- */
 function kfCalc(F,from){const c=by(S.contratistas,F.contratistaId);if(!c)return;const prev=certPct(c.id);
@@ -2729,6 +2780,10 @@ function igAct(act,a){
    case 'mq-edit':{if(!manejaIng())return true;const c=centro(a.dataset.id);S.ccForm={...num0(),kind:'maquina',id:c.id,codigo:c.codigo,nombre:c.nombre,tipo:'maquina',clienteId:'',contrato:'',marca:c.marca||'',modelo:c.modelo||'',anio:c.anio?String(c.anio):'',patente:c.patente||'',notas:c.notas||''};render();window.scrollTo(0,0);return true}
    case 'ct-new':if(!manejaIng())return true;S.cf={id:null,nombre:'',cuit:'',tel:'',obraId:S.obraF||'',terceroId:'',trabajo:'',dias:'',monto:'',obs:'',err:''};render();window.scrollTo(0,0);return true;
    case 'ct-edit':{if(!manejaIng())return true;const c=by(S.contratistas,a.dataset.id);S.cf={id:c.id,nombre:c.nombre,cuit:c.cuit||'',tel:c.tel||'',obraId:c.obraId,terceroId:c.terceroId||'',trabajo:c.trabajo||'',dias:c.dias?String(c.dias):'',monto:toIn(c.monto),obs:c.obs||'',err:''};render();window.scrollTo(0,0);return true}
+   case 'av-new':{if(!manejaIng())return true;S.itf={id:null,nombre:'',inc:'',contratistaId:'',obs:'',err:''};render();window.scrollTo(0,0);return true}
+   case 'av-edit':{if(!manejaIng())return true;const x=by(S.items,a.dataset.id);if(!x)return true;S.itf={id:x.id,nombre:x.nombre,inc:String(x.inc).replace('.',','),contratistaId:x.contratistaId||'',obs:x.obs||'',err:''};render();window.scrollTo(0,0);return true}
+   case 'av-cancel':S.itf=null;render();return true;
+   case 'av-save':itemSave();return true;
    case 'ct-cancel':S.cf=null;render();return true;
    case 'ct-pagos':S.ctPagos=S.ctPagos===a.dataset.id?null:a.dataset.id;render();return true;
    case 'ct-save':ctSave();return true;
@@ -2756,15 +2811,17 @@ function igAct(act,a){
      const b=S.backups.find(x=>x.id===id),url=URL.createObjectURL(new Blob([JSON.stringify(d.datos)],{type:'application/json'})),l=document.createElement('a');l.href=url;l.download='CODES - Backup - '+(b?new Date(b.creado).toLocaleDateString('sv-SE',{timeZone:TZ}):'copia')+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Backup descargado')})();return true}
    case 'ig-del-ok':{if(!manejaIng()||!S.igDel)return true;const {k,id,i}=S.igDel;S.igDel=null;
      if(k==='adj'){const c=by(S.certifs,id),x=c&&(c.adj||[])[+i];if(x){c.adj=c.adj.filter((_,j)=>j!==+i);if(REAL&&x.p)sb.storage.from('adjuntos-obra').remove([x.p]).catch(()=>{});aud('Eliminación','Adjunto '+x.n+' de certificación');toast('Adjunto quitado')}render();return true}
-     const T={contrat:['contratistas',x=>'Contratista '+x.nombre],certif:['certifs',x=>'Certificación '+money(x.monto)],antic:['anticipos',x=>'Anticipo de obra '+money(x.monto)],comb:['comb',x=>'Combustible '+lts(x.litros)],ace:['ace',x=>'Aceite '+lts(x.litros)],arreglo:['arreglos',x=>'Arreglo '+x.desc]}[k];
+     const T={contrat:['contratistas',x=>'Contratista '+x.nombre],certif:['certifs',x=>'Certificación '+money(x.monto)],antic:['anticipos',x=>'Anticipo de obra '+money(x.monto)],comb:['comb',x=>'Combustible '+lts(x.litros)],ace:['ace',x=>'Aceite '+lts(x.litros)],arreglo:['arreglos',x=>'Arreglo '+x.desc],item:['items',x=>'Ítem de obra '+x.nombre]}[k];
      if(!T)return true;const x=by(S[T[0]],id);if(!x)return render(),true;
      if(k==='contrat'&&(certDe(id).length||S.anticipos.some(y=>y.contratistaId===id)))return render(),true;
      if(k==='antic'&&antTot(x.contratistaId)-x.monto<antDesc(x.contratistaId)-0.005)return render(),true;
+     if(k==='contrat')S.items.forEach(i=>{if(i.contratistaId===id){i.avance=itemAv(i);i.contratistaId=''}});
      S[T[0]]=S[T[0]].filter(y=>y.id!==id);aud('Eliminación',T[1](x));render();toast('Eliminado');return true}
   }
   return false}
 Object.assign(EXPORTS,{
   obras(){const vc=veContrato();return {name:'Obras',sheets:[{name:'Obras',rows:[['Código','Obra'].concat(vc?['Cliente','Contrato']:[],['Contratistas','Contratado','Certificado','Avance %','Por certificar'])].concat(obras().map(c=>{const cts=ctDe(c.id),con=sum(cts,x=>x.monto),cer=sum(cts,x=>certMonto(x.id)),cl=c.clienteId&&tercero(c.clienteId);return [c.codigo,c.nombre].concat(vc?[cl?cl.razon:'',c.contrato||0]:[],[cts.length,con,cer,con>0?Math.round(cer/con*1000)/10:0,con-cer])}))}]}},
+  avance(){const rows=[['Obra','Ítem','Incidencia %','Subcontratista','Avance del ítem %','Aporta a la obra %']];obras().forEach(o=>itemsDe(o.id).forEach(x=>{const a=itemAv(x);rows.push([o.codigo+' · '+o.nombre,x.nombre,x.inc,x.contratistaId?((by(S.contratistas,x.contratistaId)||{}).nombre||''):'Trabajo propio',Math.round(a*10)/10,Math.round(x.inc*a)/100])}));return {name:'Avance de obra',sheets:[{name:'Avance de obra',rows}]}},
   contrat(){return {name:'Contratistas',sheets:[{name:'Contratistas',rows:[['Contratista','CUIT','Teléfono','Obra','Trabajo','Tiempo (días)','Monto','Certificado','Avance %','Anticipos','Por cobrar','Pagado','Saldo a pagar','Estado']].concat(S.contratistas.map(c=>{const cer=certMonto(c.id),o=centro(c.obraId);return [c.nombre,c.cuit||'',c.tel||'',o?o.codigo+' · '+o.nombre:'',c.trabajo||'',c.dias||'',c.monto,cer,c.monto>0?Math.round(cer/c.monto*1000)/10:0,antTot(c.id),c.monto-cer,pagadoCt(c),cer-pagadoCt(c),c.estado==='finalizado'?'Finalizado':'Activo']}))}]}},
   certif(){return {name:'Certificaciones',sheets:[{name:'Certificaciones',rows:[['Fecha','Contratista','Obra','Avance acumulado %','Monto','Anticipo descontado','Neto','Observaciones','Adjuntos','Cargó']].concat([...S.certifs].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(k=>{const c=by(S.contratistas,k.contratistaId),o=c&&centro(c.obraId);return [fd(k.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',k.pct,k.monto,k.desc||0,k.monto-(k.desc||0),k.obs||'',(k.adj||[]).map(x=>x.n).join(', '),k.ini||'']}))},
     {name:'Anticipos',rows:[['Fecha','Contratista','Obra','Monto','Observaciones','Cargó']].concat([...S.anticipos].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(a=>{const c=by(S.contratistas,a.contratistaId),o=c&&centro(c.obraId);return [fd(a.fecha),c?c.nombre:'',o?o.codigo+' · '+o.nombre:'',a.monto,a.obs||'',a.ini||'']}))}]}},
@@ -2840,7 +2897,7 @@ function render(){
   if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,calendario:vCalendario,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,calendario:vCalendario,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,avance:vAvance,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();buscables();if(S.view==='recop')setTimeout(rcThumbs,50);if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -2992,6 +3049,9 @@ main.addEventListener('change',e=>{
   if(el.dataset.rcper&&S.recopConf){S.recopConf.per[el.dataset.rcper]=el.value;return}
   if(el.dataset.rce&&S.recopEd&&el.tagName==='SELECT'){const E=S.recopEd;E[el.dataset.rce]=el.value;if(el.dataset.rce==='alic'){if(E.alic!=='otro')E.iva=toIn(r2(num(E.neto)*parseFloat(E.alic)/100));E.total=toIn(r2(num(E.neto)+num(E.iva)+num(E.otros)));render()}return}
   if(el.id==='igObraF'){S.obraF=el.value;render();return}
+  if(el.id==='igAvObra'){S.avObra=el.value;S.itf=null;render();return}
+  if(el.dataset.avct){const x=by(S.items,el.dataset.avct);if(!x||!manejaIng())return;const v=el.value;if(v&&S.items.some(y=>y.id!==x.id&&y.contratistaId===v)){toast('Ese subcontratista ya tiene otro ítem');render();return}if(x.contratistaId&&!v)x.avance=itemAv(x);x.contratistaId=v;aud('Modificación','Ítem '+x.nombre+' · subcontratista '+(v?(by(S.contratistas,v)||{}).nombre:'ninguno'));toast(v?'Subcontratista asignado: el avance sale de su certificación':'Ítem de trabajo propio');render();return}
+  if(el.dataset.avpct){const x=by(S.items,el.dataset.avpct);if(!x||!manejaIng()||x.contratistaId)return;const p=pctN(el.value);if(!(p>=0&&p<=100)){toast('El avance tiene que estar entre 0 y 100 %');render();return}x.avance=p;aud('Modificación','Avance de ítem '+x.nombre+' · '+fp(p));toast('Avance guardado');render();return}
   if(el.id==='igMaqF'){S.maqF=el.value;render();return}
   if(el.id==='igCbD0'||el.id==='igCbD1'){S[el.id==='igCbD0'?'cbD0':'cbD1']=el.value;render();return}
   if(el.dataset.kfiles){KF_FILES=KF_FILES.concat([...el.files].filter(f=>{if(!ADJ_OK(f)||f.size>10485760){toast('"'+f.name+'": solo fotos o PDF de hasta 10 MB');return false}return true}));render();return}
@@ -3025,8 +3085,8 @@ main.addEventListener('change',e=>{
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
 /* Versión visible del programa: subir en cada entrega (Codes 0.1 → 0.2 … 0.9 → 1.0 → 1.1 … hasta 100). BUILD fuerza el aviso de "versión nueva". */
-const VERSION='Codes 0.6';
-const BUILD='17-oct 14:50';
+const VERSION='Codes 0.7';
+const BUILD='17-oct 16:10';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

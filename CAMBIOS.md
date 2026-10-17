@@ -25,3 +25,11 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 0.6 (17-oct-2026)
 - Combustible y aceite: cada tabla de obra termina con una fila de totales (litros y total en $), y al final hay un total general de todas las obras.
 - Avisos de Telegram por cada movimiento de calendario, cheques y combustible (ver cambios del 15-oct en el script de Google).
+
+## Codes 0.7 (17-oct-2026)
+- Nueva pantalla **Avance de obra** (Ingeniería / Obras): cada obra se divide en ítems con su incidencia en % (tienen que sumar 100 %; el sistema avisa si no suman y no deja pasarse).
+- Cada ítem puede tener un subcontratista asignado (uno por ítem). Su avance sale solo de la última certificación cargada a ese subcontratista (avance acumulado); desde la fila se abre "Cargar avance del subcontrato".
+- Los ítems de trabajo propio (sin subcontratista) tienen el avance a mano en la misma fila.
+- Avance total de la obra = suma de incidencia × avance de cada ítem. Se puede descargar en Excel.
+- Carga y modificación: dueño e ingeniero. Contador y lector solo ven. Obra finalizada: queda fija.
+- Base de datos: tabla `obra_items` (con permisos, auditoría, tiempo real y bloqueo de obra finalizada).
