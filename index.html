@@ -2906,7 +2906,7 @@ function planillaLeer(g){
   if(C.hor<0)return {err:'No encontré la columna de horas nominales ("HORA NOMINAL" / "Nº HORA").'};
   const n=(r,c)=>c>=0&&typeof r[c]==='number'?r[c]:0,rows=[];
   for(let i=h+(tieneSub?2:1);i<g.length;i++){const r=g[i]||[];const nom=r[C.nom];
-    if(nom==null||nom===''||typeof nom==='number'||/^total/.test(nrm(nom)))continue;
+    if(nom==null||nom===''||typeof nom==='number'||/^total/.test(nrm(nom))||/apellido/.test(nrm(nom)))continue;
     rows.push({fila:i+1,nro:C.nro>=0&&r[C.nro]!=null?String(r[C.nro]):'',nombre:String(nom).trim(),ingreso:C.ing>=0?xlFecha(r[C.ing]):'',categ:C.cat>=0&&r[C.cat]?String(r[C.cat]).trim():'',
       horas:n(r,C.hor),vHora:n(r,C.vh),hFer:n(r,C.fer),h50:n(r,C.ext),solid:n(r,C.sol),basica:n(r,C.bas),sac:n(r,C.sac),pres:n(r,C.pre),sub:n(r,C.sub),ret:n(r,C.ret),seguro:n(r,C.seg),atp:n(r,C.atp),neto:C.neto>=0&&typeof r[C.neto]==='number'?r[C.neto]:null})}
   if(!rows.length)return {err:'La planilla no tiene empleados cargados debajo de los títulos.'};
@@ -2914,14 +2914,42 @@ function planillaLeer(g){
 function empMatch(r){
   const t=toks(r.nombre),k=[...t].sort().join(' ');
   return S.empleados.find(e=>[...toks(e.ape+' '+e.nom)].sort().join(' ')===k)||S.empleados.find(e=>{const a=toks(e.ape),n=toks(e.nom);return a.length&&n.length&&a.every(x=>t.includes(x))&&t.includes(n[0])})||null}
+/* PDF de la planilla (con texto, por ejemplo exportado desde Excel): se rearman filas y columnas por la posición de cada texto */
+const celdaTxt=c=>{c=String(c).trim();if(c==='')return undefined;const n=/^[\s$]*-?[\d.,]+\s*%?$/.test(c)&&/\d/.test(c)?num(c.replace(/[$%\s]/g,'')):NaN;return isNaN(n)?c:n};
+async function pdfFilas(buf){
+  let lib;try{lib=await pdfjs()}catch(e){throw new Error('No pude cargar el lector de PDF (hace falta internet). Probá con el Excel.')}
+  const doc=await lib.getDocument({data:new Uint8Array(buf)}).promise,lines=[];
+  for(let p=1;p<=doc.numPages;p++){
+    const tc=await (await doc.getPage(p)).getTextContent();
+    const its=tc.items.map(i=>({s:String(i.str).trim(),x:i.transform[4],y:i.transform[5],w:i.width||0})).filter(i=>i.s);
+    its.sort((a,b)=>b.y-a.y||a.x-b.x);
+    const ls=[];its.forEach(i=>{const l=ls.find(l=>Math.abs(l.y-i.y)<=3);if(l)l.it.push(i);else ls.push({y:i.y,it:[i]})});
+    ls.sort((a,b)=>b.y-a.y).forEach(l=>{l.it.sort((a,b)=>a.x-b.x);const cells=[];
+      l.it.forEach(i=>{const c=cells[cells.length-1];if(c&&i.x-c.x1<3){c.s+=(i.x-c.x1>1?' ':'')+i.s;c.x1=i.x+i.w}else cells.push({s:i.s,x0:i.x,x1:i.x+i.w})});
+      lines.push({y:l.y,cells})})}
+  if(!lines.length)throw new Error('El PDF no tiene texto (parece una foto o un escaneo). Usá un PDF exportado desde Excel, o subí el Excel.');
+  const nNum=l=>l.cells.filter(c=>typeof celdaTxt(c.s)==='number').length;
+  const first=lines.findIndex(l=>l.cells.length>=3),dat=lines.findIndex((l,i)=>i>first&&first>=0&&nNum(l)>=3);
+  if(first<0||dat<0)throw new Error('No pude reconocer la tabla en el PDF. Probá con el Excel.');
+  const hz=[];for(let i=first+1;i<dat-1;i++){if(true){lines[first].cells=lines[first].cells.concat(lines[i].cells);hz.push(i)}}
+  const L=lines.filter((l,i)=>!hz.includes(i));
+  const ov=(c,d)=>Math.min(c.x1,d.x1)-Math.max(c.x0,d.x0);
+  const hdr=L.slice(L.indexOf(lines[first]),L.indexOf(lines[dat])),sub=hdr.length>1?hdr[hdr.length-1].cells:[],top=hdr.length?hdr[0].cells:[];
+  const grp=top.filter(c=>sub.some(d=>ov(c,d)>0));
+  let anc=sub.concat(top.filter(c=>!grp.includes(c)&&!sub.some(d=>ov(c,d)>0))).filter(c=>c.s).sort((a,b)=>a.x0-b.x0);
+  const ctr=c=>(c.x0+c.x1)/2,gTo=new Map();
+  anc.forEach((d,j)=>{if(!sub.includes(d)||!grp.length)return;let g=grp[0];grp.forEach(x=>{if(Math.abs(ctr(x)-ctr(d))<Math.abs(ctr(g)-ctr(d)))g=x});if(!gTo.has(g))gTo.set(g,j)});
+  const idx=c=>{if(gTo.has(c))return gTo.get(c);let k=-1,best=0;anc.forEach((d,j)=>{const o=ov(c,d);if(o>best){best=o;k=j}});if(k>=0)return k;let bd=1e9;anc.forEach((d,j)=>{const g=Math.max(d.x0-c.x1,c.x0-d.x1);if(g<bd){bd=g;k=j}});return k};
+  return L.map(l=>{const r=[];l.cells.forEach(c=>{const k=idx(c);r[k]=r[k]!=null?String(r[k])+' '+c.s:(l===L[0]?c.s:celdaTxt(c.s))});return r.map(v=>typeof v==='string'&&v!==''?(celdaTxt(v)):v)}).map(r=>{for(let i=0;i<r.length;i++)if(r[i]===undefined)r[i]=undefined;return r})}
 async function impCargar(file){
   if(!file||!sdOk())return;
   const fail=m=>{S.imp={err:m,rows:[]};render()};
   try{
     let g;const nm=file.name.toLowerCase();
     if(/\.(xlsx|xlsm)$/.test(nm))g=await xlsxFilas(await file.arrayBuffer());
+    else if(/\.pdf$/.test(nm))g=await pdfFilas(await file.arrayBuffer());
     else if(/\.(csv|txt)$/.test(nm))g=csvFilas(await file.text());
-    else return fail('Subí un archivo Excel (.xlsx) o CSV. Si es un Excel viejo (.xls), guardalo como .xlsx.');
+    else return fail('Subí un archivo Excel (.xlsx), PDF o CSV. Si es un Excel viejo (.xls), guardalo como .xlsx.');
     const P=planillaLeer(g);if(P.err)return fail(P.err);
     P.rows.forEach(r=>{const e=empMatch(r);r.empId=e?e.id:'';r.ok=!!e&&r.horas>0});
     S.imp={nombre:file.name,rows:P.rows,faltan:P.cols,err:'',emitidos:[]};S.impVer=null;
@@ -2961,7 +2989,7 @@ function impCrearLegajos(){
 function sdImport(){
   const I=S.imp,f=S.impf||(S.impf={periodo:TODAY.slice(0,7),liq:'mensual',pago:TODAY,conv:'',usaPl:false});
   const act=S.empleados.filter(e=>e.activo).sort((a,b)=>a.ape.localeCompare(b.ape,'es'));
-  const cab=`<div class="fields"><div class="f" style="grid-column:span 2"><label for="imp-file">Planilla de horas (Excel .xlsx o CSV)</label><input id="imp-file" type="file" accept=".xlsx,.xlsm,.csv,.txt" data-impfile="1"><span class="hint">Se leen las columnas por sus títulos: Nº, Apellido y nombre, Fecha ing., Categ., Hora nominal, Feriados, Horas extras al 50 %, Incremento solidario, SAC, Presentismo, Seguro, ATP y Neto.</span></div>
+  const cab=`<div class="fields"><div class="f" style="grid-column:span 2"><label for="imp-file">Planilla de horas (Excel, PDF o CSV)</label><input id="imp-file" type="file" accept=".xlsx,.xlsm,.pdf,.csv,.txt" data-impfile="1"><span class="hint">El PDF tiene que ser de texto (exportado desde Excel), no una foto. Se leen las columnas por sus títulos: Nº, Apellido y nombre, Fecha ing., Categ., Hora nominal, Feriados, Horas extras al 50 %, Incremento solidario, SAC, Presentismo, Seguro, ATP y Neto.</span></div>
    ${fld('imp-per','Período de la planilla',`<input id="imp-per" type="month" data-sd="impf.periodo" data-re="1" value="${esc(f.periodo)}">`)}${fld('imp-liq','Liquidación',sds('imp-liq','impf.liq',f.liq,[['mensual','Mensual'],['1q','1.ª quincena'],['2q','2.ª quincena']],true))}
    ${fld('imp-pago','Fecha de pago',`<input id="imp-pago" type="date" data-sd="impf.pago" value="${esc(f.pago)}">`)}
    <div class="f" style="grid-column:span 2">${sdck('imp-usa','impf.usaPl',f.usaPl,'Usar el valor hora de la planilla (en vez de la escala del convenio)')}<span class="hint">Apagado: se calcula con la escala vigente y se avisa si la planilla usa otro valor.</span></div></div>`;
@@ -3630,7 +3658,7 @@ document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.datase
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
 /* Versión visible del programa: subir en cada entrega (Codes 0.1 → 0.2 … 0.9 → 1.0 → 1.1 … hasta 100). BUILD fuerza el aviso de "versión nueva". */
 const VERSION='Codes 1.6';
-const BUILD='21-oct 17:00';
+const BUILD='21-oct 18:00';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
