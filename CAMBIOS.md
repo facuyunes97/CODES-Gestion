@@ -48,3 +48,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Nota 1.0 (DB)
 - El dueño puede eliminar movimientos (transacciones, con sus pagos, retenciones y facturas vinculadas) de una obra finalizada que fue "eliminada" de Centros de costo. Cualquier otro cambio sobre una obra finalizada sigue bloqueado. Migración `dueno_borra_asientos_de_obra_archivada` (función `obra_bloquea`).
+
+## 1.1
+- Al elegir Transferencia, la cuenta por defecto (Sale de / Entra a) es Banco Patagonia; se puede cambiar.
