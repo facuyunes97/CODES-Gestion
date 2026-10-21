@@ -83,6 +83,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .adj{display:inline-flex;gap:2px;margin:0 4px 4px 0}.adjnew{cursor:pointer}
 .ctblk{border-top:1px solid var(--line,#e5e5e5);padding:10px 0}.ctblk:first-of-type{border-top:0}
 .cthead{padding:0 16px 6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sdtabs{margin-top:14px;max-width:640px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:var(--surface)}.sdtabs button{all:unset;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;text-align:center;border-right:1px solid var(--line-2)}.sdtabs button:last-child{border-right:0}.sdtabs button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}.sdtabs button.on{background:var(--surface-2);box-shadow:inset 0 -3px 0 var(--ink)}.sdsec{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:6px 16px 0;padding-top:8px}.sdchk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}.torta{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.tpie{width:130px;height:130px;border-radius:50%;flex:none}.tleg{width:auto;flex:1;min-width:240px;font-size:13px}.tleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px}.cvpar{display:flex;flex-direction:column;gap:3px;padding:0 16px 10px;font-size:13px;color:var(--ink-2)}.cvcard .toolbar{padding-top:12px}.rcframe{width:100%;height:760px;border:0;border-top:1px solid var(--line-2);background:#fff}
 .avobra{margin-top:22px}.avtab{all:unset;cursor:pointer;display:inline-block;background:var(--surface-2);border:1px solid var(--line-2);border-bottom:0;border-radius:10px 10px 0 0;padding:6px 14px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink-2);margin-left:16px;position:relative;top:1px}.avtab:hover,.avtab[aria-expanded=true]{color:var(--ink)}.avtab[aria-expanded=true]{background:var(--surface)}.avtab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.avpanel{margin-top:0!important}.avhead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 16px}.avpct{display:flex;align-items:center;gap:10px;min-width:260px}.avbig{font-family:var(--f-num);font-size:26px;font-weight:700}.avaviso{padding:0 16px 12px;font-size:13px;color:var(--ink-2)}.avbody{border-top:1px solid var(--line-2);padding-bottom:6px}.avbody h3{font-size:15px;margin:0}.avbox{padding:0 16px 12px}.avbox .actions{padding:8px 0 0}
 .ctsum{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 16px 8px;font-size:13px;align-items:center}.ctsum .ctbar{min-width:140px}
 .nav .navsec{margin-top:12px;padding:6px 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
@@ -533,6 +534,21 @@ const S={
   {id:'ct2',nombre:'Electricidad Ruiz (ejemplo)',cuit:'',tel:'',obraId:'cc3',terceroId:'t7',trabajo:'Instalación eléctrica',dias:20,monto:800000,estado:'activo',obs:'',ini:'LG'}],
  certifs:[{id:'ce1',contratistaId:'ct1',fecha:'2026-09-28',pct:40,monto:480000,desc:0,obs:'',ini:'LG'}],
  arch:[],
+ empresa:{id:'em1',razon:'CODES SRL',cuit:'',dom:'',art:''},
+ convenios:[
+  {id:'cv76',nombre:'UOCRA – Obreros de la construcción',cct:'76/75',fuentes:'https://www.uocra.org',revisado:'2026-10-21',notas:'Valores por hora, Zona A.',params:{horas_mes:200,asistencia_pct:20,antig_tipo:'ninguna',antig_valor:0,fondo_cese:true,fondo_cese_pct_1:12,fondo_cese_pct_2:8,trab:{jubilacion:11,pami:3,obra_social:3,sindicato:2},emp:{seg_social:18,obra_social:6,art:0,sindicato:0,camaras:0}}},
+  {id:'cv660',nombre:'UECARA – Empleados de la construcción',cct:'660/13',fuentes:'https://www.uecara.org.ar',revisado:'2026-10-21',notas:'Básicos mensuales.',params:{horas_mes:0,asistencia_pct:10,antig_tipo:'valor_por_anio',antig_valor:14093,fondo_cese:false,fondo_cese_pct_1:0,fondo_cese_pct_2:0,trab:{jubilacion:11,pami:3,obra_social:3,sindicato:2},emp:{seg_social:18,obra_social:6,art:0,sindicato:0,camaras:0}}}],
+ escalas:[
+  {id:'es1',convId:'cv76',cat:'Oficial Especializado',zona:'A',unidad:'hora',valor:7697,vig:'2026-10-01',fuente:'Acuerdo 21/09/2026'},
+  {id:'es2',convId:'cv76',cat:'Oficial',zona:'A',unidad:'hora',valor:6585,vig:'2026-10-01',fuente:'Acuerdo 21/09/2026'},
+  {id:'es3',convId:'cv76',cat:'Medio Oficial',zona:'A',unidad:'hora',valor:6085,vig:'2026-10-01',fuente:'Acuerdo 21/09/2026'},
+  {id:'es4',convId:'cv76',cat:'Ayudante',zona:'A',unidad:'hora',valor:5601,vig:'2026-10-01',fuente:'Acuerdo 21/09/2026'},
+  {id:'es5',convId:'cv660',cat:'Grupo II – Auxiliar administrativo (2ª)',zona:'Zona II – Centro',unidad:'mes',valor:1654125,vig:'2026-10-01',fuente:'Contala'},
+  {id:'es6',convId:'cv660',cat:'Grupo II – Analista administrativo (1ª)',zona:'Zona II – Centro',unidad:'mes',valor:1788302,vig:'2026-10-01',fuente:'Contala'}],
+ empleados:[
+  {id:'em_1',legajo:'001',ape:'Gómez',nom:'Carlos',dni:'30111222',cuil:'20-30111222-0',nac:'1984-03-15',civil:'Casado/a',hijos:2,dom:'Calle 1 Nº 100',loc:'Santiago del Estero',tel:'',mail:'',emerg:'',telEmerg:'',ingreso:'2024-05-02',egreso:'',convId:'cv76',cat:'Oficial',zona:'A',obraId:'cc2',os:'OSPECON',sind:true,ropa:'L',calzado:'42',art:'',banco:'',cbu:'',obs:'',activo:true},
+  {id:'em_2',legajo:'002',ape:'Pérez',nom:'Laura',dni:'33444555',cuil:'27-33444555-6',nac:'1990-07-20',civil:'Soltero/a',hijos:0,dom:'',loc:'',tel:'',mail:'',emerg:'',telEmerg:'',ingreso:'2021-02-01',egreso:'',convId:'cv660',cat:'Grupo II – Auxiliar administrativo (2ª)',zona:'Zona II – Centro',obraId:'',os:'OSECAC',sind:true,ropa:'',calzado:'',art:'',banco:'',cbu:'',obs:'',activo:true}],
+ recibos:[],
  items:[{id:'it1',obraId:'cc2',nombre:'Estructura de hormigón',inc:50,contratistaId:'ct1',avance:0,obs:'',ini:'LG'},{id:'it2',obraId:'cc2',nombre:'Mampostería y cerramientos',inc:30,contratistaId:'',avance:20,obs:'',ini:'LG'},{id:'it3',obraId:'cc2',nombre:'Terminaciones',inc:20,contratistaId:'',avance:0,obs:'',ini:'LG'}],
  anticipos:[{id:'an1',contratistaId:'ct2',fecha:'2026-09-20',monto:100000,obs:'',ini:'LG'}],
  precios:{nafta:1200,diesel_500:1300,diesel_premium:1500,aceite_hidraulico:4200,aceite_motor:5100,aceite_transmision:4800,aceite_super_30:3900},
@@ -697,7 +713,7 @@ async function exportar(k){
 window.__buildXLSX=k=>buildXLSX(EXPORTS[k]().sheets);
 
 /* ---------- Navegación ---------- */
-const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['calendario','Calendario','calendario'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['usuarios','Usuarios','usuarios']];
+const NAV_ADM=[['inicio','Inicio','casco'],['resumen','Resumen','plano'],['trans','Transacciones','flujo'],['cheques','Cheques y Echeqs','cheque'],['calendario','Calendario','calendario'],['facturas','Facturas','factura'],['audit','Auditoría','lupa'],['centros','Centros de costo','cono'],['terceros','Clientes y proveedores','libreta'],['sueldos','Control Sueldos','usuarios'],['usuarios','Usuarios','usuarios']];
 const NAV_ING=[['obras','Centro de costos (obras)','cono'],['contrat','Contratistas','usuarios'],['avance','Avance de obra','cono'],['certif','Certificación','lupa'],['gasto','Resumen de gasto','plano']];
 const NAV_OPE=[['maq','Maquinaria','excavadora'],['arreglos','Arreglo de maquinaria','llave'],['comb','Combustible','surtidor'],['aceite','Aceite','gota']];
 const icon=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -709,7 +725,7 @@ function renderNav(){
   const sec=(k,t,items)=>{const ab=!S.navCerr[k];return `<button class="navsec" data-sec="${k}" aria-expanded="${ab}" aria-controls="grp-${k}"><span>${t}</span><span class="car" aria-hidden="true">▾</span></button><div class="navgrp" id="grp-${k}" ${ab?'':'hidden'}>${items.filter(([v])=>vistaPermitida(v)).map(btn).join('')}</div>`};
   document.getElementById('nav').innerHTML=(puedeCargar()?`<button data-view="nueva" class="new" ${S.view==='nueva'?'aria-current="page"':''}><span>${icon('mas')}Nueva transacción</span></button>`:'')+(veAdm()?sec('adm','Administración',NAV_ADM):'')+(veIng()?sec('ing','Ingeniería / Obras',NAV_ING):'')+(veIng()||soloMaq()?sec('ope','Operario',NAV_OPE):'')+(veAdm()?`<div class="navbot">${btn(['ingres','Resumen operativo','plano'])}</div>`:'');
 }
-function go(v){KF_FILES=[];S.itf=null;S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.finConf=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.ef=null;S.recopDup=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
+function go(v){KF_FILES=[];S.itf=S.emf=S.cvp=S.vgf=S.esf=S.cvBusca=S.sdVer=S.sdDel=null;S.cf=S.kf=S.af=S.bf=S.anf=S.pf=S.igDel=null;S.finConf=null;if(S.ccForm&&S.ccForm.kind)S.ccForm=null;S.uDel=null;S.ef=null;S.recopDup=null;S.view=v;S.errors=[];S.confirm=null;S.pick={};S.edit=null;S.modal=null;S.tForm=null;render();window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 function head(t,p,right=''){return `<div class="head"><div><h1>${t}</h1>${p?`<p>${p}</p>`:''}</div><div class="right">${right}${AUTH?syncChip():'<span class="demo">Datos de ejemplo</span>'}</div></div>`+editPanel()}
 const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
@@ -1669,6 +1685,17 @@ const fromAntic=r=>({id:r.id,contratistaId:r.contratista_id,fecha:r.fecha,monto:
 const toAntic=a=>({id:a.id,contratista_id:a.contratistaId,fecha:a.fecha,monto:num(a.monto),observaciones:a.obs||null});
 const fromItem=r=>({id:r.id,obraId:r.obra_id,nombre:r.nombre,inc:+r.incidencia_pct,contratistaId:r.contratista_id||'',avance:+r.avance_pct||0,obs:r.observaciones||'',ini:r.iniciales||''});
 const toItem=x=>({id:x.id,obra_id:x.obraId,nombre:x.nombre,incidencia_pct:+x.inc,contratista_id:x.contratistaId||null,avance_pct:x.contratistaId?0:+x.avance||0,observaciones:x.obs||null});
+/* Control Sueldos */
+const fromEmpresa=r=>({id:r.id,razon:r.razon||'',cuit:r.cuit||'',dom:r.domicilio||'',art:r.art_nombre||''});
+const toEmpresa=e=>({id:e.id,razon:e.razon||'CODES SRL',cuit:e.cuit||null,domicilio:e.dom||null,art_nombre:e.art||null});
+const fromConv=r=>({id:r.id,nombre:r.nombre,cct:r.cct,fuentes:r.fuentes||'',revisado:r.revisado_at||'',params:r.params||{},notas:r.notas||''});
+const toConv=c=>({id:c.id,nombre:c.nombre,cct:c.cct,fuentes:c.fuentes||null,revisado_at:c.revisado||null,params:c.params||{},notas:c.notas||null});
+const fromEsc=r=>({id:r.id,convId:r.convenio_id,cat:r.categoria,zona:r.zona,unidad:r.unidad,valor:+r.valor,vig:r.vigencia,fuente:r.fuente||''});
+const toEsc=x=>({id:x.id,convenio_id:x.convId,categoria:x.cat,zona:x.zona,unidad:x.unidad,valor:+x.valor,vigencia:x.vig,fuente:x.fuente||null});
+const fromEmp=r=>{const d=r.datos||{};return {id:r.id,legajo:r.legajo,ape:r.apellido,nom:r.nombre,dni:r.dni||'',cuil:r.cuil||'',nac:r.fecha_nac||'',civil:r.estado_civil||'',hijos:+r.hijos||0,dom:r.domicilio||'',loc:r.localidad||'',tel:r.telefono||'',mail:r.email||'',emerg:d.emerg||'',telEmerg:d.telEmerg||'',ingreso:r.fecha_ingreso||'',egreso:r.fecha_egreso||'',convId:r.convenio_id||'',cat:r.categoria||'',zona:r.zona||'',obraId:r.obra_id||'',os:r.obra_social||'',sind:r.afiliado_sindicato!==false,ropa:d.ropa||'',calzado:d.calzado||'',art:d.art||'',banco:d.banco||'',cbu:d.cbu||'',obs:r.observaciones||'',activo:r.activo!==false}};
+const toEmp=e=>({id:e.id,legajo:e.legajo,apellido:e.ape,nombre:e.nom,dni:e.dni||null,cuil:e.cuil||null,fecha_nac:e.nac||null,estado_civil:e.civil||null,hijos:+e.hijos||0,domicilio:e.dom||null,localidad:e.loc||null,telefono:e.tel||null,email:e.mail||null,fecha_ingreso:e.ingreso||null,fecha_egreso:e.egreso||null,convenio_id:e.convId||null,categoria:e.cat||null,zona:e.zona||null,obra_id:e.obraId||null,obra_social:e.os||null,afiliado_sindicato:!!e.sind,datos:{emerg:e.emerg||'',telEmerg:e.telEmerg||'',ropa:e.ropa||'',calzado:e.calzado||'',art:e.art||'',banco:e.banco||'',cbu:e.cbu||''},observaciones:e.obs||null,activo:e.activo!==false});
+const fromRec=r=>({id:r.id,empId:r.empleado_id,periodo:r.periodo,liq:r.liquidacion,pago:r.fecha_pago||'',bruto:+r.bruto,neto:+r.neto,costo:+r.costo_total,datos:r.datos||{},estado:r.estado,ini:r.iniciales||''});
+const toRec=x=>({id:x.id,empleado_id:x.empId,periodo:x.periodo,liquidacion:x.liq,fecha_pago:x.pago||null,bruto:x.bruto,neto:x.neto,costo_total:x.costo,datos:x.datos,estado:x.estado});
 const toCertif=k=>({id:k.id,contratista_id:k.contratistaId,fecha:k.fecha,avance_pct:+k.pct,monto:num(k.monto),descuento_anticipo:num(k.desc),observaciones:k.obs||null,adjuntos:k.adj||[]});
 const fromEvento=r=>({id:r.id,tipo:r.tipo,titulo:r.titulo,fecha:r.fecha,fin:r.fecha_fin||'',hora:(r.hora||'').slice(0,5),horaFin:(r.hora_fin||'').slice(0,5),desc:r.descripcion||'',hecho:!!r.hecho,origen:r.origen,gid:r.google_event_id||'',by:r.created_by||''});
 const fromComb=r=>({id:r.id,maqId:r.maquina_id,obraId:r.obra_id||'',tipo:r.tipo_combustible||'',fh:r.fecha_hora,litros:+r.litros,precio:+r.precio_litro||0,ini:r.iniciales||'',by:r.created_by||'',reg:r.created_at||'',estId:r.estacion_id||''});
@@ -1707,6 +1734,11 @@ const COLS=[
  {k:'certifs',tabla:'certificaciones',arr:()=>S.certifs,to:toCertif},
  {k:'arch',tabla:'centros_archivados',arr:()=>S.arch.map(id=>({id})),to:x=>({id:x.id})},
  {k:'items',tabla:'obra_items',arr:()=>S.items,to:toItem},
+ {k:'semp0',tabla:'sueldos_empresa',arr:()=>S.empresa?[S.empresa]:[],to:toEmpresa,fijo:true},
+ {k:'sconv',tabla:'sueldos_convenios',arr:()=>S.convenios,to:toConv},
+ {k:'sesc',tabla:'sueldos_escalas',arr:()=>S.escalas,to:toEsc},
+ {k:'semp',tabla:'sueldos_empleados',arr:()=>S.empleados,to:toEmp},
+ {k:'srec',tabla:'sueldos_recibos',arr:()=>S.recibos,to:toRec},
  {k:'eventos',tabla:'calendario_eventos',arr:()=>S.eventos,to:toEvento},
  {k:'comb',tabla:'combustible_cargas',arr:()=>S.comb,to:toComb},
  {k:'ace',tabla:'combustible_cargas',arr:()=>S.ace,to:toComb},
@@ -1732,7 +1764,7 @@ const must=r=>{if(r.error)throw r.error;return r};
 const unaFila=r=>{must(r);if(!r.data||!r.data.length){const e=new Error('SIN_PERMISO');throw e}};
 async function aplicar(d){
   let hubo=false;
-  const orden=['tipos','terceros','centros','arch','precios','contrat','certifs','items','antic','comb','ace','arreglos','eventos','facturas','cheques','cuentas','params'];
+  const orden=['tipos','terceros','centros','arch','precios','contrat','certifs','items','semp0','sconv','sesc','semp','srec','antic','comb','ace','arreglos','eventos','facturas','cheques','cuentas','params'];
   for(const k of orden){
     for(const o of d.add.filter(x=>x.c.k===k&&!x.c.fijo)){must(await sb.from(o.c.tabla).insert(o.p));SY.sh[k].set(o.id,{p:o.p,j:o.j});if(k==='contrat')hubo=true}
     for(const o of d.mod.filter(x=>x.c.k===k)){
@@ -1751,7 +1783,7 @@ async function aplicar(d){
       if(r.error){await sb.rpc('guardar_transaccion',{p:o.antes});throw r.error}}
     SY.sh.trans.set(o.id,{p:o.p,j:o.j})}
   for(const o of d.del.filter(x=>x.c.k==='trans').sort((a,b)=>(b.antes.padre_id?1:0)-(a.antes.padre_id?1:0))){unaFila(await sb.from('transacciones').delete().eq('id',o.id).select('id'));SY.sh.trans.delete(o.id)}
-  for(const k of ['arch','items','certifs','antic','contrat','comb','ace','arreglos','eventos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
+  for(const k of ['srec','semp','sesc','sconv','arch','items','certifs','antic','contrat','comb','ace','arreglos','eventos','cheques','facturas','centros','terceros'])for(const o of d.del.filter(x=>x.c.k===k)){unaFila(await sb.from(o.c.tabla).delete().eq('id',o.id).select('id'));SY.sh[k].delete(o.id)}
   return hubo}
 function progSync(){if(!AUTH||!S.sesion||SY.cargando||!SY.sh)return;clearTimeout(SY.t);SY.t=setTimeout(correrSync,200)}
 async function correrSync(){
@@ -1766,7 +1798,7 @@ async function correrSync(){
   if(hubo){try{await cargarDatos()}catch(e){}render()}else pintaChip();
 }
 async function traer(tabla,sel,ord){let out=[],desde=0;for(;;){let q=sb.from(tabla).select(sel);(ord||[]).forEach(([c,a])=>q=q.order(c,{ascending:a}));const {data,error}=await q.range(desde,desde+999);if(error)throw error;out=out.concat(data);if(data.length<1000)return out;desde+=1000}}
-const TL={calendario_eventos:'Evento',transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',obra_items:'Ítem de obra',centros_archivados:'Obra eliminada de centros de costo',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina',anticipos_obra:'Anticipo de obra',precios_combustible:'Precio de combustible'};
+const TL={calendario_eventos:'Evento',transacciones:'Transacción',cheques:'Cheque',facturas:'Factura',centros_costo:'Centro de costo',terceros:'Tercero',cuentas:'Cuenta',perfiles:'Usuario',tipos_centro:'Tipo de centro',contratistas:'Contratista',certificaciones:'Certificación',obra_items:'Ítem de obra',sueldos_convenios:'Convenio',sueldos_escalas:'Escala de convenio',centros_archivados:'Obra eliminada de centros de costo',combustible_cargas:'Combustible',maquinaria_arreglos:'Arreglo de máquina',anticipos_obra:'Anticipo de obra',precios_combustible:'Precio de combustible'};
 function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||{};
   let acc={INSERT:'Alta',UPDATE:'Modificación',DELETE:'Eliminación'}[a.accion]||a.accion,det='';
   switch(a.tabla){
@@ -1783,6 +1815,8 @@ function audDe(a){const d=a.datos_despues||a.datos_antes||{},ant=a.datos_antes||
    case 'tipos_centro':det=d.nombre;break;
    case 'contratistas':det=d.nombre+' · '+money(d.monto);break;
    case 'centros_archivados':det='Registro de la obra eliminado de Centros de costo';break;
+   case 'sueldos_convenios':det=d.nombre+' (CCT '+d.cct+')';break;
+   case 'sueldos_escalas':det=d.categoria+' · '+money(d.valor)+' desde '+fd(d.vigencia);break;
    case 'obra_items':det=d.nombre+' · incidencia '+d.incidencia_pct+'%';break;
    case 'certificaciones':det='Avance '+d.avance_pct+'% · '+money(d.monto);break;
    case 'combustible_cargas':det=lts(d.litros)+(d.tipo_combustible?' '+(ALL_T[d.tipo_combustible]||''):'');break;
@@ -1822,7 +1856,7 @@ async function cargarDatos(){
     S.cuentas=cu.filter(c=>c.activa!==false).map(fromCuenta);S.terceros=te.filter(t=>t.activo!==false).map(fromTercero);S.centros=ce.map(r=>{const c=fromCentro(r);if(['ingeniero','operario'].includes(SY.rol))c.contrato=0;return c});
     S.cheques=ch.map(fromCheque);S.facturas=fa.map(fromFactura);S.trans=tx.map(fromTx);
     S.contratistas=cn.map(fromContrat);S.certifs=cr.map(fromCertif);S.arch=(await traer('centros_archivados','*',[['id',true]]).catch(()=>[])).map(r=>r.id);
-    S.items=(await traer('obra_items','*',[['orden',true],['created_at',true],['id',true]]).catch(()=>[])).map(fromItem);{const cbA=cb.map(fromComb);S.comb=cbA.filter(x=>!ACE_T[x.tipo]);S.ace=cbA.filter(x=>ACE_T[x.tipo])}S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]));pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
+    S.items=(await traer('obra_items','*',[['orden',true],['created_at',true],['id',true]]).catch(()=>[])).map(fromItem);{const tb=(t,o)=>traer(t,'*',o).catch(()=>[]);const [em,cv,es,ep,rc]=await Promise.all([tb('sueldos_empresa',[['id',true]]),tb('sueldos_convenios',[['cct',true],['id',true]]),tb('sueldos_escalas',[['vigencia',false],['id',true]]),tb('sueldos_empleados',[['legajo',true],['id',true]]),tb('sueldos_recibos',[['periodo',false],['created_at',false],['id',true]])]);S.empresa=em[0]?fromEmpresa(em[0]):null;S.convenios=cv.map(fromConv);S.escalas=es.map(fromEsc);S.empleados=ep.map(fromEmp);S.recibos=rc.map(fromRec)}{const cbA=cb.map(fromComb);S.comb=cbA.filter(x=>!ACE_T[x.tipo]);S.ace=cbA.filter(x=>ACE_T[x.tipo])}S.arreglos=ar.map(fromArreglo);S.anticipos=an.map(fromAntic);S.pagosCt={};pg.forEach(r=>{S.pagosCt[r.contratista_id]={total:+r.total,n:+r.cantidad}});S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]));pr.forEach(r=>{S.precios[r.id]=+r.precio||0});
     S.eventos=evs.map(fromEvento);S.remitMap={};rmp.forEach(x=>{S.remitMap[x.email]={cuit:x.cuit||'',razon:x.razon||''}});S.recop=rcp.map(fromRecop);rcRellenar();
     S.arcaId=(S.terceros.find(t=>t.sistema)||{}).id;
     if(pa&&pa[0]&&!isNaN(+pa[0].valor))S.idcRate=+pa[0].valor;
@@ -1842,10 +1876,10 @@ function recargaRemota(){clearTimeout(SY.tRe);SY.tRe=setTimeout(async function i
   if(SY.corriendo||SY.cargando||hayCambios()||escribiendo){SY.tRe=setTimeout(intento,1500);return}
   try{await cargarDatos();render()}catch(e){console.error(e)}},700)}
 function iniciarRealtime(){if(SY.ch||!AUTH)return;SY.ch=sb.channel('cambios');
-  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible','calendario_eventos','obra_items','centros_archivados'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
+  ['transacciones','cheques','facturas','centros_costo','terceros','cuentas','tipos_centro','contratistas','certificaciones','combustible_cargas','maquinaria_arreglos','anticipos_obra','precios_combustible','calendario_eventos','obra_items','centros_archivados','sueldos_empresa','sueldos_convenios','sueldos_escalas','sueldos_empleados','sueldos_recibos'].forEach(t=>SY.ch.on('postgres_changes',{event:'*',schema:'public',table:t},recargaRemota));
   SY.ch.subscribe(st=>{SY.rt=st==='SUBSCRIBED';pintaChip()})}
 function limpiarDatos(){if(SY.ch){sb.removeChannel(SY.ch);SY.ch=null}SY.rt=false;SY.sh=null;clearTimeout(SY.t);clearTimeout(SY.tRe);
-  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.eventos=[];S.contratistas=[];S.certifs=[];S.items=[];S.arch=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
+  if(AUTH){S.cuentas=[];S.centros=[];S.terceros=[];S.facturas=[];S.cheques=[];S.trans=[];S.audit=[];S.recop=[];S.eventos=[];S.contratistas=[];S.certifs=[];S.items=[];S.arch=[];S.empresa=null;S.convenios=[];S.escalas=[];S.empleados=[];S.recibos=[];S.comb=[];S.ace=[];S.arreglos=[];S.anticipos=[];S.pagosCt={};S.precios=Object.fromEntries(Object.keys(ALL_T).map(k=>[k,0]))}}
 const perfilAUsuario=r=>({id:r.id,nombre:r.nombre,apellido:r.apellido||'',iniciales:r.iniciales,email:r.email||'',rol:r.rol,activo:r.activo,alta:(r.created_at||'').slice(0,10)});
 async function cargarPerfiles(){const {data,error}=await sb.from('perfiles').select('*').order('created_at');if(!error&&data)S.usuarios=data.map(perfilAUsuario);return !error}
 async function alIniciarSesion(session){
@@ -2397,6 +2431,7 @@ const EXPORTS={
 
 /* ---------- Ingeniería / Obras ---------- */
 const rolDe=()=>{const u=usuarioActual();return u?u.rol:''};
+const veSueldos=()=>['dueno','contador'].includes(rolDe());
 const veAdm=()=>['dueno','contador','lector'].includes(rolDe());
 const manejaIng=()=>['dueno','ingeniero'].includes(rolDe());
 const veIng=()=>veAdm()||rolDe()==='ingeniero';
@@ -2409,7 +2444,7 @@ const ALL_T={...COMB_T,...ACE_T};
 /* Combustible y aceite comparten tabla y pantalla; cada familia tiene sus tipos, su precio por litro y su lista */
 const FAM={comb:{k:'comb',arr:'comb',T:COMB_T,nom:'combustible',Nom:'Combustible',art:'el',ic:'surtidor',pref:'cb'},ace:{k:'ace',arr:'ace',T:ACE_T,nom:'aceite',Nom:'Aceite',art:'el',ic:'gota',pref:'ac'}};
 const veContrato=()=>!['ingeniero','operario'].includes(rolDe());
-const vistaPermitida=v=>v==='ingres'?veAdm():OPE_VIEWS.includes(v)?(veIng()||soloMaq()):ING_VIEWS.includes(v)?veIng():(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
+const vistaPermitida=v=>v==='sueldos'?veSueldos():v==='ingres'?veAdm():OPE_VIEWS.includes(v)?(veIng()||soloMaq()):ING_VIEWS.includes(v)?veIng():(veAdm()&&(v!=='usuarios'||esAdmin())&&((v!=='nueva'&&v!=='exist')||puedeCargar()));
 const vistaInicial=r=>{r=r||rolDe();return ['dueno','contador','lector'].includes(r)?'inicio':r==='operario'?'comb':'obras'};
 S.navCerr=(()=>{try{return JSON.parse(localStorage.getItem('navCerr'))||{}}catch(e){return {}}})();
 S.itf=null;S.avObra='';S.cf=null;S.kf=null;S.af=null;S.bf=null;S.anf=null;S.pf=null;S.igDel=null;S.obraF='';S.maqF='';S.cbD0='';S.cbD1='';S.irPer='todo';
@@ -2589,6 +2624,306 @@ function itemSave(){
   if(F.id){const x=by(S.items,F.id);if(x.contratistaId&&!F.contratistaId)x.avance=itemAv(x);Object.assign(x,{nombre,inc,contratistaId:F.contratistaId||'',obs:F.obs.trim()});aud('Modificación','Ítem de obra '+nombre+' · '+fp(inc));toast('Ítem actualizado')}
   else{S.items.push({id:nid('it'),obraId:oid,nombre,inc,contratistaId:F.contratistaId||'',avance:0,obs:F.obs.trim(),ini:S.user});aud('Alta','Ítem de obra '+nombre+' · '+fp(inc));toast('Ítem cargado')}
   S.itf=null;render()}
+
+/* --- Control Sueldos: legajos, emisión de recibos y convenios --- */
+const MESES_L=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const perTxt=p=>{const [y,m]=String(p||'').split('-');return (MESES_L[+m-1]||'?')+' '+y};
+const nz=v=>{const n=num(v);return isFinite(n)?n:0};
+const pctTxt=n=>String(Math.round(n*100)/100).replace('.',',')+' %';
+const convDe=id=>by(S.convenios,id);
+const empNom=e=>e.ape+', '+e.nom;
+const zonasDe=cid=>[...new Set(S.escalas.filter(x=>x.convId===cid).map(x=>x.zona))];
+const catsDe=(cid,zona)=>[...new Set(S.escalas.filter(x=>x.convId===cid&&(!zona||x.zona===zona)).map(x=>x.cat))].sort((a,b)=>a.localeCompare(b,'es'));
+const escVig=(cid,cat,zona,per)=>S.escalas.filter(x=>x.convId===cid&&x.cat===cat&&(!zona||x.zona===zona)&&x.vig<=per+'-31').sort((a,b)=>b.vig.localeCompare(a.vig))[0]||null;
+const anios=(ing,per)=>{if(!ing||!per)return 0;const [y,m]=per.split('-').map(Number),h=new Date(y,m,0),d=new Date(ing+'T00:00:00');let a=h.getFullYear()-d.getFullYear();if(h.getMonth()<d.getMonth()||(h.getMonth()===d.getMonth()&&h.getDate()<d.getDate()))a--;return Math.max(0,a)};
+const cuilOk=c=>{const d=String(c).replace(/\D/g,'');if(d.length!==11)return false;const w=[5,4,3,2,7,6,5,4,3,2];let s=0;for(let i=0;i<10;i++)s+=w[i]*+d[i];let v=11-s%11;if(v===11)v=0;return v===10||v===+d[10]};
+const fmtCuil=c=>{const d=String(c).replace(/\D/g,'');return d.length===11?d.slice(0,2)+'-'+d.slice(2,10)+'-'+d[10]:String(c).trim()};
+const sdOk=()=>veSueldos();
+S.sdTab=S.sdTab||'legajos';S.sdQ=S.sdQ||'';S.cvVig=S.cvVig||{};
+
+/* Liquidación según el convenio del empleado, la escala vigente en el período y los parámetros editables */
+function liquidar(emp,F){
+  const cv=emp&&convDe(emp.convId);if(!cv)return {err:'El empleado no tiene convenio asignado.'};
+  const P=cv.params||{},T=P.trab||{},E=P.emp||{};
+  const es=escVig(cv.id,emp.cat,emp.zona,F.periodo);
+  if(!es)return {err:'No hay una escala cargada para "'+emp.cat+'" que rija en '+perTxt(F.periodo)+'. Cargala en la solapa Convenios.'};
+  const q=F.liq==='mensual'?1:.5,an=anios(emp.ingreso,F.periodo),hv=es.unidad==='hora'?es.valor:es.valor/200;
+  const hab=[];let basico;
+  if(es.unidad==='hora'){const h=nz(F.horas);basico=r2(es.valor*h);hab.push({d:'Jornal básico · '+emp.cat,base:es.valor,un:'$/hora',cant:h,m:basico})}
+  else{basico=r2(es.valor*q);hab.push({d:'Sueldo básico · '+emp.cat+(q<1?' (quincena)':''),base:es.valor,un:'$/mes',cant:q,m:basico})}
+  const h50=nz(F.h50),h100=nz(F.h100);
+  if(h50>0)hab.push({d:'Horas extra al 50 %',base:r2(hv*1.5),un:'$/hora',cant:h50,m:r2(hv*1.5*h50)});
+  if(h100>0)hab.push({d:'Horas extra al 100 %',base:r2(hv*2),un:'$/hora',cant:h100,m:r2(hv*2*h100)});
+  if(F.asist&&P.asistencia_pct>0)hab.push({d:'Asistencia perfecta',base:basico,un:pctTxt(P.asistencia_pct),cant:1,m:r2(basico*P.asistencia_pct/100)});
+  if(P.antig_tipo==='valor_por_anio'&&an>0)hab.push({d:'Antigüedad ('+an+' año'+(an===1?'':'s')+')',base:P.antig_valor,un:'$/año',cant:an*q,m:r2(P.antig_valor*an*q)});
+  if(P.antig_tipo==='pct_por_anio'&&an>0)hab.push({d:'Antigüedad ('+an+' año'+(an===1?'':'s')+')',base:basico,un:pctTxt(P.antig_valor*an),cant:1,m:r2(basico*P.antig_valor*an/100)});
+  if(nz(F.otroRem)>0)hab.push({d:(F.otroRemD||'').trim()||'Otros conceptos remunerativos',base:nz(F.otroRem),un:'$',cant:1,m:r2(nz(F.otroRem))});
+  const rem=r2(sum(hab,x=>x.m));
+  const nor=nz(F.norem)>0?[{d:(F.noremD||'').trim()||'Suma no remunerativa',base:nz(F.norem),un:'$',cant:1,m:r2(nz(F.norem))}]:[];
+  const norem=r2(sum(nor,x=>x.m));
+  const ded=[['jub','Jubilación (SIPA)',T.jubilacion],['pami','PAMI (Ley 19.032)',T.pami],['os','Obra social',T.obra_social]].map(([k,d,p])=>({k,d,pct:+p||0,base:rem,m:r2(rem*(+p||0)/100)}));
+  if(emp.sind&&+T.sindicato>0)ded.push({k:'sind',d:'Cuota sindical',pct:+T.sindicato,base:rem,m:r2(rem*T.sindicato/100)});
+  const dm=nz(F.otroDesc)>0?[{k:'man',d:(F.otroDescD||'').trim()||'Adelanto / otros descuentos',pct:0,base:nz(F.otroDesc),m:r2(nz(F.otroDesc))}]:[];
+  const totDed=r2(sum(ded,x=>x.m)),descMan=r2(sum(dm,x=>x.m)),neto=r2(rem+norem-totDed-descMan);
+  const con=[['ss','Seguridad social (SIPA, PAMI, asignaciones)',E.seg_social],['os','Obra social',E.obra_social],['art','ART',E.art],['sind','Aporte sindical',E.sindicato],['cam','Cámaras y entidades empresarias',E.camaras]].filter(x=>+x[2]>0).map(([k,d,p])=>({k,d,pct:+p,base:rem,m:r2(rem*p/100)}));
+  if(P.fondo_cese){const p=an<1?+P.fondo_cese_pct_1:+P.fondo_cese_pct_2;if(p>0)con.push({k:'fc',d:'Fondo de cese laboral (Ley 22.250) · '+(an<1?'primer año':'desde el segundo año'),pct:p,base:rem,m:r2(rem*p/100)})}
+  const totCon=r2(sum(con,x=>x.m)),costo=r2(rem+norem+totCon);
+  return {es,hab,nor,rem,norem,ded,dm,totDed,descMan,neto,con,totCon,costo,an};
+}
+const TORTA_C=['#2f9e6e','#3b6fb6','#d98a1f','#8a5cc2','#c2453b','#2a9aa8','#7a8a99','#b0653b'];
+function tortaSeg(L){
+  const M={jub:0,ss:0,os:1,pami:2,art:3,sind:4,cam:5,fc:6},N=['Seguridad social','Obra social','PAMI','ART','Aportes sindicales','Cámaras y entidades empresarias','Fondo de cese laboral'],v=N.map(()=>0);
+  L.ded.concat(L.con).forEach(x=>{v[M[x.k]]+=x.m});
+  return [['Neto al trabajador',r2(L.neto+L.descMan)]].concat(N.map((n,i)=>[n,r2(v[i])])).filter(x=>x[1]>0.004)}
+function tortaHTML(L,inline){
+  const seg=tortaSeg(L),tot=sum(seg,x=>x[1])||1;let acc=0;
+  const g=seg.map((x,i)=>{const a=acc/tot*100;acc+=x[1];return TORTA_C[i%8]+' '+a.toFixed(2)+'% '+(acc/tot*100).toFixed(2)+'%'}).join(',');
+  const st=inline?'':'';
+  return `<div class="torta"><div class="tpie" style="background:conic-gradient(${g})" role="img" aria-label="Costo laboral total repartido en porcentajes"></div><table class="tleg">${seg.map((x,i)=>`<tr><td><i style="background:${TORTA_C[i%8]}"></i>${esc(x[0])}</td><td class="num">${(x[1]/tot*100).toFixed(1).replace('.',',')} %</td><td class="num">${money(x[1])}</td></tr>`).join('')}<tr class="ft"><td>Costo laboral total</td><td class="num">100 %</td><td class="num">${money(tot)}</td></tr></table></div>${st}`}
+
+/* Recibo (modelo de 4 secciones del Decreto 407/2026): se usa en pantalla y para imprimir o guardar en PDF */
+function reciboDoc(R){
+  const L=R.L,e=R.emp,em=R.empresa||{};
+  const fila=x=>`<tr><td>${esc(x.d)}</td><td class="n">${x.un==='$'?money(x.base):x.un.startsWith('$/')?money(x.base):money(x.base)}</td><td>${esc(x.un)}</td><td class="n">${x.cant===1&&!x.un.startsWith('$/')?'':String(Math.round(x.cant*100)/100).replace('.',',')}</td><td class="n">${money(x.m)}</td></tr>`;
+  const cq=x=>`<tr><td>${esc(x.d)}</td><td class="n">${money(x.base)}</td><td class="n">${pctTxt(x.pct)}</td><td class="n">${money(x.m)}</td></tr>`;
+  const css=`body{font:12px/1.4 Arial,Helvetica,sans-serif;color:#111;margin:0;padding:18px}h1{font-size:16px;margin:0}h2{font-size:12px;background:#eee;margin:14px 0 4px;padding:4px 6px;letter-spacing:.04em;text-transform:uppercase}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:3px 6px;text-align:left;vertical-align:top}th{font-size:10px;text-transform:uppercase;color:#555}.n{text-align:right;white-space:nowrap}.g{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}.g div span{color:#666;display:inline-block;min-width:110px}.t{font-weight:700;border-top:2px solid #111}.neto{font-size:15px;font-weight:700;border:2px solid #111;padding:8px;display:flex;justify-content:space-between;margin-top:12px}.tp{display:flex;gap:16px;align-items:center}.pie{width:120px;height:120px;border-radius:50%;flex:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tp i{display:inline-block;width:9px;height:9px;margin-right:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.foot{margin-top:16px;font-size:10px;color:#666}.firma{display:flex;justify-content:space-between;margin-top:40px}.firma div{width:42%;border-top:1px solid #111;text-align:center;padding-top:4px;font-size:11px}`;
+  const seg=tortaSeg(L),tot=sum(seg,x=>x[1])||1;let acc=0;
+  const gr=seg.map((x,i)=>{const a=acc/tot*100;acc+=x[1];return TORTA_C[i%8]+' '+a.toFixed(2)+'% '+(acc/tot*100).toFixed(2)+'%'}).join(',');
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo ${esc(e.legajo)} ${esc(R.per)}</title><style>${css}</style></head><body>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>Recibo de haberes</h1><div>Período: <b>${esc(perTxt(R.per))}</b> · ${R.liq==='mensual'?'Mensual':R.liq==='1q'?'1.ª quincena':'2.ª quincena'}${R.pago?' · Fecha de pago '+fd(R.pago):''}</div></div><div style="text-align:right"><b>${esc(em.razon||'')}</b><br>${em.cuit?'CUIT '+esc(em.cuit)+'<br>':''}${esc(em.dom||'')}</div></div>
+  <h2>1. Datos identificatorios</h2><div class="g"><div><span>Trabajador</span><b>${esc(e.ape)}, ${esc(e.nom)}</b></div><div><span>Legajo</span>${esc(e.legajo)}</div><div><span>CUIL</span>${esc(e.cuil||'—')}</div><div><span>DNI</span>${esc(e.dni||'—')}</div><div><span>Convenio</span>${esc(e.conv||'')}</div><div><span>Categoría</span>${esc(e.cat||'')}</div><div><span>Fecha de ingreso</span>${e.ingreso?fd(e.ingreso):'—'}</div><div><span>Antigüedad</span>${L.an} año${L.an===1?'':'s'}</div>${e.banco||e.cbu?`<div><span>Banco / CBU</span>${esc(e.banco||'')} ${esc(e.cbu||'')}</div>`:''}</div>
+  <h2>2. Aportes y contribuciones</h2>
+  <b>Aportes del trabajador</b><table><thead><tr><th>Concepto</th><th class="n">Base</th><th class="n">Alícuota</th><th class="n">Monto</th></tr></thead><tbody>${L.ded.map(cq).join('')}<tr class="t"><td colspan="3">Total aportes del trabajador</td><td class="n">${money(L.totDed)}</td></tr></tbody></table>
+  <b>Contribuciones del empleador</b><table><thead><tr><th>Concepto</th><th class="n">Base</th><th class="n">Alícuota</th><th class="n">Monto</th></tr></thead><tbody>${L.con.map(cq).join('')||'<tr><td colspan="4">Sin contribuciones cargadas</td></tr>'}<tr class="t"><td colspan="3">Total contribuciones del empleador</td><td class="n">${money(L.totCon)}</td></tr></tbody></table>
+  <b>Costo laboral total</b><div class="tp"><div class="pie" style="background:conic-gradient(${gr})"></div><table>${seg.map((x,i)=>`<tr><td><i style="background:${TORTA_C[i%8]}"></i>${esc(x[0])}</td><td class="n">${(x[1]/tot*100).toFixed(1).replace('.',',')} %</td><td class="n">${money(x[1])}</td></tr>`).join('')}<tr class="t"><td>Costo laboral total</td><td class="n">100 %</td><td class="n">${money(tot)}</td></tr></table></div>
+  <h2>3. Remuneración bruta y deducciones</h2>
+  <table><thead><tr><th>Haberes</th><th class="n">Base</th><th>Unidad</th><th class="n">Cantidad</th><th class="n">Monto</th></tr></thead><tbody>${L.hab.map(fila).join('')}<tr class="t"><td colspan="4">Total remunerativo</td><td class="n">${money(L.rem)}</td></tr>${L.nor.map(fila).join('')}${L.nor.length?`<tr class="t"><td colspan="4">Total no remunerativo</td><td class="n">${money(L.norem)}</td></tr>`:''}</tbody></table>
+  <table style="margin-top:8px"><thead><tr><th>Deducciones</th><th class="n">Base</th><th class="n">Alícuota</th><th class="n">Monto</th></tr></thead><tbody>${L.ded.map(cq).join('')}${L.dm.map(x=>`<tr><td>${esc(x.d)}</td><td class="n">${money(x.base)}</td><td class="n">—</td><td class="n">${money(x.m)}</td></tr>`).join('')}<tr class="t"><td colspan="3">Total deducciones</td><td class="n">${money(L.totDed+L.descMan)}</td></tr></tbody></table>
+  <h2>4. Remuneración neta</h2><div class="neto"><span>Neto a cobrar</span><span>${money(L.neto)}</span></div>
+  ${R.obs?`<p>${esc(R.obs)}</p>`:''}<div class="firma"><div>Firma del empleador</div><div>Firma del trabajador</div></div>
+  <div class="foot">Modelo de recibo según el Decreto 407/2026 (reglamentario de la Ley 27.802, vigente desde el 1/6/2026). Escala aplicada: ${money(L.es.valor)} por ${L.es.unidad==='hora'?'hora':'mes'}, vigente desde ${fd(L.es.vig)}. Las alícuotas son las cargadas en la solapa Convenios: confirmar con el contador antes de entregar.</div></body></html>`}
+function imprimirDoc(html){
+  let f=document.getElementById('prn-frame');if(f)f.remove();
+  f=document.createElement('iframe');f.id='prn-frame';f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';f.srcdoc=html;
+  f.onload=()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){toast('No se pudo abrir la impresión')}};document.body.appendChild(f)}
+function recDoc(r){const d=r.datos||{};return reciboDoc({emp:d.emp||{},empresa:d.empresa||{},per:r.periodo,liq:r.liq,pago:r.pago,L:d.L,obs:d.obs||''})}
+
+/* --- Pantalla --- */
+const sdt=(id,k,v,ph,ex='')=>`<input id="${id}" data-sd="${k}" value="${esc(v)}" ${ph?`placeholder="${esc(ph)}"`:''} ${ex}>`;
+const sdn=(id,k,v,ph)=>`<input id="${id}" data-sd="${k}" value="${esc(v)}" inputmode="decimal" ${ph?`placeholder="${esc(ph)}"`:''} class="num">`;
+const sds=(id,k,v,ops,re)=>`<select id="${id}" data-sd="${k}" ${re?'data-re="1"':''}>${ops.map(o=>opt(o[0],o[1],v)).join('')}</select>`;
+const sdm=(id,k,v)=>`<div class="money"><span aria-hidden="true">$</span><input class="num" id="${id}" data-sd="${k}" value="${esc(v)}" inputmode="decimal" placeholder="0,00"></div>`;
+const sdck=(id,k,v,txt)=>`<label class="sdchk"><input type="checkbox" id="${id}" data-sd="${k}" data-re="1" ${v?'checked':''}> ${txt}</label>`;
+const sdTabs=()=>`<div class="sdtabs" role="tablist">${[['legajos','Legajo de empleados'],['recibos','Emisión de recibos'],['convenios','Convenios']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${S.sdTab===k}" class="${S.sdTab===k?'on':''}" data-act="sd-tab" data-tab="${k}">${l}</button>`).join('')}</div>`;
+function vSueldos(){
+  const t=S.sdTab,body=t==='legajos'?sdLegajos():t==='recibos'?sdRecibos():sdConvenios();
+  return head('Control Sueldos','Legajos del personal, recibos de sueldo y convenios (UOCRA 76/75 y UECARA 660/13). Lo ven y modifican el dueño y los contadores.')+sdTabs()+sdDelBox()+body}
+function sdDelBox(){
+  const D=S.sdDel;if(!D)return '';
+  const msg={emp:'Se elimina el legajo. Si ya tiene recibos no se puede: en ese caso usá "Dar de baja". Esto no se puede deshacer.',rec:'Se elimina el recibo emitido. Esto no se puede deshacer; si solo querés dejarlo sin efecto, usá "Anular".',esc:'Se elimina esta categoría de la escala.',conv:'Se elimina el convenio con todas sus escalas.'}[D.k]||'Esto no se puede deshacer.';
+  return `<section class="panel" style="padding:0;margin-top:14px"><div class="alerta" role="alertdialog" style="margin:0;border:0"><b>¿Eliminar este registro?</b><span>${msg}</span><div class="actions"><button class="btn" data-act="sd-del-no">Cancelar</button><button class="btn danger" data-act="sd-del-ok">Sí, eliminar</button></div></div></section>`}
+
+/* Legajo de empleados */
+const empNew=()=>{const n=S.empleados.reduce((m,x)=>Math.max(m,parseInt(x.legajo,10)||0),0)+1;return {id:null,legajo:String(n).padStart(3,'0'),ape:'',nom:'',dni:'',cuil:'',nac:'',civil:'',hijos:'0',dom:'',loc:'',tel:'',mail:'',emerg:'',telEmerg:'',ingreso:TODAY,egreso:'',convId:'',cat:'',zona:'',obraId:'',os:'',sind:true,ropa:'',calzado:'',art:'',banco:'',cbu:'',obs:'',err:''}};
+function sdLegajos(){
+  const F=S.emf,q=S.sdQ.trim().toLowerCase();
+  const ls=S.empleados.filter(e=>(S.sdBajas||e.activo)&&(!q||(e.ape+' '+e.nom+' '+e.legajo+' '+e.dni+' '+e.cuil).toLowerCase().includes(q))).sort((a,b)=>a.ape.localeCompare(b.ape,'es')||a.nom.localeCompare(b.nom,'es'));
+  const form=F?(()=>{const cv=convDe(F.convId),zs=cv?zonasDe(cv.id):[],cs=cv?catsDe(cv.id,F.zona):[];
+   return `<section class="panel" style="margin-top:14px"><h2>${F.id?'Legajo de '+esc(F.ape+', '+F.nom):'Nuevo empleado'}</h2>${errBox(F)}
+   <h3 class="sdsec">Datos personales</h3><div class="fields">
+   ${fld('em-ape','Apellido <em>*</em>',sdt('em-ape','emf.ape',F.ape))}${fld('em-nom','Nombres <em>*</em>',sdt('em-nom','emf.nom',F.nom))}
+   ${fld('em-dni','DNI',sdt('em-dni','emf.dni',F.dni,'Sin puntos','inputmode="numeric"'))}${fld('em-cuil','CUIL',sdt('em-cuil','emf.cuil',F.cuil,'20-12345678-9','inputmode="numeric"'))}
+   ${fld('em-nac','Fecha de nacimiento',`<input id="em-nac" type="date" data-sd="emf.nac" value="${esc(F.nac)}">`)}${fld('em-civil','Estado civil',sds('em-civil','emf.civil',F.civil,[['',''],['Soltero/a','Soltero/a'],['Casado/a','Casado/a'],['Unión convivencial','Unión convivencial'],['Divorciado/a','Divorciado/a'],['Viudo/a','Viudo/a']]))}
+   ${fld('em-hijos','Hijos a cargo',sdn('em-hijos','emf.hijos',F.hijos))}${fld('em-tel','Teléfono',sdt('em-tel','emf.tel',F.tel,'','inputmode="tel"'))}
+   ${fld('em-mail','Email',sdt('em-mail','emf.mail',F.mail,'','type="email"'))}${fld('em-dom','Domicilio',sdt('em-dom','emf.dom',F.dom),'',2)}${fld('em-loc','Localidad',sdt('em-loc','emf.loc',F.loc))}
+   ${fld('em-emerg','Contacto de emergencia',sdt('em-emerg','emf.emerg',F.emerg,'Nombre y vínculo'))}${fld('em-temerg','Teléfono de emergencia',sdt('em-temerg','emf.telEmerg',F.telEmerg,'','inputmode="tel"'))}</div>
+   <h3 class="sdsec">Datos laborales</h3><div class="fields">
+   ${fld('em-leg','Nº de legajo <em>*</em>',sdt('em-leg','emf.legajo',F.legajo))}${fld('em-ing','Fecha de ingreso <em>*</em>',`<input id="em-ing" type="date" data-sd="emf.ingreso" value="${esc(F.ingreso)}">`)}
+   ${fld('em-egr','Fecha de egreso',`<input id="em-egr" type="date" data-sd="emf.egreso" value="${esc(F.egreso)}">`,'Solo si ya no trabaja con nosotros.')}
+   ${fld('em-conv','Convenio <em>*</em>',sds('em-conv','emf.convId',F.convId,[['','Elegir convenio…']].concat(S.convenios.map(c=>[c.id,c.nombre+' (CCT '+c.cct+')'])),true),'',2)}
+   ${fld('em-zona','Zona',sds('em-zona','emf.zona',F.zona,[['','Elegir zona…']].concat(zs.map(z=>[z,z])),true))}
+   ${fld('em-cat','Categoría <em>*</em>',sds('em-cat','emf.cat',F.cat,[['','Elegir categoría…']].concat(cs.map(c=>[c,c])),false),'',2)}
+   ${fld('em-obra','Obra donde trabaja',sds('em-obra','emf.obraId',F.obraId,[['','Sin obra asignada']].concat(obrasVivas().map(o=>[o.id,o.codigo+' · '+o.nombre]))))}
+   ${fld('em-os','Obra social',sdt('em-os','emf.os',F.os,'Ej: OSPECON'))}${fld('em-art','ART',sdt('em-art','emf.art',F.art))}
+   <div class="f">${sdck('em-sind','emf.sind',F.sind,'Afiliado al sindicato (se descuenta la cuota)')}</div></div>
+   <h3 class="sdsec">Pago y equipo</h3><div class="fields">
+   ${fld('em-banco','Banco',sdt('em-banco','emf.banco',F.banco))}${fld('em-cbu','CBU / alias',sdt('em-cbu','emf.cbu',F.cbu),'',2)}
+   ${fld('em-ropa','Talle de ropa',sdt('em-ropa','emf.ropa',F.ropa))}${fld('em-calz','Talle de calzado',sdt('em-calz','emf.calzado',F.calzado))}
+   ${fld('em-obs','Observaciones',`<textarea id="em-obs" rows="2" data-sd="emf.obs">${esc(F.obs)}</textarea>`,'',3)}</div>
+   <div class="actions" style="padding:0 16px 16px"><button type="button" class="btn" data-act="sd-emp-cancel">Cancelar</button><button type="button" class="btn dark" data-act="sd-emp-save">${F.id?'Guardar cambios':'Guardar legajo'}</button></div></section>`})():'';
+  const rows=ls.map(e=>{const cv=convDe(e.convId),o=e.obraId&&centro(e.obraId);
+   return `<tr${e.activo?'':' style="opacity:.6"'}><td class="mono">${esc(e.legajo)}</td><td><b>${esc(empNom(e))}</b><br><span class="sub">${esc(e.cuil||e.dni||'')}</span></td><td>${cv?'CCT '+esc(cv.cct):'—'}<br><span class="sub">${esc(e.cat||'')}</span></td><td>${o?esc(o.codigo):'—'}</td><td class="mono">${fd(e.ingreso)}</td><td>${e.activo?'<span class="pill p-ok">Activo</span>':'<span class="pill p-mute">Baja'+(e.egreso?' '+fd(e.egreso):'')+'</span>'}</td><td><button class="btn small" data-act="sd-emp-edit" data-id="${e.id}">Ver / editar</button> <button class="btn small" data-act="sd-emp-baja" data-id="${e.id}">${e.activo?'Dar de baja':'Reactivar'}</button>${esDueno()?` <button class="btn small danger" data-act="sd-del" data-k="emp" data-id="${e.id}">Eliminar</button>`:''}</td></tr>`}).join('');
+  return `<div class="toolbar" style="margin-top:14px"><input id="sd-q" data-sd="sdQ" class="search" value="${esc(S.sdQ)}" placeholder="Buscar por apellido, legajo, DNI o CUIL" aria-label="Buscar empleado" style="max-width:340px"><label class="sdchk"><input type="checkbox" data-sd="sdBajas" data-re="1" ${S.sdBajas?'checked':''}> Mostrar bajas</label>${F?'':'<button class="btn small primary" data-act="sd-emp-new">+ Nuevo empleado</button>'}</div>${form}
+   <section class="panel" style="padding:0;margin-top:14px"><div class="tw"><table><thead><tr><th>Legajo</th><th>Empleado</th><th>Convenio / categoría</th><th>Obra</th><th>Ingreso</th><th>Estado</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="empty">Todavía no hay empleados cargados.</td></tr>'}</tbody></table></div></section>`}
+function empSave(){
+  const F=S.emf;F.err='';const fail=m=>{F.err=m;render();window.scrollTo(0,0)};
+  const ape=F.ape.trim(),nom=F.nom.trim(),legajo=F.legajo.trim();
+  if(!ape||!nom)return fail('Cargá apellido y nombres.');
+  if(!legajo)return fail('Cargá el número de legajo.');
+  if(S.empleados.some(x=>x.id!==F.id&&x.legajo===legajo))return fail('Ya existe un empleado con el legajo '+legajo+'.');
+  const dni=F.dni.replace(/\D/g,'');if(F.dni.trim()&&(dni.length<7||dni.length>8))return fail('El DNI tiene que tener 7 u 8 números.');
+  if(F.cuil.trim()&&!cuilOk(F.cuil))return fail('El CUIL no es válido: revisá los números (11 dígitos con su verificador).');
+  if(dni&&F.cuil.trim()&&F.cuil.replace(/\D/g,'').slice(2,10).replace(/^0/,'')!==dni.replace(/^0/,''))return fail('El DNI no coincide con el CUIL.');
+  if(!F.ingreso)return fail('Cargá la fecha de ingreso.');
+  if(F.egreso&&F.egreso<F.ingreso)return fail('El egreso no puede ser anterior al ingreso.');
+  if(!F.convId)return fail('Elegí el convenio.');
+  if(!F.cat)return fail('Elegí la categoría.');
+  const hijos=Math.max(0,parseInt(F.hijos,10)||0);
+  const d={legajo,ape,nom,dni,cuil:F.cuil.trim()?fmtCuil(F.cuil):'',nac:F.nac,civil:F.civil,hijos,dom:F.dom.trim(),loc:F.loc.trim(),tel:F.tel.trim(),mail:F.mail.trim(),emerg:F.emerg.trim(),telEmerg:F.telEmerg.trim(),ingreso:F.ingreso,egreso:F.egreso,convId:F.convId,cat:F.cat,zona:F.zona,obraId:F.obraId,os:F.os.trim(),sind:!!F.sind,ropa:F.ropa.trim(),calzado:F.calzado.trim(),art:F.art.trim(),banco:F.banco.trim(),cbu:F.cbu.trim(),obs:F.obs.trim()};
+  if(F.id){const e=by(S.empleados,F.id);Object.assign(e,d);if(e.egreso)e.activo=false;aud('Modificación','Legajo '+legajo+' · '+empNom(e));toast('Legajo actualizado')}
+  else{S.empleados.push({id:nid('emp'),...d,activo:!F.egreso});aud('Alta','Legajo '+legajo+' · '+ape+', '+nom);toast('Legajo cargado')}
+  S.emf=null;render()}
+
+/* Emisión de recibos */
+const rcNew=()=>({empId:'',periodo:TODAY.slice(0,7),liq:'mensual',pago:TODAY,horas:'200',h50:'',h100:'',asist:true,otroRem:'',otroRemD:'',norem:'',noremD:'',otroDesc:'',otroDescD:'',obs:'',err:''});
+function rcHoras(F){const e=by(S.empleados,F.empId),cv=e&&convDe(e.convId),h=(cv&&cv.params.horas_mes)||200;F.horas=String(Math.round(h*(F.liq==='mensual'?1:.5)))}
+function rcPrev(){
+  const F=S.rcf,e=F&&by(S.empleados,F.empId);
+  if(!e)return '<div class="empty">Elegí un empleado para ver la liquidación.</div>';
+  if(!F.periodo)return '<div class="empty">Elegí el período.</div>';
+  const L=liquidar(e,F);if(L.err)return `<div class="alerta" role="alert"><b>${esc(L.err)}</b></div>`;
+  const fila=x=>`<tr><td>${esc(x.d)}</td><td class="num">${money(x.m)}</td></tr>`;
+  return `<div class="grid2"><div><h3 class="sdsec" style="padding:0">Liquidación</h3><table><tbody>${L.hab.map(fila).join('')}<tr class="ft"><td>Total remunerativo</td><td class="num">${money(L.rem)}</td></tr>${L.nor.map(fila).join('')}${L.ded.map(x=>`<tr><td>− ${esc(x.d)} <span class="sub">${pctTxt(x.pct)}</span></td><td class="num">${money(-x.m)}</td></tr>`).join('')}${L.dm.map(x=>`<tr><td>− ${esc(x.d)}</td><td class="num">${money(-x.m)}</td></tr>`).join('')}<tr class="ft"><td>Neto a cobrar</td><td class="num">${money(L.neto)}</td></tr></tbody></table>
+   <p class="sub">Escala usada: ${money(L.es.valor)} por ${L.es.unidad==='hora'?'hora':'mes'} (vigente desde ${fd(L.es.vig)}) · Antigüedad ${L.an} año${L.an===1?'':'s'}.</p></div>
+   <div><h3 class="sdsec" style="padding:0">Costo laboral total · ${money(L.costo)}</h3>${tortaHTML(L)}<p class="sub">Contribuciones del empleador: ${money(L.totCon)}.</p></div></div>`}
+function sdRecibos(){
+  const F=S.rcf=S.rcf||rcNew(),act=S.empleados.filter(e=>e.activo).sort((a,b)=>a.ape.localeCompare(b.ape,'es'));
+  const e=by(S.empleados,F.empId),cv=e&&convDe(e.convId),hora=!!(e&&cv&&(escVig(cv.id,e.cat,e.zona,F.periodo)||{}).unidad==='hora');
+  const form=`<section class="panel" style="margin-top:14px"><h2>Nuevo recibo</h2>${errBox(F)}<div class="fields">
+   ${fld('rc-emp','Empleado <em>*</em>',sds('rc-emp','rcf.empId',F.empId,[['','Elegir empleado…']].concat(act.map(x=>[x.id,x.legajo+' · '+empNom(x)])),true),'',2)}
+   ${fld('rc-per','Período <em>*</em>',`<input id="rc-per" type="month" data-sd="rcf.periodo" data-re="1" value="${esc(F.periodo)}" placeholder="AAAA-MM">`)}
+   ${fld('rc-liq','Liquidación',sds('rc-liq','rcf.liq',F.liq,[['mensual','Mensual'],['1q','1.ª quincena'],['2q','2.ª quincena']],true))}
+   ${fld('rc-pago','Fecha de pago',`<input id="rc-pago" type="date" data-sd="rcf.pago" value="${esc(F.pago)}">`)}
+   ${hora?fld('rc-hs','Horas trabajadas',sdn('rc-hs','rcf.horas',F.horas),'Jornal por hora: horas normales del período.'):''}
+   ${fld('rc-h50','Horas extra al 50 %',sdn('rc-h50','rcf.h50',F.h50))}${fld('rc-h100','Horas extra al 100 %',sdn('rc-h100','rcf.h100',F.h100))}
+   <div class="f">${sdck('rc-asist','rcf.asist',F.asist,'Asistencia perfecta')}</div>
+   ${fld('rc-orem','Otros remunerativos ($)',sdm('rc-orem','rcf.otroRem',F.otroRem))}${fld('rc-oremd','Detalle',sdt('rc-oremd','rcf.otroRemD',F.otroRemD,'Ej: Premio'))}
+   ${fld('rc-nrem','No remunerativo ($)',sdm('rc-nrem','rcf.norem',F.norem))}${fld('rc-nremd','Detalle',sdt('rc-nremd','rcf.noremD',F.noremD,'Ej: Suma acuerdo'))}
+   ${fld('rc-odesc','Adelantos / descuentos ($)',sdm('rc-odesc','rcf.otroDesc',F.otroDesc))}${fld('rc-odescd','Detalle',sdt('rc-odescd','rcf.otroDescD',F.otroDescD,'Ej: Adelanto'))}
+   ${fld('rc-obs','Observaciones del recibo',sdt('rc-obs','rcf.obs',F.obs),'',2)}</div>
+   <div id="rc-prev" style="padding:0 16px 8px">${rcPrev()}</div>
+   <div class="actions" style="padding:0 16px 16px"><button type="button" class="btn dark" data-act="sd-rc-save">Emitir recibo</button></div></section>`;
+  const V=S.sdVer&&by(S.recibos,S.sdVer);
+  const ver=V&&V.datos&&V.datos.L?`<section class="panel" style="margin-top:14px"><div class="toolbar"><h3 style="margin:0">Recibo · ${esc((V.datos.emp||{}).ape||'')}, ${esc((V.datos.emp||{}).nom||'')} · ${esc(perTxt(V.periodo))}</h3><span><button class="btn small primary" data-act="sd-rc-print">Imprimir / guardar PDF</button> <button class="btn small" data-act="sd-rc-cerrar">Cerrar</button></span></div><iframe id="rc-frame" class="rcframe" title="Recibo" srcdoc="${esc(recDoc(V))}"></iframe></section>`:'';
+  const rs=[...S.recibos].sort((a,b)=>b.periodo.localeCompare(a.periodo)||((a.datos.emp||{}).ape||'').localeCompare((b.datos.emp||{}).ape||'','es'));
+  const rows=rs.map(r=>{const d=r.datos||{},em=d.emp||{};return `<tr${r.estado==='anulado'?' style="opacity:.55"':''}><td>${esc(perTxt(r.periodo))}<br><span class="sub">${r.liq==='mensual'?'Mensual':r.liq==='1q'?'1.ª quincena':'2.ª quincena'}</span></td><td><b>${esc(em.ape||'')}, ${esc(em.nom||'')}</b><br><span class="sub">Legajo ${esc(em.legajo||'')}</span></td><td class="num">${money(r.bruto)}</td><td class="num"><b>${money(r.neto)}</b></td><td class="num">${money(r.costo)}</td><td>${r.estado==='anulado'?'<span class="pill p-mute">Anulado</span>':'<span class="pill p-ok">Emitido</span>'}</td><td><button class="btn small" data-act="sd-rc-ver" data-id="${r.id}">Ver / imprimir</button>${r.estado==='emitido'?` <button class="btn small danger" data-act="sd-rc-anular" data-id="${r.id}">Anular</button>`:''}${esDueno()?` <button class="btn small danger" data-act="sd-del" data-k="rec" data-id="${r.id}">Eliminar</button>`:''}</td></tr>`}).join('');
+  return form+ver+`<section class="panel" style="padding:0;margin-top:14px"><div class="toolbar" style="padding:12px 16px"><h3 style="margin:0">Recibos emitidos</h3></div><div class="tw"><table><thead><tr><th>Período</th><th>Empleado</th><th class="num">Bruto</th><th class="num">Neto</th><th class="num">Costo laboral</th><th>Estado</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="empty">Todavía no se emitió ningún recibo.</td></tr>'}</tbody></table></div></section>
+   <div class="legend">El recibo sigue el modelo de 4 secciones del Decreto 407/2026 (vigente desde el 1/6/2026): datos identificatorios, aportes y contribuciones con el costo laboral total en gráfico, remuneración bruta y deducciones, y neto. Se guarda tal como se emitió: si después cambia una escala, los recibos viejos no se alteran.</div>`}
+function rcSave(){
+  const F=S.rcf;F.err='';const fail=m=>{F.err=m;render();window.scrollTo(0,0)};
+  const e=by(S.empleados,F.empId);if(!e)return fail('Elegí el empleado.');
+  if(!/^\d{4}-\d{2}$/.test(F.periodo))return fail('Elegí el período.');
+  if(S.recibos.some(r=>r.estado==='emitido'&&r.empId===e.id&&r.periodo===F.periodo&&r.liq===F.liq))return fail('Ya hay un recibo emitido de '+empNom(e)+' para '+perTxt(F.periodo)+'. Anulalo primero si hay que rehacerlo.');
+  const L=liquidar(e,F);if(L.err)return fail(L.err);
+  const cv=convDe(e.convId),em=S.empresa||{razon:'CODES SRL'};
+  const emp={legajo:e.legajo,ape:e.ape,nom:e.nom,cuil:e.cuil,dni:e.dni,cat:e.cat,conv:'CCT '+cv.cct+' · '+cv.nombre,ingreso:e.ingreso,zona:e.zona,banco:e.banco,cbu:e.cbu};
+  S.recibos.push({id:nid('rc'),empId:e.id,periodo:F.periodo,liq:F.liq,pago:F.pago,bruto:r2(L.rem+L.norem),neto:L.neto,costo:L.costo,datos:{emp,empresa:{razon:em.razon,cuit:em.cuit,dom:em.dom},L,obs:F.obs.trim()},estado:'emitido',ini:S.user});
+  aud('Alta','Recibo '+perTxt(F.periodo)+' · '+empNom(e)+' · neto '+money(L.neto));
+  const id=S.recibos[S.recibos.length-1].id;S.sdVer=id;S.rcf=rcNew();toast('Recibo emitido');render();window.scrollTo(0,0)}
+
+/* Convenios */
+function vigSel(c){const vs=[...new Set(S.escalas.filter(x=>x.convId===c.id).map(x=>x.vig))].sort().reverse();let v=S.cvVig[c.id];if(!vs.includes(v)){v=vs.find(x=>x<=TODAY)||vs[0]||'';S.cvVig[c.id]=v}return {vs,v}}
+const linkify=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean).map(u=>/^https?:\/\//.test(u)?`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u.replace(/^https?:\/\//,''))}</a>`:esc(u)).join('<br>');
+function cvCard(c){
+  const P=c.params||{},T=P.trab||{},E=P.emp||{},{vs,v}=vigSel(c),es=S.escalas.filter(x=>x.convId===c.id&&x.vig===v).sort((a,b)=>a.zona.localeCompare(b.zona,'es')||a.cat.localeCompare(b.cat,'es'));
+  const F=S.cvp&&S.cvp.id===c.id?S.cvp:null,VG=S.vgf&&S.vgf.convId===c.id?S.vgf:null,SF=S.esf&&S.esf.convId===c.id?S.esf:null;
+  const antTxt=P.antig_tipo==='valor_por_anio'?money(P.antig_valor)+' por año':P.antig_tipo==='pct_por_anio'?pctTxt(P.antig_valor)+' por año':'No aplica';
+  const par=`<div class="cvpar"><span>Asistencia <b>${pctTxt(P.asistencia_pct||0)}</b></span><span>Antigüedad <b>${antTxt}</b></span><span>Fondo de cese <b>${P.fondo_cese?pctTxt(P.fondo_cese_pct_1)+' (1.er año) / '+pctTxt(P.fondo_cese_pct_2):'No aplica'}</b></span><span>Trabajador: jubilación <b>${pctTxt(T.jubilacion||0)}</b> · PAMI <b>${pctTxt(T.pami||0)}</b> · obra social <b>${pctTxt(T.obra_social||0)}</b> · sindicato <b>${pctTxt(T.sindicato||0)}</b></span><span>Empleador: seguridad social <b>${pctTxt(E.seg_social||0)}</b> · obra social <b>${pctTxt(E.obra_social||0)}</b> · ART <b>${pctTxt(E.art||0)}</b> · sindical <b>${pctTxt(E.sindicato||0)}</b> · cámaras <b>${pctTxt(E.camaras||0)}</b></span></div>`;
+  const pf=F?`<div class="avbox"><h3>Parámetros de liquidación</h3>${errBox(F)}<div class="fields">
+   ${fld('cp-asi','Asistencia perfecta (%)',sdn('cp-asi','cvp.asistencia_pct',F.asistencia_pct))}${fld('cp-hm','Horas del mes completo',sdn('cp-hm','cvp.horas_mes',F.horas_mes),'0 si se paga por mes.')}
+   ${fld('cp-at','Antigüedad',sds('cp-at','cvp.antig_tipo',F.antig_tipo,[['ninguna','No aplica'],['valor_por_anio','Importe fijo por año'],['pct_por_anio','% por año sobre el básico']]))}${fld('cp-av','Valor de antigüedad',sdn('cp-av','cvp.antig_valor',F.antig_valor),'Importe en $ o porcentaje, según lo elegido.')}
+   <div class="f">${sdck('cp-fc','cvp.fondo_cese',F.fondo_cese,'Lleva fondo de cese laboral')}</div>${fld('cp-f1','Fondo de cese, primer año (%)',sdn('cp-f1','cvp.fondo_cese_pct_1',F.fondo_cese_pct_1))}${fld('cp-f2','Fondo de cese, desde el 2.º año (%)',sdn('cp-f2','cvp.fondo_cese_pct_2',F.fondo_cese_pct_2))}
+   ${fld('cp-tj','Trabajador · jubilación (%)',sdn('cp-tj','cvp.t_jub',F.t_jub))}${fld('cp-tp','Trabajador · PAMI (%)',sdn('cp-tp','cvp.t_pami',F.t_pami))}${fld('cp-to','Trabajador · obra social (%)',sdn('cp-to','cvp.t_os',F.t_os))}${fld('cp-ts','Trabajador · cuota sindical (%)',sdn('cp-ts','cvp.t_sind',F.t_sind))}
+   ${fld('cp-es','Empleador · seguridad social (%)',sdn('cp-es','cvp.e_ss',F.e_ss))}${fld('cp-eo','Empleador · obra social (%)',sdn('cp-eo','cvp.e_os',F.e_os))}${fld('cp-ea','Empleador · ART (%)',sdn('cp-ea','cvp.e_art',F.e_art))}${fld('cp-esi','Empleador · aporte sindical (%)',sdn('cp-esi','cvp.e_sind',F.e_sind))}${fld('cp-ec','Empleador · cámaras y entidades (%)',sdn('cp-ec','cvp.e_cam',F.e_cam))}
+   ${fld('cp-fu','Fuentes (una por línea)',`<textarea id="cp-fu" rows="3" data-sd="cvp.fuentes">${esc(F.fuentes)}</textarea>`,'',3)}${fld('cp-no','Notas',`<textarea id="cp-no" rows="3" data-sd="cvp.notas">${esc(F.notas)}</textarea>`,'',3)}</div>
+   <div class="actions"><button type="button" class="btn" data-act="sd-cv-cancel">Cancelar</button><button type="button" class="btn dark" data-act="sd-cv-save">Guardar parámetros</button></div></div>`:'';
+  const vgf=VG?`<div class="avbox"><h3>Nueva escala (nueva vigencia)</h3>${errBox(VG)}<div class="fields">
+   ${fld('vg-vig','Rige desde <em>*</em>',`<input id="vg-vig" type="date" data-sd="vgf.vig" value="${esc(VG.vig)}">`)}${fld('vg-pct',`Aumento sobre la escala del ${esc(fd(v))} (%)`,sdn('vg-pct','vgf.pct',VG.pct,'Ej: 1,9'),'Copia la escala que estás viendo con ese aumento. Después podés corregir cada valor.')}
+   ${fld('vg-fu','Fuente del acuerdo',sdt('vg-fu','vgf.fuente',VG.fuente,'Ej: Acuerdo del 21/09/2026'),'',2)}</div><div class="actions"><button type="button" class="btn" data-act="sd-vig-cancel">Cancelar</button><button type="button" class="btn dark" data-act="sd-vig-save">Crear escala</button></div></div>`:'';
+  const esf=SF?`<div class="avbox"><h3>Nueva categoría en la escala del ${esc(fd(v))}</h3>${errBox(SF)}<div class="fields">
+   ${fld('ec-cat','Categoría <em>*</em>',sdt('ec-cat','esf.cat',SF.cat),'',2)}${fld('ec-zona','Zona',sdt('ec-zona','esf.zona',SF.zona))}${fld('ec-un','Se paga por',sds('ec-un','esf.unidad',SF.unidad,[['hora','Hora'],['mes','Mes']]))}${fld('ec-val','Valor ($) <em>*</em>',sdm('ec-val','esf.valor',SF.valor))}</div>
+   <div class="actions"><button type="button" class="btn" data-act="sd-esc-cancel">Cancelar</button><button type="button" class="btn dark" data-act="sd-esc-save">Agregar</button></div></div>`:'';
+  const busca=S.cvBusca===c.id?`<div class="avbox"><h3>Buscar actualización</h3><p>Fuentes oficiales y de seguimiento de este convenio:</p><p>${linkify(c.fuentes)||'<span class="sub">Sin fuentes cargadas.</span>'}</p><p class="sub">Las páginas del sindicato y de las cámaras no permiten que el sistema las lea por su cuenta, y un valor mal leído cambiaría sueldos sin que nadie lo vea. Por eso la actualización se hace con control: abrí la fuente, y si hay un acuerdo nuevo usá <b>Nueva escala</b> con el porcentaje del acuerdo, corregí los valores que difieran y tocá <b>Marcar como revisado</b>. Si querés, pedile a Claude que busque y cargue la escala nueva: la carga queda a la vista para que la confirmen.</p><div class="actions"><button type="button" class="btn" data-act="sd-cv-busca" data-id="${c.id}">Cerrar</button><button type="button" class="btn dark" data-act="sd-cv-rev" data-id="${c.id}">Marcar como revisado hoy</button></div></div>`:'';
+  const rows=es.map(x=>`<tr><td>${esc(x.cat)}</td><td>${esc(x.zona)}</td><td>${x.unidad==='hora'?'Por hora':'Por mes'}</td><td class="num"><div class="money" style="max-width:170px;margin-left:auto"><span aria-hidden="true">$</span><input class="num" data-sdesc="${x.id}" value="${esc(toIn(x.valor))}" inputmode="decimal" aria-label="Valor de ${esc(x.cat)}"></div></td><td><button class="btn small danger" data-act="sd-del" data-k="esc" data-id="${x.id}">Eliminar</button></td></tr>`).join('');
+  const rev=c.revisado?fd(c.revisado):'sin revisar';
+  return `<section class="panel cvcard" style="margin-top:14px"><div class="avhead"><div><b>${esc(c.nombre)}</b> <span class="pill p-mute">CCT ${esc(c.cct)}</span><br><span class="sub">Última revisión: ${rev}${c.revisado&&c.revisado<TODAY.slice(0,8)+'01'?' · conviene revisarla':''}</span></div><div><button class="btn small" data-act="sd-cv-busca" data-id="${c.id}">Buscar actualización</button> <button class="btn small" data-act="sd-cv-edit" data-id="${c.id}">Parámetros</button></div></div>
+   ${par}${c.notas?`<div class="avaviso">${esc(c.notas)}</div>`:''}${busca}${pf}
+   <div class="avbody"><div class="toolbar"><h3 style="margin:0">Escala salarial</h3><span>${vs.length?`<label for="vs-${c.id}" class="sub">Vigente desde</label> <select id="vs-${c.id}" data-sd="cvVigSel.${c.id}" data-re="1">${vs.map(x=>opt(x,fd(x)+(x<=TODAY&&x===(vs.find(y=>y<=TODAY))?' (en uso)':''),v)).join('')}</select> `:''}${VG||SF?'':`<button class="btn small" data-act="sd-vig-new" data-id="${c.id}">+ Nueva escala</button> <button class="btn small" data-act="sd-esc-add" data-id="${c.id}">+ Categoría</button>`}</span></div>${vgf}${esf}
+   ${es.length?`<div class="tw"><table><thead><tr><th>Categoría</th><th>Zona</th><th>Se paga</th><th class="num">Valor</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><div class="legend">${es[0].fuente?'Fuente: '+esc(es[0].fuente)+'. ':''}Los valores se corrigen directamente en la tabla. Cada recibo usa la escala vigente en su período.</div>`:'<div class="empty">Este convenio todavía no tiene escala cargada. Usá "+ Categoría" o "+ Nueva escala".</div>'}</div></section>`}
+function sdConvenios(){
+  const em=S.empresa||{razon:'',cuit:'',dom:'',art:''};
+  return `<section class="panel" style="margin-top:14px"><h2>Datos del empleador (van en el recibo)</h2><div class="fields">
+   ${fld('ep-razon','Razón social',`<input id="ep-razon" data-sdemp="razon" value="${esc(em.razon)}">`)}${fld('ep-cuit','CUIT',`<input id="ep-cuit" data-sdemp="cuit" value="${esc(em.cuit)}" inputmode="numeric" placeholder="30-12345678-9">`)}${fld('ep-dom','Domicilio',`<input id="ep-dom" data-sdemp="dom" value="${esc(em.dom)}">`,'',2)}</div></section>`
+   +(S.convenios.map(cvCard).join('')||'<section class="panel"><div class="empty">No hay convenios cargados.</div></section>')}
+const cvFlat=c=>{const P=c.params||{},T=P.trab||{},E=P.emp||{},s=v=>String(v==null?'':v).replace('.',',');return {id:c.id,asistencia_pct:s(P.asistencia_pct),horas_mes:s(P.horas_mes),antig_tipo:P.antig_tipo||'ninguna',antig_valor:s(P.antig_valor),fondo_cese:!!P.fondo_cese,fondo_cese_pct_1:s(P.fondo_cese_pct_1),fondo_cese_pct_2:s(P.fondo_cese_pct_2),t_jub:s(T.jubilacion),t_pami:s(T.pami),t_os:s(T.obra_social),t_sind:s(T.sindicato),e_ss:s(E.seg_social),e_os:s(E.obra_social),e_art:s(E.art),e_sind:s(E.sindicato),e_cam:s(E.camaras),fuentes:c.fuentes||'',notas:c.notas||'',err:''}};
+function cvSave(){
+  const F=S.cvp,c=by(S.convenios,F.id);F.err='';const n=k=>{const v=nz(F[k]);return v};
+  const ks=['asistencia_pct','t_jub','t_pami','t_os','t_sind','e_ss','e_os','e_art','e_sind','e_cam','fondo_cese_pct_1','fondo_cese_pct_2'];
+  for(const k of ks)if(n(k)<0||n(k)>100){F.err='Los porcentajes tienen que estar entre 0 y 100.';render();return}
+  c.params={horas_mes:n('horas_mes'),asistencia_pct:n('asistencia_pct'),antig_tipo:F.antig_tipo,antig_valor:n('antig_valor'),fondo_cese:!!F.fondo_cese,fondo_cese_pct_1:n('fondo_cese_pct_1'),fondo_cese_pct_2:n('fondo_cese_pct_2'),trab:{jubilacion:n('t_jub'),pami:n('t_pami'),obra_social:n('t_os'),sindicato:n('t_sind')},emp:{seg_social:n('e_ss'),obra_social:n('e_os'),art:n('e_art'),sindicato:n('e_sind'),camaras:n('e_cam')}};
+  c.fuentes=F.fuentes.trim();c.notas=F.notas.trim();aud('Modificación','Convenio '+c.cct+' · parámetros');S.cvp=null;toast('Parámetros guardados');render()}
+function vigSave(){
+  const F=S.vgf,c=by(S.convenios,F.convId),{v}=vigSel(c);F.err='';const fail=m=>{F.err=m;render()};
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(F.vig))return fail('Elegí desde qué fecha rige.');
+  if(S.escalas.some(x=>x.convId===c.id&&x.vig===F.vig))return fail('Ya hay una escala con esa fecha de vigencia: editala en la tabla.');
+  const pct=nz(F.pct);if(pct<-50||pct>100)return fail('El aumento tiene que ser un porcentaje razonable.');
+  const base=S.escalas.filter(x=>x.convId===c.id&&x.vig===v);if(!base.length)return fail('No hay escala de base para copiar. Cargá categorías con "+ Categoría".');
+  base.forEach(x=>S.escalas.push({id:nid('es'),convId:c.id,cat:x.cat,zona:x.zona,unidad:x.unidad,valor:Math.round(x.valor*(1+pct/100)),vig:F.vig,fuente:F.fuente.trim()}));
+  S.cvVig[c.id]=F.vig;aud('Alta','Escala de convenio '+c.cct+' desde '+fd(F.vig)+(pct?' · '+pctTxt(pct):''));S.vgf=null;toast('Escala creada. Revisá los valores.');render()}
+function escSave(){
+  const F=S.esf,c=by(S.convenios,F.convId),{v}=vigSel(c);F.err='';const fail=m=>{F.err=m;render()};
+  const cat=F.cat.trim(),val=nz(F.valor);if(!cat)return fail('Cargá la categoría.');if(!(val>0))return fail('Cargá el valor.');if(!v)return fail('Primero creá una escala con "+ Nueva escala".');
+  const zona=F.zona.trim()||'A';if(S.escalas.some(x=>x.convId===c.id&&x.vig===v&&x.cat===cat&&x.zona===zona))return fail('Esa categoría ya está en esta escala.');
+  S.escalas.push({id:nid('es'),convId:c.id,cat,zona,unidad:F.unidad,valor:val,vig:v,fuente:''});aud('Alta','Categoría '+cat+' en convenio '+c.cct);S.esf=null;render()}
+
+/* Acciones, entradas y cambios */
+function sdAct(act,a){
+  if(!sdOk())return;const id=a.dataset.id;
+  switch(act){
+   case 'sd-tab':S.sdTab=a.dataset.tab;S.emf=S.cvp=S.vgf=S.esf=S.cvBusca=S.sdDel=null;render();return;
+   case 'sd-emp-new':S.emf=empNew();render();window.scrollTo(0,0);return;
+   case 'sd-emp-edit':{const e=by(S.empleados,id);if(!e)return;S.emf={...e,hijos:String(e.hijos||0),err:''};render();window.scrollTo(0,0);return}
+   case 'sd-emp-cancel':S.emf=null;render();return;
+   case 'sd-emp-save':empSave();return;
+   case 'sd-emp-baja':{const e=by(S.empleados,id);if(!e)return;if(e.activo){e.activo=false;if(!e.egreso)e.egreso=TODAY}else{e.activo=true;e.egreso=''}aud('Modificación','Legajo '+e.legajo+' · '+(e.activo?'reactivado':'dado de baja'));render();return}
+   case 'sd-rc-save':rcSave();return;
+   case 'sd-rc-ver':S.sdVer=id;render();setTimeout(()=>{const f=document.getElementById('rc-frame');if(f)f.scrollIntoView({behavior:'smooth',block:'start'})},60);return;
+   case 'sd-rc-cerrar':S.sdVer=null;render();return;
+   case 'sd-rc-print':{const r=S.sdVer&&by(S.recibos,S.sdVer);if(r&&r.datos&&r.datos.L)imprimirDoc(recDoc(r));return}
+   case 'sd-rc-anular':{const r=by(S.recibos,id);if(!r)return;r.estado='anulado';aud('Modificación','Recibo '+perTxt(r.periodo)+' anulado');toast('Recibo anulado');render();return}
+   case 'sd-del':S.sdDel={k:a.dataset.k,id};render();window.scrollTo(0,0);return;
+   case 'sd-del-no':S.sdDel=null;render();return;
+   case 'sd-del-ok':{const D=S.sdDel;if(!D)return;S.sdDel=null;
+     const T={emp:['empleados',x=>'Legajo '+x.legajo],rec:['recibos',x=>'Recibo '+perTxt(x.periodo)],esc:['escalas',x=>'Escala '+x.cat]}[D.k];if(!T)return render();
+     if(D.k==='rec'&&!esDueno())return render();if(D.k==='emp'&&(!esDueno()||S.recibos.some(r=>r.empId===D.id))){toast('Ese empleado tiene recibos: usá "Dar de baja".');return render()}
+     const x=by(S[T[0]],D.id);if(!x)return render();S[T[0]]=S[T[0]].filter(y=>y.id!==D.id);if(D.k==='rec'&&S.sdVer===D.id)S.sdVer=null;aud('Eliminación',T[1](x));toast('Eliminado');render();return}
+   case 'sd-cv-edit':{const c=by(S.convenios,id);if(!c)return;S.cvp=cvFlat(c);render();return}
+   case 'sd-cv-cancel':S.cvp=null;render();return;
+   case 'sd-cv-save':cvSave();return;
+   case 'sd-cv-busca':S.cvBusca=S.cvBusca===id?null:id;render();return;
+   case 'sd-cv-rev':{const c=by(S.convenios,id);if(!c)return;c.revisado=TODAY;aud('Modificación','Convenio '+c.cct+' · revisado');S.cvBusca=null;toast('Marcado como revisado hoy');render();return}
+   case 'sd-vig-new':{const c=by(S.convenios,id),{v}=vigSel(c);S.vgf={convId:id,vig:'',pct:'',fuente:'',err:''};S.esf=null;render();return}
+   case 'sd-vig-cancel':S.vgf=null;render();return;
+   case 'sd-vig-save':vigSave();return;
+   case 'sd-esc-add':S.esf={convId:id,cat:'',zona:'A',unidad:'hora',valor:'',err:''};S.vgf=null;render();return;
+   case 'sd-esc-cancel':S.esf=null;render();return;
+   case 'sd-esc-save':escSave();return;
+  }}
+function sdSet(el,fromChange){
+  if(!sdOk())return;const [f,k]=el.dataset.sd.split('.');
+  const val=el.type==='checkbox'?el.checked:el.value;
+  if(f==='sdQ'||f==='sdBajas'){S[f]=val;if(f==='sdQ'){if(!fromChange){const pos=el.selectionStart;render();const q=document.getElementById('sd-q');if(q){q.focus();q.setSelectionRange(pos,pos)}}}else if(fromChange)render();return}
+  if(f==='cvVigSel'){S.cvVig[k]=val;if(fromChange)render();return}
+  const F=S[f];if(!F)return;F[k]=val;
+  if(f==='rcf'&&!fromChange){const p=document.getElementById('rc-prev');if(p)p.innerHTML=rcPrev()}}
+function sdChange(el){
+  if(!sdOk())return;
+  if(el.dataset.sdesc){const x=by(S.escalas,el.dataset.sdesc);if(!x)return;const v=nz(el.value);if(!(v>0)){toast('El valor tiene que ser mayor a 0');render();return}x.valor=v;aud('Modificación','Escala '+x.cat+' · '+money(v));toast('Valor guardado');render();return}
+  if(el.dataset.sdemp){if(!S.empresa)S.empresa={id:nid('em'),razon:'CODES SRL',cuit:'',dom:'',art:''};S.empresa[el.dataset.sdemp]=el.value.trim();toast('Datos del empleador guardados');return}
+  const [f,k]=el.dataset.sd.split('.');sdSet(el,true);
+  if(f==='emf'){const F=S.emf;if(!F)return;if(k==='convId'){F.zona='';F.cat='';const zs=F.convId?zonasDe(F.convId):[];if(zs.length===1)F.zona=zs[0]}if(k==='zona'){const cs=F.convId?catsDe(F.convId,F.zona):[];if(!cs.includes(F.cat))F.cat=''}if(el.dataset.re)render();return}
+  if(f==='rcf'){const F=S.rcf;if(!F)return;if(k==='empId'||k==='liq')rcHoras(F);if(el.dataset.re)render();else{const p=document.getElementById('rc-prev');if(p)p.innerHTML=rcPrev()}return}
+  if(el.dataset.re)render()}
 
 /* --- Certificación y anticipos --- */
 function kfCalc(F,from){const c=by(S.contratistas,F.contratistaId);if(!c)return;const prev=certPct(c.id);
@@ -2923,7 +3258,7 @@ function render(){
   if(!vistaPermitida(S.view))S.view=vistaInicial();
   document.body.classList.toggle('lector',!puedeCargar());
   renderNav();
-  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,calendario:vCalendario,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,avance:vAvance,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
+  const v={inicio:vInicio,resumen:vResumen,trans:vTrans,nueva:vNueva,exist:vExistencia,cheques:vCheques,calendario:vCalendario,facturas:vFacturas,recop:vRecop,aceite:vAceite,iva:vIva,audit:vAudit,centros:vCentros,cuenta:vCuenta,usuarios:vUsuarios,terceros:vTerceros,ingres:vIngRes,gasto:vGasto,obras:vObras,contrat:vContrat,avance:vAvance,sueldos:vSueldos,certif:vCertif,maq:vMaq,arreglos:vArreglos,comb:vComb}[S.view];
   document.getElementById('main').innerHTML=backupBanner()+v()+pickBar(PK_VIEW[S.view]);renderModal();updIni();tarjetas();buscables();if(S.view==='recop')setTimeout(rcThumbs,50);if(AUTH){progSync();if(S.view==='trans'&&S.sel&&!S.audTx[S.sel]&&S.audTxPend!==S.sel){S.audTxPend=S.sel;cargarAuditTx(S.sel)}}
 }
 const MQ=window.matchMedia?window.matchMedia('(max-width:700px)'):{matches:false};
@@ -2981,6 +3316,7 @@ document.addEventListener('click',e=>{
   const sg=e.target.closest('.seg button');if(sg){const t=sg.dataset.t;if(t!==D.tipo){D.tipo=t;D.terceroId='';D.facts={};D.nf=null;D.nt=null;D.pagos=[newPago(t)];if(t==='interna')D.rets=[];S.errors=[];render()}return}
   const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act,i=+a.dataset.i;
   if(accionPk(act,a,e))return;
+  if(act.startsWith('sd-')){sdAct(act,a);return}
   if(act.startsWith('fin-')){finAct(act,a);return}
   if(igAct(act,a))return;
   if(act==='sub-open'){const i=document.getElementById('subFacts');if(i)i.click();return}
@@ -3046,6 +3382,7 @@ main.addEventListener('input',e=>{
     if(e.inputType==='insertText'&&e.data==='.'&&!raw.slice(0,pos-1).concat(raw.slice(pos)).includes(',')){raw=raw.slice(0,pos-1)+','+raw.slice(pos)}
     const keep=raw.slice(0,pos).replace(/[^\d,]/g,'').length;const out=fmtTyping(raw);
     if(out!==raw0){el.value=out;let c=0,np=0;while(np<out.length&&c<keep){if(/[\d,]/.test(out[np]))c++;np++}try{el.setSelectionRange(np,np)}catch(_){}}}
+  if(el.dataset.sd){sdSet(el,false);return}
   if(el.dataset.ini&&S.ini){S.ini[el.dataset.ini]=el.value;return}
   if(el.dataset.inic&&S.ini){S.ini.m[el.dataset.inic]=el.value;updIni();return}
   if(el.dataset.initc&&S.ini){S.ini.tc[el.dataset.initc]=el.value;return}
@@ -3070,6 +3407,7 @@ main.addEventListener('input',e=>{
 });
 main.addEventListener('change',e=>{
   const el=e.target;
+  if(el.dataset.sd||el.dataset.sdesc||el.dataset.sdemp){sdChange(el);return}
   if(el.dataset.subfact){const fs=[...el.files];el.value='';subirFacturas(fs);return}
   if(el.dataset.rcprov){rcElegirProv(el.dataset.rcprov,el.value);return}
   if(el.dataset.rcper&&S.recopConf){S.recopConf.per[el.dataset.rcper]=el.value;return}
@@ -3116,8 +3454,8 @@ main.addEventListener('change',e=>{
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
 /* Versión visible del programa: subir en cada entrega (Codes 0.1 → 0.2 … 0.9 → 1.0 → 1.1 … hasta 100). BUILD fuerza el aviso de "versión nueva". */
-const VERSION='Codes 1.1';
-const BUILD='21-oct 10:40';
+const VERSION='Codes 1.2';
+const BUILD='21-oct 12:30';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

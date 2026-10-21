@@ -51,3 +51,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## 1.1
 - Al elegir Transferencia, la cuenta por defecto (Sale de / Entra a) es Banco Patagonia; se puede cambiar.
+
+## 1.2
+- Nuevo ítem **Control Sueldos** en Administración (dueño y contadores; lector, ingeniero y operario no lo ven), con tres solapas:
+  - **Legajo de empleados**: datos personales, laborales (convenio, categoría, zona, obra), obra social, ART, banco/CBU, talles, baja y reactivación. Valida DNI, CUIL y legajo único.
+  - **Emisión de recibos**: liquidación por convenio con la escala vigente en el período (jornal por hora o sueldo mensual, horas extra, asistencia, antigüedad, no remunerativos, adelantos), aportes del trabajador, contribuciones del empleador, fondo de cese (UOCRA) y costo laboral total con gráfico. Recibo imprimible / PDF con las 4 secciones del Decreto 407/2026. Se guarda tal como se emitió.
+  - **Convenios**: UOCRA 76/75 y UECARA 660/13 con escalas por vigencia (historial), parámetros y alícuotas editables, "Nueva escala" copiando con % de aumento, "Buscar actualización" (fuentes + marcar revisado) y datos del empleador.
+- Base: tablas `sueldos_empresa`, `sueldos_convenios`, `sueldos_escalas`, `sueldos_empleados`, `sueldos_recibos` (solo dueño/contador; eliminar legajos y recibos solo el dueño). Escalas UOCRA sept–nov 2026 y UECARA oct 2026 cargadas.
