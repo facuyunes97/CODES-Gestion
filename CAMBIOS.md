@@ -64,3 +64,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## 1.4
 - Combustible y aceite funcionan como el resto de las listas (Transacciones, Cheques, etc.): casillero en cada fila y para seleccionar todas, y barra con **Modificar** y **Eliminar** (solo el dueño). Se puede modificar máquina, obra, tipo, fecha y hora, litros y estación; antes de guardar se ve un resumen y queda en Auditoría. El precio por litro queda el de la carga.
+
+## 1.5
+- Convenios: UOCRA y UECARA en solapas separadas, y botones y valores de la escala bien acomodados (el valor ya no se pisa con Eliminar).
