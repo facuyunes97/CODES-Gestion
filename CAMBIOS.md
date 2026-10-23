@@ -71,3 +71,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## 1.6
 - Control Sueldos › Emisión de recibos: **importar la planilla de horas** (Excel .xlsx, PDF de texto o CSV, sin IA). Se leen las columnas por sus títulos (horas, feriados, extras 50 %, incremento solidario, SAC, presentismo, seguro, ATP, neto), se vinculan con los legajos (o se crean los que faltan), se calcula cada recibo con el convenio y se compara con el neto de la planilla. Se tildan los que se aceptan, se emiten y se guardan todos juntos en un PDF. Opción de usar el valor hora de la planilla.
 - Recibos: feriados, incremento solidario, SAC, seguro y ATP.
+
+## 1.7
+- Cheques y Echeqs: los cheques cuya fecha de pago ya pasó muestran "Venció · confirmar" con botones **Ya se pagó / Ya se cobró** o **Rechazado**. Los pagados o cobrados se ven en verde en el listado y en los calendarios (Cheques y Calendario). Solo el dueño puede deshacer.
