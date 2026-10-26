@@ -84,3 +84,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## 1.10
 - Subir facturas (PDF): ahora acepta también las **emitidas por CODES**. El sistema mira quién emite: si el emisor es CODES (su CUIT) la factura va a Facturas como **emitida** (genera débito fiscal) y la contraparte es el cliente; si emite otro, va como **recibida** (genera crédito fiscal). Se puede corregir a mano en Editar ("Qué es esta factura"). El puente de Gmail sigue ignorando las emitidas.
 - Base: columna `lado` en facturas_recopiladas (sql/11) y función leer_factura actualizada.
+
+## Codes 1.11 (26-oct-2026)
+- Facturas emitidas por CODES: el lector ahora sigue la estructura real del comprobante ARCA. Emisor = CODES (arriba a la izquierda, se confirma con el CUIT); cliente = bloque del medio (CUIT, razón social, domicilio). Antes tomaba como cliente el texto de las etiquetas ("Domicilio Comercial: 05/10/2026…").
+- Facturas B emitidas: usa el "IVA Contenido" que informa ARCA como débito fiscal (antes quedaba IVA 0 o total 0).
+- La fecha de emisión se toma del bloque de fechas del comprobante.
+- Corregidas las 7 facturas emitidas ya subidas (cliente, fecha, neto/IVA/total, lado débito).

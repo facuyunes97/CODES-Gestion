@@ -104,6 +104,33 @@ export function razonArriba(t) {
   return ok(ini) ? ini : '';
 }
 
+// Facturas EMITIDAS por CODES (formato ARCA "Comprobantes en línea"). En el PDF el emisor (CODES) está arriba a la izquierda y los
+// datos del cliente en el bloque de abajo, pero el texto sale desordenado: primero todas las etiquetas y después los valores en este orden:
+//   4 fechas · CUIT de CODES · [CUIT del cliente, en facturas A] · RAZÓN SOCIAL DEL CLIENTE · domicilio ("calle 123 - Localidad, Provincia") · condición de venta
+// En las B, el CUIT del cliente viene al final, después de "CUIT:" (ya lo toma cuitsEn).
+const CALLE = /^(av|av\.|avda|avda\.|avenida|calle|ruta|rn|rp|bv|bvd|boulevard|pasaje|pje|mz|manzana|barrio|b°|km|diagonal|camino|diag|esq|esquina)$/i;
+export function clienteEmitida(t) {
+  const out = { fecha: '', razon: '' };
+  const f = /Domicilio(?: Comercial)?:\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t);
+  if (f) out.fecha = fechaISO(f[1]);
+  const m = /(?:\d{1,2}\/\d{1,2}\/\d{4}\s+){4}30717002454\s+(?:\d{11}\s+)?(.+?)(?=\s+(?:CUIT:|Ingresos Brutos))/i.exec(t);
+  if (m) {
+    const toks = m[1].trim().split(/\s+/);
+    const MAY = /^[A-ZÁÉÍÓÚÜÑ0-9&.,'"()\/-]+$/;
+    const r = [];
+    for (const k of toks) {
+      if (CALLE.test(k) && r.length) break;
+      if (!MAY.test(k) || !/[A-ZÁÉÍÓÚÜÑ&]/.test(k)) break;
+      r.push(k);
+    }
+    if (!r.length) { // razón social con minúsculas: se corta antes de la calle
+      for (let i = 0; i < toks.length && r.length < 8; i++) { if (CALLE.test(toks[i]) && r.length) break; if (/^\d+$/.test(toks[i + 1] || '') && r.length) break; if (toks[i] === '-') break; r.push(toks[i]); }
+    }
+    out.razon = r.join(' ').replace(/[\s,.-]+$/, (s) => (/\.$/.test(s) ? '.' : '')).slice(0, 90);
+  }
+  return out;
+}
+
 // Devuelve { esFactura, ignorar, motivo, datos, observaciones }
 // opciones.emitidas: si es true también se leen las facturas EMITIDAS por CODES (lado 'debito'); si no, se ignoran.
 // En lado 'debito' emisor_cuit / emisor_razon son los de la CONTRAPARTE (el cliente) y receptor_cuit es CODES.
@@ -162,7 +189,8 @@ export function analizar(texto, nombreArchivo = '', opciones = {}) {
   if (!(pv > 0) || !(nro > 0)) obs.push('No se pudo leer el punto de venta y el número.');
 
   // Fecha
-  let fecha = fechaISO((/Fecha de Emisi[oó]n:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
+  const ce = emitida ? clienteEmitida(t) : { fecha: '', razon: '' };
+  let fecha = ce.fecha || fechaISO((/Fecha de Emisi[oó]n:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
   if (!fecha) fecha = fechaISO((/(?:FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO)\s+\d{4,5}\s*-\s*\d{8}\s+(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
   if (!fecha) fecha = fechaISO((/(?<![\w])Fecha:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t) || [])[1]);
   if (!fecha) { fecha = fechaISO((/(\d{1,2}\/\d{1,2}\/\d{4})/.exec(t) || [])[1]); if (fecha) obs.push('La fecha de emisión se tomó de la primera fecha del comprobante: revisar.'); }
@@ -183,6 +211,14 @@ export function analizar(texto, nombreArchivo = '', opciones = {}) {
   if (!especial) {
     const pn = /NETO\s*\$?\s*(\d+\.\d{2})/i.exec(t), pi = /\$\s*(\d+\.\d{2})\s*I\.V\.A\./i.exec(t), pt = /I\.V\.A\.\s*\$\s*(\d+\.\d{2})(?=\d{1,2}\/\d{1,2}\/\d{4})/i.exec(t);
     if (pn && pt) { neto = numero(pn[1]); iva = pi ? numero(pi[1]) : 0; total = numero(pt[1]); especial = true; }
+  }
+  // Factura B emitida: el IVA no se discrimina, pero ARCA informa "IVA Contenido": ese es el débito fiscal y el neto es lo que sobra del total.
+  if (emitida && !especial) {
+    const mi = /IVA Contenido:?\s*\$?\s*([\d.]+,\d{2})/i.exec(t);
+    if (mi) {
+      const ic = numero(mi[1]), A = importesEn(t), tot = A.length ? Math.max(...A) : 0;
+      if (tot > ic && ic > 0) { total = tot; iva = ic; neto = Math.round((tot - ic) * 100) / 100; otros = 0; especial = true; }
+    }
   }
   const reIva = /IVA\s*(\d{1,2}(?:[.,]\d{1,2})?)\s*%:?\s*\$?\s*([\d.]+,\d{2}|[\d]+\.\d{2})/gi;
   if (!especial) {
@@ -251,24 +287,24 @@ export function analizar(texto, nombreArchivo = '', opciones = {}) {
   if (!(total > 0)) obs.push('No se pudo leer el importe total.');
 
   const cae = (/C\.?\s?A\.?\s?E\.?\s*(?:N[°ºro.]*\s*)?:?\s*(\d{14})/i.exec(t) || [])[1] || '';
-  let razon = '';
+  let razon = ce.razon || '';
   const RZ = /Raz[oó]n Social:?\s*(.+?)(?=\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto|Ingresos|Comp\.|Per[ií]odo)|\n|$)/gi;
-  const mr = new RegExp(RZ.source, 'i').exec(t);
+  const mr = emitida ? null : new RegExp(RZ.source, 'i').exec(t);
   if (mr) razon = mr[1].trim().slice(0, 90);
-  if (!razon || /CODES/i.test(razon)) {
+  if (!emitida && (!razon || /CODES/i.test(razon))) {
     const todas = [...t.matchAll(RZ)].map(x => x[1].trim()).filter(x => x && !/CODES/i.test(x));
     razon = (todas[0] || '').slice(0, 90);
   }
-  if (!razon) { const mn = /FACTURA\s+C[oó]digo:?\s*\d+\s+[ABCM]\s+(?:[A-Z]{1,3}\s+)?(.{3,70}?)\s+[A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d/.exec(t); if (mn) razon = mn[1].trim().slice(0, 90); }
-  if (!razon) {
+  if (!razon && !emitida) { const mn = /FACTURA\s+C[oó]digo:?\s*\d+\s+[ABCM]\s+(?:[A-Z]{1,3}\s+)?(.{3,70}?)\s+[A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d/.exec(t); if (mn) razon = mn[1].trim().slice(0, 90); }
+  if (!razon && !emitida) {
     const pos = emisor ? Math.max(t.indexOf(cuitFmt(emisor)), t.indexOf(emisor)) : -1;
     let zona = pos > 0 ? t.slice(Math.max(0, pos - 300), pos + 40) : t.slice(0, 400);
     if (pos > 300) zona = zona.slice(zona.indexOf(' ') + 1);
     const soc = [...zona.matchAll(/([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ0-9.&' -]{2,60}?\s(?:S\.?\s?R\.?\s?L\.?|S\.?\s?A\.?\s?S\.?|S\.?\s?A\.?|S\.?\s?H\.?))(?![A-Za-z])/g)].map(x => x[1].replace(/^(?:Concesionario Oficial|Hoja\s+\d+\s+de\s+\d+|N[úu]mero:?[\d\s-]*Hoja \d+ de \d+|Fecha:?\s*[\d/]+|ORIGINAL|DUPLICADO)\s*/i, '').trim()).filter(x => x.length > 4 && !/CODES/i.test(x));
     if (soc.length) razon = soc[soc.length - 1].slice(0, 90);
   }
-  if (!razon) { const mp = /\d{4,5}\s*-\s*\d{8}\s+([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ.' ]{3,50}?)\s+(?:CFNMN|FACTURA|CUIT)/.exec(t); if (mp && !/CODES/i.test(mp[1])) razon = mp[1].trim(); }
-  if (!razon) razon = razonArriba(t);
+  if (!razon && !emitida) { const mp = /\d{4,5}\s*-\s*\d{8}\s+([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ.' ]{3,50}?)\s+(?:CFNMN|FACTURA|CUIT)/.exec(t); if (mp && !/CODES/i.test(mp[1])) razon = mp[1].trim(); }
+  if (!razon && !emitida) razon = razonArriba(t);
   if (!emisor) obs.push(emitida ? 'No se pudo leer el CUIT del cliente.' : 'No se pudo leer el CUIT del emisor.');
   if (!razon) obs.push(emitida ? 'No se pudo leer la razón social del cliente.' : 'No se pudo leer la razón social del emisor.');
   if (emitida) obs.unshift('Factura EMITIDA por CODES SRL: va a Facturas como emitida (débito fiscal). El "proveedor" de esta fila es el cliente.');
