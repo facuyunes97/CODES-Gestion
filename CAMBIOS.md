@@ -97,3 +97,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.13 (26-oct-2026)
 - **Papelera**: todo lo que se borra (facturas, cheques, transacciones, clientes/proveedores, centros de costo, contratistas, sueldos, combustible, etc.) ahora se guarda en la Papelera (menú Administración) en vez de perderse. Cada elemento muestra qué era, quién y cuándo lo borró y cuántos días le quedan. Botón **Restaurar** lo devuelve a donde estaba. A las 3 semanas se elimina solo.
 - Base: tabla `papelera` y función `purgar_papelera` (sql/12). Visible para dueño y contador.
+
+## Codes 1.14 (26-oct-2026)
+- Resumen → "Por centro de costo": ahora muestra solo los centros activos. Los finalizados o desactivados aparecen abajo en otro cuadro, "Centros finalizados o inactivos".
