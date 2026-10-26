@@ -93,3 +93,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.12 (26-oct-2026)
 - Facturas recopiladas: la app no leía la columna "lado" y mostraba las emitidas por CODES como recibidas (crédito fiscal). Ahora las emitidas se ven y se cargan como emitidas (débito fiscal), con el cliente en lugar del proveedor.
+
+## Codes 1.13 (26-oct-2026)
+- **Papelera**: todo lo que se borra (facturas, cheques, transacciones, clientes/proveedores, centros de costo, contratistas, sueldos, combustible, etc.) ahora se guarda en la Papelera (menú Administración) en vez de perderse. Cada elemento muestra qué era, quién y cuándo lo borró y cuántos días le quedan. Botón **Restaurar** lo devuelve a donde estaba. A las 3 semanas se elimina solo.
+- Base: tabla `papelera` y función `purgar_papelera` (sql/12). Visible para dueño y contador.
