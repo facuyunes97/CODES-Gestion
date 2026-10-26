@@ -90,3 +90,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Facturas B emitidas: usa el "IVA Contenido" que informa ARCA como débito fiscal (antes quedaba IVA 0 o total 0).
 - La fecha de emisión se toma del bloque de fechas del comprobante.
 - Corregidas las 7 facturas emitidas ya subidas (cliente, fecha, neto/IVA/total, lado débito).
+
+## Codes 1.12 (26-oct-2026)
+- Facturas recopiladas: la app no leía la columna "lado" y mostraba las emitidas por CODES como recibidas (crédito fiscal). Ahora las emitidas se ven y se cargan como emitidas (débito fiscal), con el cliente en lugar del proveedor.
