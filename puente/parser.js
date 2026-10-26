@@ -105,19 +105,29 @@ export function razonArriba(t) {
 }
 
 // Devuelve { esFactura, ignorar, motivo, datos, observaciones }
-export function analizar(texto, nombreArchivo = '') {
+// opciones.emitidas: si es true también se leen las facturas EMITIDAS por CODES (lado 'debito'); si no, se ignoran.
+// En lado 'debito' emisor_cuit / emisor_razon son los de la CONTRAPARTE (el cliente) y receptor_cuit es CODES.
+export function analizar(texto, nombreArchivo = '', opciones = {}) {
   const t = String(texto || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ');
   const obs = [];
   const tieneCAE = /\bCAE\b/i.test(t);
   const palabra = /(FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO|COMPROBANTE)/i.test(t);
   if (!tieneCAE && !palabra) return { esFactura: false, ignorar: true, motivo: 'no parece una factura' };
   if (/\bRECIBO\b/i.test(t.slice(0, 80)) || (/\bRECIBO\b/i.test(t) && !/FACTURA|NOTA DE/i.test(t))) return { esFactura: false, ignorar: true, motivo: 'es un recibo' };
-  if (/ORIGINAL\s+CODES\s+S\.?\s*R\.?\s*L/i.test(t)) return { esFactura: true, ignorar: true, motivo: 'emitida por CODES SRL (no es una compra)' };
-
-  // CUITs: el receptor tiene que ser CODES SRL
   const cuits = cuitsEn(t);
+  // ¿Quién emite? CODES (emitida: genera débito fiscal) u otro (recibida: genera crédito fiscal).
+  // 1) el nombre que baja ARCA empieza con el CUIT del emisor; 2) "ORIGINAL CODES S.R.L."; 3) el primer CUIT del comprobante.
+  const pref = /^(\d{11})[_\-\s]/.exec(String(nombreArchivo || '').trim());
+  let emitida = false;
+  if (pref && cuitValido(pref[1])) emitida = pref[1] === CUIT_CODES;
+  else if (/ORIGINAL\s+CODES\s+S\.?\s*R\.?\s*L/i.test(t)) emitida = true;
+  else emitida = cuits[0] === CUIT_CODES;
+  if (emitida && !opciones.emitidas) return { esFactura: true, ignorar: true, motivo: 'emitida por CODES SRL (no es una compra)' };
+
+  // CUITs: si es recibida, el receptor tiene que ser CODES SRL
   let receptor = '';
-  if (cuits.includes(CUIT_CODES)) receptor = CUIT_CODES;
+  if (emitida) receptor = CUIT_CODES;
+  else if (cuits.includes(CUIT_CODES)) receptor = CUIT_CODES;
   else if (/CODES\s*S\.?\s*R\.?\s*L/i.test(t)) obs.push('No se pudo leer el CUIT de CODES SRL en el comprobante: revisar que sea a nombre de la empresa.');
   else return { esFactura: true, ignorar: true, motivo: 'no está a nombre de CODES SRL' };
   const emisor = cuits.find(c => c !== CUIT_CODES) || '';
@@ -242,10 +252,11 @@ export function analizar(texto, nombreArchivo = '') {
 
   const cae = (/C\.?\s?A\.?\s?E\.?\s*(?:N[°ºro.]*\s*)?:?\s*(\d{14})/i.exec(t) || [])[1] || '';
   let razon = '';
-  const mr = /Raz[oó]n Social:?\s*([^\n]+)/i.exec(t);
-  if (mr) razon = mr[1].split(/\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto|Ingresos|Comp\.|Per[ií]odo)/i)[0].trim().slice(0, 90);
+  const RZ = /Raz[oó]n Social:?\s*(.+?)(?=\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto|Ingresos|Comp\.|Per[ií]odo)|\n|$)/gi;
+  const mr = new RegExp(RZ.source, 'i').exec(t);
+  if (mr) razon = mr[1].trim().slice(0, 90);
   if (!razon || /CODES/i.test(razon)) {
-    const todas = [...t.matchAll(/Raz[oó]n Social:?\s*([^\n]+)/gi)].map(x => x[1].split(/\s(?:Domicilio|Condici[oó]n|CUIT|Fecha|Punto)/i)[0].trim()).filter(x => x && !/CODES/i.test(x));
+    const todas = [...t.matchAll(RZ)].map(x => x[1].trim()).filter(x => x && !/CODES/i.test(x));
     razon = (todas[0] || '').slice(0, 90);
   }
   if (!razon) { const mn = /FACTURA\s+C[oó]digo:?\s*\d+\s+[ABCM]\s+(?:[A-Z]{1,3}\s+)?(.{3,70}?)\s+[A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d/.exec(t); if (mn) razon = mn[1].trim().slice(0, 90); }
@@ -258,8 +269,9 @@ export function analizar(texto, nombreArchivo = '') {
   }
   if (!razon) { const mp = /\d{4,5}\s*-\s*\d{8}\s+([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ.' ]{3,50}?)\s+(?:CFNMN|FACTURA|CUIT)/.exec(t); if (mp && !/CODES/i.test(mp[1])) razon = mp[1].trim(); }
   if (!razon) razon = razonArriba(t);
-  if (!emisor) obs.push('No se pudo leer el CUIT del emisor.');
-  if (!razon) obs.push('No se pudo leer la razón social del emisor.');
+  if (!emisor) obs.push(emitida ? 'No se pudo leer el CUIT del cliente.' : 'No se pudo leer el CUIT del emisor.');
+  if (!razon) obs.push(emitida ? 'No se pudo leer la razón social del cliente.' : 'No se pudo leer la razón social del emisor.');
+  if (emitida) obs.unshift('Factura EMITIDA por CODES SRL: va a Facturas como emitida (débito fiscal). El "proveedor" de esta fila es el cliente.');
 
   return {
     esFactura: true, ignorar: false,
@@ -267,7 +279,7 @@ export function analizar(texto, nombreArchivo = '') {
       emisor_cuit: cuitFmt(emisor), emisor_razon: razon, receptor_cuit: receptor ? cuitFmt(receptor) : '',
       tipo, punto_venta: pv || null, numero: nro || null, fecha: fecha || null,
       neto_gravado: Math.round(neto * 100) / 100, iva: Math.round(iva * 100) / 100, otros: Math.round(otros * 100) / 100,
-      total: Math.round(total * 100) / 100, cae, alicuota
+      total: Math.round(total * 100) / 100, cae, alicuota, lado: emitida ? 'debito' : 'credito'
     },
     observaciones: obs
   };

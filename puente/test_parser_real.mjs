@@ -16,4 +16,13 @@ ok(d.neto_gravado===20852488.69&&d.iva===2189511.31&&d.total===23042000,'Chelala
 r=analizar(senna,'code.pdf');d=r.datos;console.log(d,r.observaciones);
 ok(d.neto_gravado===368801.6&&d.iva===77448.34&&d.total===446249.94&&d.otros===0,'Senna: neto con descuento');
 ok(/SENNA AUTOMOTORES S\.A\./.test(d.emisor_razon)&&d.punto_venta===14&&d.numero===41845,'Senna: razón/numero '+d.emisor_razon);
+// Facturas emitidas por CODES (lado débito)
+const emi=`ORIGINAL CODES S.R.L. Razón Social: CODES S.R.L. Domicilio Comercial: Ruta 9 Km 1 Condición frente al IVA: IVA Responsable Inscripto A COD. 001 FACTURA Punto de Venta: 00001 Comp. Nro: 00000002 Fecha de Emisión: 05/10/2026 CUIT: 30717002454 Ingresos Brutos: 30717002454 Fecha de Inicio de Actividades: 01/01/2020 CUIT: 30709676977 Apellido y Nombre / Razón Social: Alberto Gauss e Hijos S.R.L Condición frente al IVA: IVA Responsable Inscripto Subtotal Importe Neto Gravado: $ 2.700.000,00 IVA 21%: $ 567.000,00 Importe Otros Tributos: $ 0,00 Importe Total: $ 3.267.000,00 CAE N°: 71234567890123 Fecha de Vto. de CAE: 15/10/2026`;
+r=analizar(emi,'30717002454_001_00001_00000002.pdf');ok(r.ignorar,'emitida se ignora sin opción (puente de Gmail)');
+r=analizar(emi,'30717002454_001_00001_00000002.pdf',{emitidas:true});d=r.datos;console.log(d,r.observaciones);
+ok(!r.ignorar&&d.lado==='debito'&&d.emisor_cuit==='30-70967697-7'&&d.receptor_cuit==='30-71700245-4'&&d.punto_venta===1&&d.numero===2&&d.total===3267000&&d.iva===567000,'emitida: lado débito, cliente como contraparte');
+ok(/Gauss/.test(d.emisor_razon),'emitida: razón del cliente '+d.emisor_razon);
+r=analizar(emi.replace('ORIGINAL CODES S.R.L. ',''),'FAC 2.pdf',{emitidas:true});ok(r.datos&&r.datos.lado==='debito','emitida sin prefijo de nombre: por el primer CUIT');
+r=analizar(gauss,'30709676977_001_00011_00002684.pdf',{emitidas:true});ok(r.datos.lado==='credito','recibida (nombre ARCA con CUIT ajeno) sigue siendo crédito');
+r=analizar(gauss,'FVA.pdf',{emitidas:true});ok(r.datos.lado==='credito','recibida sin prefijo: crédito');
 console.log(fails?'FALLAS '+fails:'TODO OK');process.exit(fails?1:0)

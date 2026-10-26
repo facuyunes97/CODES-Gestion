@@ -80,3 +80,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## 1.9
 - Posición de IVA: botón **Ver** en cada factura del detalle mensual. Abre una ventana con los datos y el PDF original (si la factura entró por Facturas recopiladas o por la subida de PDF). Las cargadas a mano muestran los datos y avisan que no tienen PDF.
+
+## 1.10
+- Subir facturas (PDF): ahora acepta también las **emitidas por CODES**. El sistema mira quién emite: si el emisor es CODES (su CUIT) la factura va a Facturas como **emitida** (genera débito fiscal) y la contraparte es el cliente; si emite otro, va como **recibida** (genera crédito fiscal). Se puede corregir a mano en Editar ("Qué es esta factura"). El puente de Gmail sigue ignorando las emitidas.
+- Base: columna `lado` en facturas_recopiladas (sql/11) y función leer_factura actualizada.

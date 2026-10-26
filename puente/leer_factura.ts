@@ -35,14 +35,14 @@ Deno.serve(async (req) => {
       texto = Array.isArray(r.text) ? r.text.join("\n") : r.text;
     } catch (e) { return json({ ok: true, ignorada: "no se pudo leer el PDF (puede ser una foto escaneada)" }); }
     if (!String(texto).trim()) return json({ ok: true, ignorada: "el PDF no tiene texto (puede ser una foto escaneada)" });
-    const r = analizar(texto, nombre);
+    const r = analizar(texto, nombre, { emitidas: true }); // también las emitidas por CODES (lado "debito")
     if (r.ignorar) return json({ ok: true, ignorada: r.motivo });
     const d = r.datos;
     // Si la misma factura ya estaba pendiente o descartada se vuelve a leer y se reactiva (así se puede subir de nuevo y configurar).
     // Si ya estaba cargada en el sistema, se crea otra pendiente: la alerta de repetida aparece recién al cargarla.
     let previa: any = null;
     if (d.numero && d.punto_venta && d.emisor_cuit) {
-      const ex = await sb.from("facturas_recopiladas").select("id,estado,pdf_path").eq("punto_venta", d.punto_venta).eq("numero", d.numero).eq("emisor_cuit", d.emisor_cuit).in("estado", ["pendiente", "descartada"]).limit(1);
+      const ex = await sb.from("facturas_recopiladas").select("id,estado,pdf_path").eq("punto_venta", d.punto_venta).eq("numero", d.numero).eq("emisor_cuit", d.emisor_cuit).eq("lado", d.lado).in("estado", ["pendiente", "descartada"]).limit(1);
       if (ex.data && ex.data.length) previa = ex.data[0];
     }
     const uid = crypto.randomUUID();
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     const fila = {
       gmail_message_id: "manual-" + uid, adjunto: nombre, recibida_at: new Date().toISOString(),
       remitente: "Subida a mano", asunto: nombre, mail_url: null,
-      emisor_cuit: d.emisor_cuit || null, emisor_razon: d.emisor_razon || null, receptor_cuit: d.receptor_cuit || null,
+      lado: d.lado || "credito", emisor_cuit: d.emisor_cuit || null, emisor_razon: d.emisor_razon || null, receptor_cuit: d.receptor_cuit || null,
       tipo: d.tipo, punto_venta: d.punto_venta, numero: d.numero, fecha: d.fecha,
       neto_gravado: d.neto_gravado, iva: d.iva, otros: d.otros, total: d.total, cae: d.cae || null,
       pdf_path: path, observaciones: r.observaciones.length ? r.observaciones.join(" ") : null,
