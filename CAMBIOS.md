@@ -74,3 +74,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## 1.7
 - Cheques y Echeqs: los cheques cuya fecha de pago ya pasó muestran "Venció · confirmar" con botones **Ya se pagó / Ya se cobró** o **Rechazado**. Los pagados o cobrados se ven en amarillo en el listado y en los calendarios (Cheques y Calendario). Solo el dueño puede deshacer.
+
+## 1.8
+- Facturas recopiladas: se corrigió que las facturas subidas a mano tomaran el proveedor de la anterior (Track Mar SACI). Ahora, si el CUIT leído es de un proveedor del sistema, se completan solos proveedor y razón social; al editar, si se cambia el CUIT o el proveedor, el otro dato se completa y todo se puede corregir a mano.
