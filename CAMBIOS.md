@@ -100,3 +100,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.14 (26-oct-2026)
 - Resumen → "Por centro de costo": ahora muestra solo los centros activos. Los finalizados o desactivados aparecen abajo en otro cuadro, "Centros finalizados o inactivos".
+
+## Codes 1.15 (26-oct-2026)
+- Transacciones → totales del registro: ya no mezclan pesos con dólares. Si en lo que se ve hay operaciones en dólares, los totales (ingresos, egresos, resultado, internos) se muestran en dos bloques: en pesos y en dólares (US$). También en el Excel exportado.
