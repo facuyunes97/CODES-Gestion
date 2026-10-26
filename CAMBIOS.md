@@ -77,3 +77,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## 1.8
 - Facturas recopiladas: se corrigió que las facturas subidas a mano tomaran el proveedor de la anterior (Track Mar SACI). Ahora, si el CUIT leído es de un proveedor del sistema, se completan solos proveedor y razón social; al editar, si se cambia el CUIT o el proveedor, el otro dato se completa y todo se puede corregir a mano.
+
+## 1.9
+- Posición de IVA: botón **Ver** en cada factura del detalle mensual. Abre una ventana con los datos y el PDF original (si la factura entró por Facturas recopiladas o por la subida de PDF). Las cargadas a mano muestran los datos y avisan que no tienen PDF.
