@@ -108,3 +108,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Importar Excel de ARCA** (Facturas y Facturas recopiladas): se sube el Excel "Mis Comprobantes Recibidos" y cada comprobante nuevo queda como **Pendiente** en Facturas recopiladas para aceptarlo (Cargar) o rechazarlo (Descartar). Lee facturas A/B/C/M y notas de crédito/débito; los recibos no se usan; los de dólares se pasan a pesos con el tipo de cambio de ARCA.
 - Repetidas: se compara CUIT del emisor + punto de venta + número (mismo tipo o mismo importe) contra Facturas cargadas, Facturas recopiladas (cualquier estado) y dentro del mismo Excel. Si la factura cargada no tiene CUIT, compara punto de venta + número + importe. Al terminar muestra cuántas son nuevas, cuáles ya estaban y por qué.
 - Base: permiso para insertar en facturas_recopiladas (sql/13).
+
+## Codes 1.17 (28-oct-2026)
+- Facturas: nuevo dato **"Cómo está la factura"** con tres opciones: Física (papel), Digital (PDF / mail) o Solo en ARCA. Se elige al cargar una factura, al editarla (también en lote) y en Facturas recopiladas. Se ve como una etiqueta bajo el número de comprobante.
+- Valores iniciales: lo que llega por mail o se sube en PDF queda como Digital; lo que viene del Excel de ARCA queda como Solo en ARCA; las facturas cargadas a mano quedan sin definir hasta que el contador lo complete. Al pasar de Recopiladas a Facturas el dato se conserva.
