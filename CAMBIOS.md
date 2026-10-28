@@ -103,3 +103,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.15 (26-oct-2026)
 - Transacciones → totales del registro: ya no mezclan pesos con dólares. Si en lo que se ve hay operaciones en dólares, los totales (ingresos, egresos, resultado, internos) se muestran en dos bloques: en pesos y en dólares (US$). También en el Excel exportado.
+
+## Codes 1.16 (28-oct-2026)
+- **Importar Excel de ARCA** (Facturas y Facturas recopiladas): se sube el Excel "Mis Comprobantes Recibidos" y cada comprobante nuevo queda como **Pendiente** en Facturas recopiladas para aceptarlo (Cargar) o rechazarlo (Descartar). Lee facturas A/B/C/M y notas de crédito/débito; los recibos no se usan; los de dólares se pasan a pesos con el tipo de cambio de ARCA.
+- Repetidas: se compara CUIT del emisor + punto de venta + número (mismo tipo o mismo importe) contra Facturas cargadas, Facturas recopiladas (cualquier estado) y dentro del mismo Excel. Si la factura cargada no tiene CUIT, compara punto de venta + número + importe. Al terminar muestra cuántas son nuevas, cuáles ya estaban y por qué.
+- Base: permiso para insertar en facturas_recopiladas (sql/13).
