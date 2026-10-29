@@ -148,3 +148,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.22.1 (29-oct-2026)
 - Oficina: los contadores también pueden hablar con el Director Ejecutivo (antes solo el dueño). El Director sabe con quién habla y no lo trata como al dueño. Ven los mismos datos que ya ven en el sistema.
+
+## Codes 1.22.2 (29-oct-2026)
+- Oficina: identidad CODES. Logo grande con el rojo de marca detrás del Director Ejecutivo, franja roja y blanca de obra en el zócalo, borde rojo en la alfombra de Dirección y cinco láminas de maquinaria (excavadora, motoniveladora, cargadora frontal, rodillo compactador y camión hormigonero) sobre las paredes. Se mantiene el estilo blanco y gris.
+- Impuestos: cuando los pagos sin factura superan el 25 % de las ventas pasa a «urgente» y su recuadro se ve en rojo (cuenta en las alertas del Ejecutivo).

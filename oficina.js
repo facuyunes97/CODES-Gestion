@@ -256,11 +256,11 @@
       var fd = function (d) { return d ? String(d).slice(8, 10) + '/' + String(d).slice(5, 7) + '/' + String(d).slice(0, 4) : ''; };
       chk('impuestos', I.estado === 'observado', 'alta', 'El Director Adm. observó el informe de la semana del ' + fd(sem) + ': no se anunció como aprobado. Revisar los chequeos.');
       if (I.estado === 'aprobado') out.tot.impuestos++;
-      (I.chequeos || []).forEach(function (c) { chk('impuestos', true, c.sev === 'alta' ? 'alta' : 'media', esc(c.t)); });
+      (I.chequeos || []).filter(function (c) { return !/^Hay egresos sin comprobante/.test(c.t); }).forEach(function (c) { chk('impuestos', true, c.sev === 'alta' ? 'alta' : 'media', esc(c.t)); });
       add('impuestos', 'info', 'Ejercicio ' + fd(r.ejercicio_ini) + ' al ' + fd(r.ejercicio_fin) + ' · informe de la semana del ' + fd(sem) + ' (' + (I.estado === 'aprobado' ? 'aprobado por Dir. Adm.' : 'observado') + ').');
       add('impuestos', 'info', 'Ventas del ejercicio: ' + mm(r.ventas_brutas) + ' brutas (con IVA) y ' + mm(r.ventas_netas) + ' netas · gastos deducibles con factura: ' + mm(r.compras_deducibles) + ' · resultado a hoy: <b>' + mm(r.resultado_ytd) + '</b>.');
       add('impuestos', 'info', 'Proyección al ' + fd(r.ejercicio_fin) + ' (ritmo desde el ' + fd(r.desde_datos) + ', ' + r.dias + ' días): resultado <b>' + mm(r.resultado_proy) + '</b> · Ganancias estimado <b>' + mm(r.ganancias_proy) + '</b> · quedaría ' + mm(r.neto_proy) + ' después de impuesto. Con lo ya facturado, sin proyectar: Ganancias ' + mm(r.ganancias_ytd) + '.');
-      if (r.sin_comprobante > 0) add('impuestos', 'media', 'Pagos sin factura vinculada en el ejercicio: ' + mm(r.sin_comprobante) + ' en ' + r.sin_comprobante_n + ' movimientos (' + mm(r.sin_comprobante_candidatos) + ' parecen gastos). No se descuentan: con su comprobante bajarían el impuesto.');
+      if (r.sin_comprobante > 0) chk('impuestos', r.sin_comprobante_candidatos > 0.25 * r.ventas_netas, 'alta', 'Pagos sin factura vinculada en el ejercicio: ' + mm(r.sin_comprobante) + ' en ' + r.sin_comprobante_n + ' movimientos (' + mm(r.sin_comprobante_candidatos) + ' parecen gastos). No se descuentan: con su comprobante bajarían el impuesto.');
       add('impuestos', 'info', 'IVA del ejercicio: débito ' + mm(r.iva_debito) + ', crédito ' + mm(r.iva_credito) + ' (saldo ' + mm(r.iva_debito - r.iva_credito) + '). Impuesto a los créditos y débitos pagado: ' + mm(r.imp_debcred) + ' (puede tomarse como pago a cuenta de Ganancias; validar el porcentaje).');
       add('impuestos', 'info', 'Cómo se calcula: ventas netas menos compras netas con factura, proyectado a ritmo constante. Escala de sociedades 2026 (25 %, 30 %, 35 %). No incluye amortizaciones, sueldos, anticipos ni ajuste por inflación. Es una estimación: validar con el contador matriculado.');
     })();
@@ -782,7 +782,7 @@
       var w = Math.abs(x2 - x1) || 0.07, d = Math.abs(z2 - z1) || 0.07;
       scene.add(box(w + (x1 === x2 ? 0 : 0.07), 0.01, d + (z1 === z2 ? 0 : 0.07), new T.MeshBasicMaterial({ color: 0xffffff }), (x1 + x2) / 2, 0.062, (z1 + z2) / 2, { cast: false }));
     }
-    rug(0, -6.7, 9.4, 5.8, '#3b4047', '#2b2f35');       /* dirección ejecutiva */
+    rug(0, -6.7, 9.4, 5.8, '#3b4047', '#a8171b');       /* dirección ejecutiva */
     rug(-7.9, 3.15, 13, 12.5, '#c4c8ce', '#b0b5bc');    /* administración */
     rug(7.9, 3.15, 13, 12.5, '#d3d0cb', '#bfbbb4');     /* marketing */
     dais(0, -6.7, 7.0, 5.0, 0.24);
@@ -1008,6 +1008,90 @@
     [-9.5, -5.5, 5.5, 9.5].forEach(function (x) { glassWall(x, 4.0, x, 6.9, 1.7); });
     plant(-14.0, 9.0, 1.0); plant(-1.0, 9.0, 0.9); plant(1.0, 9.0, 0.9); plant(14.0, 9.0, 1.0);
     plant(-3.3, 0.9, 1.0); plant(3.3, 0.9, 1.0);
+
+    /* ===== Identidad CODES: rojo de marca, logo y láminas de maquinaria ===== */
+    var RED = '#e31b1f', REDD = '#b3171b';
+    var FONT = '"Barlow Condensed","Arial Narrow",sans-serif';
+    /* franja de obra rojo y blanco sobre el zócalo del fondo */
+    var hzTex = canvasTex(256, 32, function (g, w, h) {
+      g.fillStyle = '#f4f4f2'; g.fillRect(0, 0, w, h); g.fillStyle = RED;
+      for (var i = -2; i < 12; i++) { g.beginPath(); g.moveTo(i * 32, h); g.lineTo(i * 32 + 16, h); g.lineTo(i * 32 + 32, 0); g.lineTo(i * 32 + 16, 0); g.closePath(); g.fill(); }
+    });
+    hzTex.wrapS = T.RepeatWrapping; hzTex.repeat.set(58, 1);
+    var hz = new T.Mesh(new T.PlaneGeometry(29.6, 0.2), new T.MeshBasicMaterial({ map: hzTex }));
+    hz.position.set(0, 0.3, -9.935); scene.add(hz);
+    /* logo grande detrás del Director Ejecutivo */
+    function logoPaint(g, cw, ch) {
+      g.clearRect(0, 0, cw, ch);
+      rr(g, 6, 6, cw - 12, ch - 12, 26); g.fillStyle = '#fbfbfb'; g.fill(); g.lineWidth = 6; g.strokeStyle = RED; g.stroke();
+      g.fillStyle = RED; rr(g, 40, 40, 170, ch - 80, 18); g.fill();
+      g.fillStyle = '#fff'; g.font = '800 190px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillText('C', 125, ch / 2 + 62);
+      g.textAlign = 'left'; g.fillStyle = '#23272d'; g.font = '800 168px ' + FONT; g.fillText('CODES', 248, 190);
+      g.fillStyle = RED; g.fillRect(250, 212, 150, 8);
+      g.fillStyle = '#4a5059'; g.font = '600 46px ' + FONT; var sf = 46; while (g.measureText('CONSTRUCCIONES · SANTIAGO DEL ESTERO').width > cw - 290 && sf > 20) { sf -= 2; g.font = '600 ' + sf + 'px ' + FONT; } g.fillText('CONSTRUCCIONES · SANTIAGO DEL ESTERO', 250, 280);
+    }
+    var logoTex = canvasTex(1024, 320, logoPaint);
+    var logoM = new T.Mesh(new T.PlaneGeometry(4.6, 1.44), new T.MeshBasicMaterial({ map: logoTex, transparent: true }));
+    logoM.position.set(0, 2.15, -9.93); scene.add(logoM); signs.push({ tex: logoTex, paint: logoPaint });
+    /* láminas de maquinaria */
+    function wheel(g, x, y, r) { g.fillStyle = '#23272d'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#b4b9c0'; g.beginPath(); g.arc(x, y, r * 0.45, 0, 7); g.fill(); }
+    function pl(g, pts, w, col) { g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach(function (p, i) { i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }); g.stroke(); }
+    var MAQ = {
+      excavadora: function (g) {
+        rr(g, 120, 300, 300, 56, 28); g.fillStyle = '#23272d'; g.fill();
+        [160, 230, 300, 370].forEach(function (x) { g.fillStyle = '#6f757e'; g.beginPath(); g.arc(x, 328, 14, 0, 7); g.fill(); });
+        g.fillStyle = RED; rr(g, 150, 232, 220, 70, 10); g.fill();
+        g.fillStyle = '#23272d'; rr(g, 150, 172, 92, 66, 8); g.fill(); g.fillStyle = '#cfe3f2'; g.fillRect(160, 182, 72, 40);
+        pl(g, [[330, 250], [450, 150], [540, 220]], 22, RED); pl(g, [[540, 220], [575, 300]], 16, '#23272d');
+        g.fillStyle = '#23272d'; g.beginPath(); g.moveTo(560, 292); g.lineTo(620, 300); g.lineTo(592, 346); g.lineTo(546, 330); g.closePath(); g.fill();
+      },
+      cargadora: function (g) {
+        g.fillStyle = RED; rr(g, 200, 230, 280, 80, 14); g.fill();
+        g.fillStyle = '#23272d'; rr(g, 270, 160, 130, 76, 10); g.fill(); g.fillStyle = '#cfe3f2'; g.fillRect(282, 172, 106, 44);
+        wheel(g, 270, 330, 52); wheel(g, 430, 330, 52);
+        pl(g, [[200, 270], [120, 250], [90, 300]], 20, '#23272d');
+        g.fillStyle = RED; g.beginPath(); g.moveTo(40, 260); g.lineTo(130, 270); g.lineTo(120, 350); g.lineTo(48, 350); g.closePath(); g.fill();
+      },
+      motoniveladora: function (g) {
+        pl(g, [[90, 250], [520, 250]], 30, RED);
+        g.fillStyle = '#23272d'; rr(g, 450, 160, 110, 90, 10); g.fill(); g.fillStyle = '#cfe3f2'; g.fillRect(462, 172, 86, 50);
+        [300, 370, 440, 520].forEach(function (x) { wheel(g, x, 318, 36); });
+        pl(g, [[190, 262], [175, 305]], 10, '#6f757e');
+        g.fillStyle = '#23272d'; rr(g, 100, 300, 140, 22, 8); g.fill();
+      },
+      rodillo: function (g) {
+        g.fillStyle = RED; rr(g, 150, 190, 330, 64, 14); g.fill();
+        g.fillStyle = '#23272d'; rr(g, 290, 118, 120, 76, 10); g.fill(); g.fillStyle = '#cfe3f2'; g.fillRect(302, 130, 96, 46);
+        [[200, 296], [430, 296]].forEach(function (c) { g.fillStyle = '#8a9099'; g.beginPath(); g.arc(c[0], c[1], 54, 0, 7); g.fill(); g.strokeStyle = '#23272d'; g.lineWidth = 8; g.stroke(); g.fillStyle = '#4a5059'; g.beginPath(); g.arc(c[0], c[1], 14, 0, 7); g.fill(); });
+      },
+      hormigonero: function (g) {
+        g.fillStyle = '#23272d'; rr(g, 70, 240, 500, 40, 8); g.fill();
+        g.fillStyle = '#f4f4f2'; rr(g, 70, 190, 100, 80, 12); g.fill(); g.fillStyle = '#cfe3f2'; g.fillRect(80, 200, 70, 36);
+        g.save(); g.translate(360, 195); g.rotate(-0.18); g.fillStyle = '#f4f4f2'; g.beginPath(); g.ellipse(0, 0, 200, 78, 0, 0, 7); g.fill();
+        g.strokeStyle = RED; g.lineWidth = 12; [-120, -50, 20, 90].forEach(function (x) { g.beginPath(); g.moveTo(x, -70); g.quadraticCurveTo(x + 40, 0, x, 70); g.stroke(); }); g.restore();
+        [130, 330, 420, 500].forEach(function (x) { wheel(g, x, 306, 34); });
+      }
+    };
+    function lamina(kind, label, x, y, z, ry, w) {
+      function paint(g, cw, ch) {
+        g.clearRect(0, 0, cw, ch); g.fillStyle = '#f4f5f6'; g.fillRect(0, 0, cw, ch);
+        g.fillStyle = '#e3e5e8'; g.fillRect(0, ch - 150, cw, 150);
+        g.save(); g.translate(0, 0); MAQ[kind](g); g.restore();
+        g.fillStyle = RED; g.fillRect(0, 0, 18, ch);
+        g.fillStyle = '#23272d'; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.font = '800 64px ' + FONT; var fs = 64; while (g.measureText(label).width > cw - 80 && fs > 28) { fs -= 2; g.font = '800 ' + fs + 'px ' + FONT; } g.fillText(label, 44, 78);
+        g.fillStyle = RED; g.fillRect(46, 94, 90, 6);
+        g.fillStyle = '#4a5059'; g.font = '700 36px ' + FONT; g.fillText('CODES CONSTRUCCIONES', 44, ch - 22);
+      }
+      var tex = canvasTex(640, 440, paint), hh = w * 440 / 640, gp = new T.Group();
+      gp.add(box(w + 0.16, hh + 0.16, 0.06, M('#23272d', { roughness: 0.5 }), 0, 0, 0, { cast: false }));
+      var pm = new T.Mesh(new T.PlaneGeometry(w, hh), new T.MeshBasicMaterial({ map: tex })); pm.position.z = 0.04; gp.add(pm);
+      gp.position.set(x, y, z); gp.rotation.y = ry; scene.add(gp); signs.push({ tex: tex, paint: paint });
+    }
+    lamina('excavadora', 'EXCAVADORA', -12.3, 2.15, -9.9, 0, 1.9);
+    lamina('motoniveladora', 'MOTONIVELADORA', -7.2, 2.15, -9.9, 0, 1.9);
+    lamina('cargadora', 'CARGADORA FRONTAL', -14.95, 2.3, -1.0, Math.PI / 2, 1.9);
+    lamina('rodillo', 'RODILLO COMPACTADOR', -14.95, 2.3, 3.0, Math.PI / 2, 1.9);
+    lamina('hormigonero', 'CAMIÓN HORMIGONERO', -14.95, 2.3, 7.0, Math.PI / 2, 1.9);
 
     /* ===== Agentes ===== */
     var pickRoots = [], idleAv = [];
