@@ -133,3 +133,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.20.1 (29-oct-2026)
 - Oficina: Marketing actualizado. Instagram limpio (publicaciones archivadas, logo nuevo), línea editorial «Cómo se hace» (70 % edificio, 20 % maquinaria, 10 % herramientas), plan de 4 semanas y comparación con 5 cuentas del rubro. El Director lo conoce en la charla.
+
+## Codes 1.21 (29-oct-2026)
+- Oficina: nuevo contador «Maquinaria», que responde a Dir. Adm. Junta las cargas de combustible de cada semana, las pasa a horas de motor según la ficha del fabricante (o un rango típico por tipo de máquina) y marca las cargas que no cierran: carga mayor que el tanque, o litros que no entran en las horas posibles entre dos cargas.
+- Es una estimación (supone que cada carga llena el tanque) y un desvío es para revisar, no prueba nada. Para confirmarlo hacen falta marca y modelo de cada máquina y el horómetro en cada carga.
+- Los hallazgos de combustible de Compras (kilometraje y ritmo diario) pasan a Maquinaria; Compras conserva la comparación de precios.
