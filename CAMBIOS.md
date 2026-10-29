@@ -152,3 +152,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.22.2 (29-oct-2026)
 - Oficina: identidad CODES. Logo grande con el rojo de marca detrás del Director Ejecutivo, franja roja y blanca de obra en el zócalo, borde rojo en la alfombra de Dirección y cinco láminas de maquinaria (excavadora, motoniveladora, cargadora frontal, rodillo compactador y camión hormigonero) sobre las paredes. Se mantiene el estilo blanco y gris.
 - Impuestos: cuando los pagos sin factura superan el 25 % de las ventas pasa a «urgente» y su recuadro se ve en rojo (cuenta en las alertas del Ejecutivo).
+
+## Codes 1.22.3 (29-oct-2026)
+- Oficina: se saca el cuadro rojo «cosas urgentes» de arriba a la izquierda del 3D (el contador de urgentes sigue arriba) y el cartel del fondo ahora lleva el logo real de CODES Construcciones en vez de la «C».
