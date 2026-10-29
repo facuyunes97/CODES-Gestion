@@ -145,3 +145,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Los avisos aparecen arriba de cualquier pantalla con «Ver en Oficina» y «Entendido». Nuevas tablas en la base: informes_impuestos, anuncios e impuestos_config (escala de Ganancias editable).
 - Es una estimación: no incluye amortizaciones, sueldos y cargas, anticipos ni ajuste por inflación, y los pagos sin factura no se descuentan. La cifra final la valida el contador matriculado.
 - El Director Ejecutivo conoce al contador Impuestos y puede responder sobre su informe.
+
+## Codes 1.22.1 (29-oct-2026)
+- Oficina: los contadores también pueden hablar con el Director Ejecutivo (antes solo el dueño). El Director sabe con quién habla y no lo trata como al dueño. Ven los mismos datos que ya ven en el sistema.

@@ -580,14 +580,14 @@
     }
     function draw() {
       log.innerHTML = '';
-      if (!msgs.length) bubble('ia', 'Hola Facundo. Ya revisé el sistema con los contadores. Pregúntame lo que quieras o dame una tarea: por ejemplo, qué atender primero hoy.');
+      if (!msgs.length) bubble('ia', 'Hola. Ya revisé el sistema con los contadores. Pregúntame lo que quieras o dame una tarea: por ejemplo, qué atender primero hoy.');
       msgs.forEach(function (m) { bubble(m.role === 'user' ? 'user' : 'ia', m.content); });
     }
     function fail(d, txt) { d.classList.add('err'); d.innerHTML = '<p>' + esc(txt) + '</p>'; }
     function ask(text) {
       text = (text || '').trim(); if (!text || busy) return;
       var C = getD().chat;
-      if (!C || !C.ok) { note.hidden = false; note.textContent = 'La charla funciona en el sistema real con tu usuario de dueño, no en la demo.'; return; }
+      if (!C || !C.ok) { note.hidden = false; note.textContent = 'La charla funciona en el sistema real con tu usuario de dueño o contador, no en la demo.'; return; }
       busy = true; send.disabled = true; inp.value = ''; inp.style.height = '';
       msgs.push({ role: 'user', content: text }); bubble('user', text); save();
       var d = bubble('ia', ''); d.classList.add('typing'); d.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>';
@@ -632,7 +632,7 @@
       var b = el('button', 'sg', t); b.type = 'button'; b.addEventListener('click', function () { ask(t); }); sug.appendChild(b);
     });
     $('#c-clear').addEventListener('click', function () { msgs = []; save(); draw(); });
-    var C0 = getD().chat; if (!C0 || !C0.ok) { note.hidden = false; note.textContent = 'La charla funciona en el sistema real con tu usuario de dueño, no en la demo.'; }
+    var C0 = getD().chat; if (!C0 || !C0.ok) { note.hidden = false; note.textContent = 'La charla funciona en el sistema real con tu usuario de dueño o contador, no en la demo.'; }
     draw();
   })();
 
