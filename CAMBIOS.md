@@ -123,3 +123,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.19 (29-oct-2026)
 - Oficina: caja de charla con el Director Ejecutivo, debajo de la oficina. Solo para el dueño. Él responde con los hallazgos de los contadores de ese momento; solo recomienda, no carga ni paga nada. La charla se guarda en este navegador (botón «Borrar charla»).
 - Nueva función de Supabase `director` (archivo `puente/director.ts`). Necesita el secreto `ANTHROPIC_API_KEY` en Supabase → Edge Functions → Secrets; sin él la caja avisa que falta la clave.
+
+## Codes 1.19.1 (29-oct-2026)
+- Oficina: la caja del Director Ejecutivo pasa justo debajo de la barra de agentes (antes estaba al final de la pantalla).
