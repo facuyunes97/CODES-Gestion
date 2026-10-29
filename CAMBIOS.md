@@ -119,3 +119,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Se recalcula solo cada vez que cambia algo; cuando entra un movimiento nuevo, un informe viaja del agente a su jefe. Los informes que suben por la jerarquía son las alertas abiertas.
 - Archivos: `oficina.js` (carga solo al abrir la pantalla; usa three.js desde cdnjs/jsDelivr). Si el navegador no puede abrir 3D, queda el organigrama.
 - Marketing todavía no tiene datos (falta el usuario de Instagram).
+
+## Codes 1.19 (29-oct-2026)
+- Oficina: caja de charla con el Director Ejecutivo, debajo de la oficina. Solo para el dueño. Él responde con los hallazgos de los contadores de ese momento; solo recomienda, no carga ni paga nada. La charla se guarda en este navegador (botón «Borrar charla»).
+- Nueva función de Supabase `director` (archivo `puente/director.ts`). Necesita el secreto `ANTHROPIC_API_KEY` en Supabase → Edge Functions → Secrets; sin él la caja avisa que falta la clave.
