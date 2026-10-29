@@ -190,15 +190,23 @@
     /* ===== MARKETING ===== */
     var pub = sal.filter(function (t) { return /publicidad|marketing|instagram|redes/i.test(t.concepto || ''); });
     add('dirmkt', 'info', pub.length ? 'Gasto marcado como publicidad: ' + pub.slice(0, 2).map(function (t) { return esc(t.concepto) + ' ' + mm(t.total) + ' (' + t.fecha.split('-').reverse().join('/') + ')'; }).join('; ') + '. No hay forma de medir qué se obtuvo con eso.' : 'No hay ningún gasto de publicidad cargado, así que no se puede medir qué se invirtió.');
-    add('dirmkt', 'info', 'Falta el usuario de Instagram de CODES. Instagram no deja que una herramienta externa lo lea sin tu sesión: se puede abrir en el navegador con tu sesión iniciada, o pasar capturas de las estadísticas.');
-    add('redes', 'info', 'Sin acceso a las métricas de las redes todavía: falta el usuario y la sesión iniciada.');
-    add('imagen', 'info', 'Falta una carpeta con fotos y videos de las obras para empezar a elegir las mejores tomas.');
-    add('guion', 'info', 'Esperando datos reales de cada obra (ubicación, qué se hizo, fechas) para escribir las fichas sin inventar cifras.');
+    /* ===== MARKETING (lectura del perfil @codesconstrucciones hecha el 29-oct-2026; se actualiza a mano al volver a leerlo) ===== */
+    function mk(id, sev, txt) { out.tot[id]++; if (sev !== 'info') out.bad[id]++; add(id, sev, txt); }
+    mk('imagen', 'media', 'La foto de perfil de Instagram sigue siendo el logo viejo: hay que cambiarla por el nuevo (se hace desde el celular: Editar perfil → Cambiar foto).');
+    mk('imagen', 'media', 'Las 18 publicaciones siguen a la vista. Decisión tomada: ocultarlas (archivar, se puede revertir) y empezar de cero. Se hace desde el celular.');
+    mk('imagen', 'info', 'El material de obra es bueno (excavadora, losas, encofrado, estructura, interiores terminados): se guarda para reusar las mejores tomas.');
+    mk('guion', 'media', 'La bio no dice qué hace CODES (obras viales, hormigón, obras civiles) ni tiene enlace a WhatsApp. Falta escribir la bio nueva.');
+    mk('guion', 'media', 'Sin historias destacadas. Propuesta: Obras viales, Hormigón, Obras civiles, Equipo y Contacto.');
+    mk('guion', 'info', 'Plan de las primeras 4 semanas (2 o 3 publicaciones por semana): antes y después, obra terminada, equipo trabajando y cómo se hace.');
+    mk('redes', 'media', 'La cuenta es chica: 94 seguidores y 88 seguidos. Para compararla falta mirar 4 empresas del rubro (esperando los usuarios).');
+    mk('redes', 'info', 'Las estadísticas de la cuenta (qué publicaciones funcionaron) todavía no se revisaron: falta tu OK para abrirlas.');
+    var nomM = { imagen: 'Imagen', guion: 'Guion', redes: 'Redes' };
+    ['imagen', 'guion', 'redes'].forEach(function (id) { out.find[id].forEach(function (f) { out.tot.dirmkt++; if (f[0] !== 'info') out.bad.dirmkt++; add('dirmkt', f[0], f[1] + ' <i>(' + nomM[id] + ')</i>'); }); });
 
     /* ===== EJECUTIVO ===== */
-    var nom = { admin: 'Dir. Adm.', compras: 'Compras', pagos: 'Pagos', cobros: 'Cobros' };
+    var nom = { admin: 'Dir. Adm.', compras: 'Compras', pagos: 'Pagos', cobros: 'Cobros', dirmkt: 'Marketing' };
     var todas = [];
-    ['cobros', 'compras', 'pagos', 'admin'].forEach(function (id) { out.find[id].forEach(function (f) { if (f[0] !== 'info') todas.push([id, f]); }); });
+    ['cobros', 'compras', 'pagos', 'admin', 'dirmkt'].forEach(function (id) { out.find[id].forEach(function (f) { if (f[0] !== 'info') todas.push([id, f]); }); });
     todas.sort(function (a, b) { return (a[1][0] === 'alta' ? 0 : 1) - (b[1][0] === 'alta' ? 0 : 1); });
     todas.slice(0, 6).forEach(function (x) { chk('ejecutivo', true, x[1][0], x[1][1] + ' <i>(' + nom[x[0]] + ')</i>'); });
     if (!todas.length) { out.tot.ejecutivo++; add('ejecutivo', 'info', 'Sin alertas en Administración con los datos de hoy.'); }
@@ -211,6 +219,8 @@
     });
     facs.forEach(function (f) { ev.push({ k: 'F' + f.id, ag: f.lado === 'debito' ? 'cobros' : 'compras', f: f.creada || f.fecha, o: 0, t: 'Factura ' + (f.lado === 'debito' ? 'de venta ' : 'de compra ') + esc(f.tipo) + ' ' + f.nro + ' · ' + esc(tn(f.terceroId)) + ' · ' + mm(f.total) }); });
     comb.forEach(function (x) { ev.push({ k: 'G' + x.id, ag: 'compras', f: x.fh.slice(0, 10), o: 0, t: 'Combustible · ' + esc((cen[x.maqId] || {}).nombre || 'máquina') + ' · ' + lts(x.litros) }); });
+    ev.push({ k: 'M-perfil', ag: 'redes', f: '2026-10-29', o: 0, t: 'Leyó el perfil @codesconstrucciones: 18 publicaciones, 94 seguidores' });
+    ev.push({ k: 'M-plan', ag: 'guion', f: '2026-10-29', o: 0, t: 'Armó el plan de 4 semanas y la propuesta de destacados' });
     ev.sort(function (a, b) { return a.f < b.f ? 1 : a.f > b.f ? -1 : b.o - a.o; });
     ev.forEach(function (e) { out.keys[e.k] = e; });
     out.feed = ev.slice(0, 12);
@@ -293,7 +303,7 @@
       desk: { x: 11.5, z: 6.2, w: 2.4 }, look: { shirt: 0xdfe2e6, hair: 0x8a3b52, headset: true, lan: 0x19b394, acc: 0x19b394 },
       does: ['Es una genia de internet: analiza los parámetros de las redes para ver si las publicaciones están siendo exitosas o no.', 'Te da ideas para que la marca CODES crezca y sea reconocida.'],
       skills: ['Tablero por publicación: alcance, interacciones, guardados, compartidos y clics, contra el promedio propio.', 'Qué formatos, días y horarios funcionan mejor.', 'Ideas de contenido para cada semana, pensadas desde lo que ya funcionó.', 'Mira cómo comunican otras constructoras y organismos de obra, para tomar ideas. Solo información pública.', 'Menciones y comentarios: avisa si hay algo que atender o responder.', 'Informe mensual de crecimiento de la marca.'],
-      needs: ['El usuario de Instagram de CODES y qué otras redes usa: ' + PEND + '.', 'Acceso a las métricas de esas redes, exportadas o con permiso.'] }
+      needs: ['Los usuarios de 4 empresas del rubro para compararlas con CODES.', 'Tu OK para abrir las estadísticas de la cuenta (instagram: codesconstrucciones).'] }
   ];
 
 
@@ -311,17 +321,17 @@
   var hooks = { focus: function () {}, home: function () {}, mark: function () {}, sync: function () {}, pulse: function () {} };
   var cardsEl = $('#cards'), dock = $('#dock'), panel = $('#panel'), stageEl = $('#stage'), orgEl = $('#org');
   $('#n-ag').textContent = AGENTS.length;
-  var LIVEIDS = { ejecutivo: 1, admin: 1, compras: 1, pagos: 1, cobros: 1 };
+  var LIVEIDS = { ejecutivo: 1, admin: 1, compras: 1, pagos: 1, cobros: 1, dirmkt: 1, imagen: 1, guion: 1, redes: 1 };
   var DECIDE = [
     'Decidir qué te alarma: % de desvío de presupuesto, días de pago vencido y días de cobro atrasado. Con eso se ajustan los semáforos.',
     'Decidir si se agregan kilómetros u horas de motor a cada carga de combustible, para poder auditar el consumo por máquina.',
-    'Pasar el usuario de Instagram de CODES y fotos o videos de las obras, para que Marketing pueda arrancar.'
+    'Ocultar las 18 publicaciones de Instagram y cambiar la foto de perfil por el logo nuevo (desde el celular). Pasar 4 empresas para comparar y el OK para ver las estadísticas.'
   ];
 
   function urg(id) { return A.find[id].filter(function (f) { return f[0] === 'alta'; }).length; }
   function setStates() {
     AGENTS.forEach(function (a) {
-      if (LIVEIDS[a.id]) { var u = urg(a.id); a.state = u ? 'alerta' : 'listo'; a.badge = u ? u + (u === 1 ? ' urgente' : ' urgentes') : 'Al día'; }
+      if (LIVEIDS[a.id]) { var u = urg(a.id); var md = (A.find[a.id] || []).filter(function (x) { return x[0] === 'media'; }).length; a.state = u ? 'alerta' : 'listo'; a.badge = u ? u + (u === 1 ? ' urgente' : ' urgentes') : (a.area === 'Marketing' && md ? 'Trabajando' : 'Al día'); }
       else { a.state = a.id === 'guion' ? 'espera' : 'conectar'; a.badge = STATES[a.state].label; }
       var st = STATES[a.state];
       a.card.style.setProperty('--sc', st.c); a.card.style.setProperty('--gl', rgba(st.c, 0.28));
@@ -330,7 +340,7 @@
       var tot = A.tot[a.id], bad = A.bad[a.id];
       a.pct = LIVEIDS[a.id] && tot ? Math.round((tot - bad) / tot * 100) : 0;
     });
-    var eq = ['admin', 'compras', 'pagos', 'cobros'].map(byId);
+    var eq = ['admin', 'compras', 'pagos', 'cobros', 'dirmkt'].map(byId);
     byId('ejecutivo').pct = Math.round(eq.reduce(function (s, x) { return s + x.pct; }, 0) / eq.length);
     AGENTS.forEach(function (a) { a.card.querySelector('.bar i').style.width = a.pct + '%'; });
     var total = urg('ejecutivo');
@@ -405,7 +415,7 @@
       var kids = AGENTS.filter(function (k) { return k.boss === a.id; });
       var fl = A.find[a.id] || [];
       h = '<div class="p-head" style="--tc:' + a.tc + '"><div class="p-dot"><i></i></div><div><div class="eyebrow">' + a.area + ' · ' + a.level + '</div><h2>' + a.name + '</h2></div></div>' +
-        '<p class="status" style="--sc:' + st.c + '"><i></i>' + (LIVEIDS[a.id] ? a.badge + ' · leyendo tu sistema' : st.label) + '</p>' +
+        '<p class="status" style="--sc:' + st.c + '"><i></i>' + (LIVEIDS[a.id] ? a.badge + (a.area === 'Marketing' ? ' · leyó el Instagram de CODES' : ' · leyendo tu sistema') : st.label) + '</p>' +
         '<div class="rel"><span>Responde a: <b>' + (boss ? boss.name : 'Facundo Yunes') + '</b></span>' +
         (kids.length ? '<span>Tiene a su cargo: <b>' + kids.map(function (k) { return k.name; }).join(', ') + '</b></span>' : '') + '</div>' +
         (fl.length ? '<h3>Lo que encontró<small>datos en vivo</small></h3>' + findList(fl) : '') +
@@ -485,14 +495,14 @@
     function strip(h) { return String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' '); }
     function contexto() {
       var D = getD(), L = ['Fecha: ' + D.hoy, 'Hallazgos de los contadores (urgencia · texto):'];
-      ['compras', 'pagos', 'cobros', 'admin', 'ejecutivo'].forEach(function (id) {
+      ['compras', 'pagos', 'cobros', 'admin', 'dirmkt', 'imagen', 'guion', 'redes', 'ejecutivo'].forEach(function (id) {
         var fl = (A.find[id] || []).slice(0, 14);
         if (!fl.length) return;
         L.push('[' + byId(id).name + ']');
         fl.forEach(function (f) { L.push('- ' + f[0] + ' · ' + strip(f[1])); });
       });
       if (A.feed && A.feed.length) { L.push('Movimiento reciente:'); A.feed.slice(0, 8).forEach(function (e) { L.push('- ' + strip(e.t) + ' (' + (e.f || '') + ')'); }); }
-      L.push('Marketing (Imagen, Guion, Redes): sin datos, falta el Instagram de CODES.');
+      L.push('Marketing: perfil de Instagram @codesconstrucciones leído el 29-oct-2026 (lectura hecha por Claude en el navegador, no en vivo). No se publica ni borra nada sin el «va» de Facundo; ocultar publicaciones y cambiar la foto de perfil se hace desde el celular.');
       return L.join('\n');
     }
     function draw() {
@@ -1044,7 +1054,7 @@
         if (LIVEIDS[a.id] && a.id !== 'ejecutivo') {
           var u = urg(a.id), m = (A.find[a.id] || []).filter(function (x) { return x[0] === 'media'; }).length;
           var n = Math.min(a.id === 'admin' ? 2 : 3, u) + (m ? 1 : 0);
-          hot = u > 0;
+          hot = u > 0 || (a.area === 'Marketing' && m > 0);
           for (var i = 0; i < n; i++) {
             var isUrg = i < u;
             flows.push({ p: pathOf(a), env: envMesh(isUrg ? 0xd8352a : 0xd98a00), speed: 0.06 + 0.012 * (a.rank === 3 ? 1 : 0), ph: (i / Math.max(1, n)) + (a.rank === 3 ? 0.07 : 0.33) });

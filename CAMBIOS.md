@@ -126,3 +126,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.19.1 (29-oct-2026)
 - Oficina: la caja del Director Ejecutivo pasa justo debajo de la barra de agentes (antes estaba al final de la pantalla).
+
+## Codes 1.20 (29-oct-2026)
+- Oficina: Marketing ya trabaja con datos reales. Imagen, Guion y Redes muestran lo que se leyó del Instagram de CODES (@codesconstrucciones: 18 publicaciones, 94 seguidores) y lo que falta resolver. Se ven en movimiento y le informan al Director Ejecutivo, que ahora también lo conoce en la charla.
+- Es una lectura hecha el 29-oct: no se actualiza sola.
