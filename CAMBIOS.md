@@ -130,3 +130,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.20 (29-oct-2026)
 - Oficina: Marketing ya trabaja con datos reales. Imagen, Guion y Redes muestran lo que se leyó del Instagram de CODES (@codesconstrucciones: 18 publicaciones, 94 seguidores) y lo que falta resolver. Se ven en movimiento y le informan al Director Ejecutivo, que ahora también lo conoce en la charla.
 - Es una lectura hecha el 29-oct: no se actualiza sola.
+
+## Codes 1.20.1 (29-oct-2026)
+- Oficina: Marketing actualizado. Instagram limpio (publicaciones archivadas, logo nuevo), línea editorial «Cómo se hace» (70 % edificio, 20 % maquinaria, 10 % herramientas), plan de 4 semanas y comparación con 5 cuentas del rubro. El Director lo conoce en la charla.
