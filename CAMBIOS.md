@@ -138,3 +138,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Oficina: nuevo contador «Maquinaria», que responde a Dir. Adm. Junta las cargas de combustible de cada semana, las pasa a horas de motor según la ficha del fabricante (o un rango típico por tipo de máquina) y marca las cargas que no cierran: carga mayor que el tanque, o litros que no entran en las horas posibles entre dos cargas.
 - Es una estimación (supone que cada carga llena el tanque) y un desvío es para revisar, no prueba nada. Para confirmarlo hacen falta marca y modelo de cada máquina y el horómetro en cada carga.
 - Los hallazgos de combustible de Compras (kilometraje y ritmo diario) pasan a Maquinaria; Compras conserva la comparación de precios.
+
+## Codes 1.22 (29-oct-2026)
+- Oficina: nuevo contador «Impuestos», que responde a Dir. Adm. Suma las ventas del ejercicio (netas y brutas, con notas de crédito restadas), resta los gastos con factura y estima el resultado a hoy, el proyectado al 31/12 y el impuesto a las Ganancias con la escala de sociedades 2026. También informa IVA e impuesto a los créditos y débitos.
+- Informe automático todos los viernes a las 13 h (hora de Argentina). El Director Adm. lo revisa con chequeos (facturas que no suman, fechas imposibles, datos de pocos meses, gastos sin factura). Si no hay problemas graves lo aprueba y el Director Ejecutivo deja un aviso en pantalla al dueño y a los contadores; si lo observa, el aviso va solo al dueño.
+- Los avisos aparecen arriba de cualquier pantalla con «Ver en Oficina» y «Entendido». Nuevas tablas en la base: informes_impuestos, anuncios e impuestos_config (escala de Ganancias editable).
+- Es una estimación: no incluye amortizaciones, sueldos y cargas, anticipos ni ajuste por inflación, y los pagos sin factura no se descuentan. La cifra final la valida el contador matriculado.
+- El Director Ejecutivo conoce al contador Impuestos y puede responder sobre su informe.
