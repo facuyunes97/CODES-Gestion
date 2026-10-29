@@ -112,3 +112,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.17 (28-oct-2026)
 - Facturas: nuevo dato **"Cómo está la factura"** con tres opciones: Física (papel), Digital (PDF / mail) o Solo en ARCA. Se elige al cargar una factura, al editarla (también en lote) y en Facturas recopiladas. Se ve como una etiqueta bajo el número de comprobante.
 - Valores iniciales: lo que llega por mail o se sube en PDF queda como Digital; lo que viene del Excel de ARCA queda como Solo en ARCA; las facturas cargadas a mano quedan sin definir hasta que el contador lo complete. Al pasar de Recopiladas a Facturas el dato se conserva.
+
+## Codes 1.18 (29-oct-2026)
+- Nuevo ítem **Oficina** en Administración, debajo de Usuarios. Muestra en 3D un equipo de 9 agentes (Director Ejecutivo; Director Adm. con Compras, Pagos y Cobros; Director Marketing con Imagen, Guion y Redes) con su organigrama.
+- Los cuatro puestos de Administración controlan los datos del sistema en vivo (solo lectura, sin consultas nuevas a la base): facturas de venta sin cobro, facturas borradas, cobrado contra facturado, pagos sin factura, proveedores concentrados, combustible (premium contra diésel 500, falta de km/horas), cheques vencidos y por vencer, saldos negativos, movimientos repetidos, fechas imposibles, obras de prueba y clientes duplicados.
+- Se recalcula solo cada vez que cambia algo; cuando entra un movimiento nuevo, un informe viaja del agente a su jefe. Los informes que suben por la jerarquía son las alertas abiertas.
+- Archivos: `oficina.js` (carga solo al abrir la pantalla; usa three.js desde cdnjs/jsDelivr). Si el navegador no puede abrir 3D, queda el organigrama.
+- Marketing todavía no tiene datos (falta el usuario de Instagram).
