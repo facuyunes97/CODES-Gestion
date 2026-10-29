@@ -192,14 +192,15 @@
     add('dirmkt', 'info', pub.length ? 'Gasto marcado como publicidad: ' + pub.slice(0, 2).map(function (t) { return esc(t.concepto) + ' ' + mm(t.total) + ' (' + t.fecha.split('-').reverse().join('/') + ')'; }).join('; ') + '. No hay forma de medir qué se obtuvo con eso.' : 'No hay ningún gasto de publicidad cargado, así que no se puede medir qué se invirtió.');
     /* ===== MARKETING (lectura del perfil @codesconstrucciones hecha el 29-oct-2026; se actualiza a mano al volver a leerlo) ===== */
     function mk(id, sev, txt) { out.tot[id]++; if (sev !== 'info') out.bad[id]++; add(id, sev, txt); }
-    mk('imagen', 'media', 'La foto de perfil de Instagram sigue siendo el logo viejo: hay que cambiarla por el nuevo (se hace desde el celular: Editar perfil → Cambiar foto).');
-    mk('imagen', 'media', 'Las 18 publicaciones siguen a la vista. Decisión tomada: ocultarlas (archivar, se puede revertir) y empezar de cero. Se hace desde el celular.');
-    mk('imagen', 'info', 'El material de obra es bueno (excavadora, losas, encofrado, estructura, interiores terminados): se guarda para reusar las mejores tomas.');
-    mk('guion', 'media', 'La bio no dice qué hace CODES (obras viales, hormigón, obras civiles) ni tiene enlace a WhatsApp. Falta escribir la bio nueva.');
-    mk('guion', 'media', 'Sin historias destacadas. Propuesta: Obras viales, Hormigón, Obras civiles, Equipo y Contacto.');
-    mk('guion', 'info', 'Plan de las primeras 4 semanas (2 o 3 publicaciones por semana): antes y después, obra terminada, equipo trabajando y cómo se hace.');
-    mk('redes', 'media', 'La cuenta es chica: 94 seguidores y 88 seguidos. Para compararla falta mirar 4 empresas del rubro (esperando los usuarios).');
-    mk('redes', 'info', 'Las estadísticas de la cuenta (qué publicaciones funcionaron) todavía no se revisaron: falta tu OK para abrirlas.');
+    mk('imagen', 'info', 'Instagram limpio (29-oct): las 18 publicaciones quedaron archivadas, se pueden restaurar desde «Ver archivo». Foto de perfil con el logo nuevo.');
+    mk('imagen', 'info', 'El material archivado es bueno (excavadora, losas, encofrado, estructura, interiores): se reusa para las series «Cómo se hace».');
+    mk('imagen', 'media', 'Falta una plantilla visual fija: título sobre la foto, logo chico en una esquina y mismo estilo en todas las piezas (como Criba y Cemex).');
+    mk('guion', 'media', 'La bio sigue sin decir qué hace CODES. Propuesta: «Constructora · Santiago del Estero. Obras viales, hormigón y edificios. Acá te contamos cómo se hace una obra.» Falta tu OK y agregar el WhatsApp desde el celular.');
+    mk('guion', 'info', 'Línea editorial: «Cómo se hace», para informar y no para vender. 70 % edificio y construcción tradicional, 20 % maquinaria (incluye obras viales), 10 % herramientas. 3 publicaciones por semana, sin precios ni «contáctenos».');
+    mk('guion', 'info', 'Primeras 4 semanas: losa en 4 pasos, cómo funciona una excavadora, antes y después; encofrado, hormigón armado, equipo; edificio piso por piso, compactación, una herramienta; controles antes de hormigonar, obra contada de principio a fin.');
+    mk('guion', 'media', 'Destacados por crear: Cómo se hace, Máquinas, Herramientas, Obras y Contacto. Fijar 3 publicaciones arriba.');
+    mk('redes', 'info', 'Comparación con 5 cuentas (Criba, Cemex, Vinci, Caterpillar, Groff Tractor): todas usan plantilla visual constante, texto sobre la imagen, personas en las fotos, destacados y un solo enlace. Criba (48 mil seguidores) es la más cercana en tono; Vinci (876) en tamaño.');
+    mk('redes', 'media', 'La cuenta parte de 94 seguidores y 0 publicaciones. Las estadísticas de la cuenta todavía no se revisaron: falta tu OK para abrirlas.');
     var nomM = { imagen: 'Imagen', guion: 'Guion', redes: 'Redes' };
     ['imagen', 'guion', 'redes'].forEach(function (id) { out.find[id].forEach(function (f) { out.tot.dirmkt++; if (f[0] !== 'info') out.bad.dirmkt++; add('dirmkt', f[0], f[1] + ' <i>(' + nomM[id] + ')</i>'); }); });
 
@@ -219,8 +220,8 @@
     });
     facs.forEach(function (f) { ev.push({ k: 'F' + f.id, ag: f.lado === 'debito' ? 'cobros' : 'compras', f: f.creada || f.fecha, o: 0, t: 'Factura ' + (f.lado === 'debito' ? 'de venta ' : 'de compra ') + esc(f.tipo) + ' ' + f.nro + ' · ' + esc(tn(f.terceroId)) + ' · ' + mm(f.total) }); });
     comb.forEach(function (x) { ev.push({ k: 'G' + x.id, ag: 'compras', f: x.fh.slice(0, 10), o: 0, t: 'Combustible · ' + esc((cen[x.maqId] || {}).nombre || 'máquina') + ' · ' + lts(x.litros) }); });
-    ev.push({ k: 'M-perfil', ag: 'redes', f: '2026-10-29', o: 0, t: 'Leyó el perfil @codesconstrucciones: 18 publicaciones, 94 seguidores' });
-    ev.push({ k: 'M-plan', ag: 'guion', f: '2026-10-29', o: 0, t: 'Armó el plan de 4 semanas y la propuesta de destacados' });
+    ev.push({ k: 'M-perfil', ag: 'redes', f: '2026-10-29', o: 0, t: 'Limpió y revisó @codesconstrucciones y la comparó con 5 cuentas del rubro' });
+    ev.push({ k: 'M-plan', ag: 'guion', f: '2026-10-29', o: 0, t: 'Armó la línea «Cómo se hace» y el plan de 4 semanas' });
     ev.sort(function (a, b) { return a.f < b.f ? 1 : a.f > b.f ? -1 : b.o - a.o; });
     ev.forEach(function (e) { out.keys[e.k] = e; });
     out.feed = ev.slice(0, 12);
@@ -325,7 +326,7 @@
   var DECIDE = [
     'Decidir qué te alarma: % de desvío de presupuesto, días de pago vencido y días de cobro atrasado. Con eso se ajustan los semáforos.',
     'Decidir si se agregan kilómetros u horas de motor a cada carga de combustible, para poder auditar el consumo por máquina.',
-    'Ocultar las 18 publicaciones de Instagram y cambiar la foto de perfil por el logo nuevo (desde el celular). Pasar 4 empresas para comparar y el OK para ver las estadísticas.'
+    'Aprobar la bio nueva de Instagram y agregar el WhatsApp (desde el celular). Dar el OK para abrir las estadísticas de la cuenta.'
   ];
 
   function urg(id) { return A.find[id].filter(function (f) { return f[0] === 'alta'; }).length; }
@@ -502,7 +503,7 @@
         fl.forEach(function (f) { L.push('- ' + f[0] + ' · ' + strip(f[1])); });
       });
       if (A.feed && A.feed.length) { L.push('Movimiento reciente:'); A.feed.slice(0, 8).forEach(function (e) { L.push('- ' + strip(e.t) + ' (' + (e.f || '') + ')'); }); }
-      L.push('Marketing: perfil de Instagram @codesconstrucciones leído el 29-oct-2026 (lectura hecha por Claude en el navegador, no en vivo). No se publica ni borra nada sin el «va» de Facundo; ocultar publicaciones y cambiar la foto de perfil se hace desde el celular.');
+      L.push('Marketing: perfil de Instagram @codesconstrucciones leído el 29-oct-2026 (lectura hecha por Claude en el navegador, no en vivo). Facundo ya archivó las publicaciones y cambió la foto de perfil. No se publica ni borra nada sin su «va»; archivar, la foto y el enlace se hacen desde el celular.');
       return L.join('\n');
     }
     function draw() {
