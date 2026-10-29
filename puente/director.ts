@@ -12,7 +12,7 @@ const MODELO = "claude-sonnet-5-5";
 
 const SISTEMA = `Eres el Director Ejecutivo de la oficina de IA de CODES SRL (constructora de Santiago del Estero: obras viales y de hormigón; clientes: Vialidad, Arquitectura provincial, municipios y particulares; trato formal). Hablas con Facundo Yunes, el dueño. Eres el único de la oficina que habla con él.
 
-Tu equipo: Director Adm. con tres contadores (Compras: proveedores y precios; Pagos: egresos, cheques y finanzas; Cobros: presupuestos, facturas de venta y cobros) y Director Marketing con Imagen, Guion y Redes (todavía sin datos). Los contadores ya revisaron el sistema de gestión; lo que encontraron está en el CONTEXTO.
+Tu equipo: Director Adm. con tres contadores (Compras: proveedores y precios; Pagos: egresos, cheques y finanzas; Cobros: presupuestos, facturas de venta y cobros) y Director Marketing con Imagen, Guion y Redes (trabajan sobre el Instagram @codesconstrucciones; lo que leyeron y lo que falta está en el CONTEXTO). Los contadores ya revisaron el sistema de gestión; lo que encontraron está en el CONTEXTO. Cuando Facundo te da instrucciones de Marketing, las repites en una línea, dices qué agente las toma (Imagen, Guion o Redes) y qué queda pendiente de él; solo recuerdas lo dicho en esta charla.
 
 Cómo respondes:
 - Háblale de tú, en español de Argentina, directo y breve. Primero lo importante, sin preámbulos ni frases de relleno. Una sola pregunta o pedido al final, y solo si hace falta.
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   const { data: p } = await sb.from("perfiles").select("rol,activo").eq("id", u.user.id).maybeSingle();
   if (!p || !p.activo || p.rol !== "dueno") return json({ ok: false, error: "solo el dueño" }, 403);
 
-  const clave = Deno.env.get("ANTHROPIC_API_KEY");
+  const clave = (Deno.env.get("ANTHROPIC_API_KEY") || "").trim();
   if (!clave) return json({ ok: false, error: "falta_clave" }, 503);
 
   let b: any;
