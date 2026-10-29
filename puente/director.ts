@@ -1,5 +1,5 @@
 // Supabase Edge Function "director"
-// Chat con el Director Ejecutivo de la pantalla Oficina. La llama la app con la sesión del DUEÑO.
+// Chat con el Director Ejecutivo de la pantalla Oficina. La llama la app con la sesión del DUEÑO o de un CONTADOR.
 // Solo conversa: no lee ni escribe nada en la base. El contexto (hallazgos y cifras de hoy) lo arma la app
 // con los datos que ya tiene en pantalla y lo manda junto con el mensaje.
 // Requiere el secreto ANTHROPIC_API_KEY (Supabase → Edge Functions → Secrets). Sin la clave responde "falta_clave".
@@ -10,7 +10,7 @@ const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "content-type": "application/json" } });
 const MODELO = "claude-sonnet-5-5";
 
-const SISTEMA = `Eres el Director Ejecutivo de la oficina de IA de CODES SRL (constructora de Santiago del Estero: obras viales y de hormigón; clientes: Vialidad, Arquitectura provincial, municipios y particulares; trato formal). Hablas con Facundo Yunes, el dueño. Eres el único de la oficina que habla con él.
+const SISTEMA = `Eres el Director Ejecutivo de la oficina de IA de CODES SRL (constructora de Santiago del Estero: obras viales y de hormigón; clientes: Vialidad, Arquitectura provincial, municipios y particulares; trato formal). Hablas con Facundo Yunes (el dueño) o con un contador de la empresa; la última línea del CONTEXTO dice con quién hablas. Eres el único de la oficina que habla con ellos. Si es un contador, trátalo de igual manera, no lo llames Facundo y no le des órdenes del dueño: solo analizas y recomiendas.
 
 Tu equipo: Director Adm. con cinco contadores (Compras: proveedores y precios; Pagos: egresos, cheques y finanzas; Cobros: presupuestos, facturas de venta y cobros; Maquinaria: combustible y horas de máquina; Impuestos: ventas, gastos deducibles y Ganancias estimada del ejercicio, con informe los viernes a las 13 h que el Director Adm. aprueba y tú anuncias a Facundo y a los contadores) y Director Marketing con Imagen, Guion y Redes (trabajan sobre el Instagram @codesconstrucciones; lo que leyeron y lo que falta está en el CONTEXTO). Los contadores ya revisaron el sistema de gestión; lo que encontraron está en el CONTEXTO. Cuando Facundo te da instrucciones de Marketing, las repites en una línea, dices qué agente las toma (Imagen, Guion o Redes) y qué queda pendiente de él; solo recuerdas lo dicho en esta charla.
 
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   const { data: u, error: ue } = await sb.auth.getUser(token);
   if (ue || !u || !u.user) return json({ ok: false, error: "sesión inválida" }, 401);
   const { data: p } = await sb.from("perfiles").select("rol,activo").eq("id", u.user.id).maybeSingle();
-  if (!p || !p.activo || p.rol !== "dueno") return json({ ok: false, error: "solo el dueño" }, 403);
+  if (!p || !p.activo || !["dueno", "contador"].includes(p.rol)) return json({ ok: false, error: "solo dueño o contador" }, 403);
 
   const clave = (Deno.env.get("ANTHROPIC_API_KEY") || "").trim();
   if (!clave) return json({ ok: false, error: "falta_clave" }, 503);
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, 4000) }));
   while (msgs.length && msgs[0].role !== "user") msgs.shift();
   if (!msgs.length || msgs[msgs.length - 1].role !== "user") return json({ ok: false, error: "falta el mensaje" }, 400);
-  const contexto = String(b.contexto || "").slice(0, 24000);
+  const contexto = String(b.contexto || "").slice(0, 24000) + "\nQuien escribe ahora: " + (p.rol === "dueno" ? "Facundo Yunes, el dueño." : "un contador de CODES (no es el dueño).");
 
   const up = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
