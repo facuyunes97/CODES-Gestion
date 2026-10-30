@@ -98,7 +98,8 @@
 
   /* ---------- Qué dibujo le toca a cada máquina ---------- */
   var FORMAS = [['', 'Automática (según el nombre)'], ['excavadora', 'Excavadora / retro'], ['pala', 'Pala cargadora'], ['moto', 'Motoniveladora'],
-    ['camion', 'Camión'], ['camioneta', 'Camioneta'], ['tractor', 'Tractor'], ['rodillo', 'Compactador de suelo (rodillo)']];
+    ['camion', 'Camión'], ['camioneta', 'Camioneta'], ['tractor', 'Tractor'], ['rodillo', 'Compactador de suelo (rodillo)'],
+    ['acc_desmalezadora', 'Accesorio: desmalezadora'], ['acc_rastra', 'Accesorio: rastra'], ['acc_regador', 'Accesorio: tanque regador'], ['acc_casilla', 'Accesorio: casilla'], ['acc_tanque', 'Accesorio: tanque de combustible']];
   function tipoDibujo(m) {
     if (m.formaMaq) return m.formaMaq;
     var t = (m.nombre + ' ' + (m.marca || '') + ' ' + (m.modelo || '')).toLowerCase();
@@ -128,7 +129,7 @@
     { re: /toyota|toyta|hilux/, n: 'Toyota', body: '#f4f4f0', trim: '#c4172c', roof: 'flat', rim: '#b7bcc4' },
     { re: /ford|ranger/, n: 'Ford', body: '#f4f4f0', trim: '#1c4f9c', roof: 'flat', rim: '#b7bcc4' }
   ];
-  var DEFAULT_BODY = { excavadora: '#f2b705', pala: '#f2b705', moto: '#f2b705', rodillo: '#f2b705', camion: '#f4f4f0', camioneta: '#f4f4f0', tractor: '#2f7d4f', generico: '#f2b705' };
+  var DEFAULT_BODY = { excavadora: '#f2b705', pala: '#f2b705', moto: '#f2b705', rodillo: '#f2b705', camion: '#f4f4f0', camioneta: '#f4f4f0', tractor: '#2f7d4f', generico: '#f2b705', acc_desmalezadora: '#c8402f', acc_rastra: '#6b717b', acc_regador: '#2f6fb0', acc_casilla: '#e8e4d8', acc_tanque: '#d9382b' };
   var ROAD = { camion: 1, camioneta: 1 };
   var ROADB = { 'Mercedes-Benz': 1, 'Toyota': 1, 'Ford': 1 };
   function marcaDe(m) {
@@ -198,6 +199,16 @@
         '<path d="' + cabPath(32, 40, 22, 15, st.roof) + '" fill="' + c + '"/><path d="M36 38v-11h14l2 11z" fill="' + GL + '"/><rect x="30" y="22" width="28" height="3" fill="' + K + '"/>' +
         '<circle cx="82" cy="49" r="15" fill="#7f8792"/><circle cx="82" cy="49" r="15" fill="none" stroke="#5b616b" stroke-width="2"/><circle cx="82" cy="49" r="5.5" fill="#444a54"/><rect x="62" y="44" width="20" height="3.5" fill="' + K + '"/>' +
         '<circle cx="36" cy="54" r="12" fill="' + K + '"/><circle cx="36" cy="54" r="5" fill="' + st.rim + '"/>';
+    } else if (tipo === 'acc_desmalezadora') {
+      s += wheel(34, 58, 6, st.rim) + wheel(70, 58, 6, st.rim) + '<rect x="14" y="40" width="72" height="14" rx="3" fill="' + c + '"/><rect x="14" y="48" width="72" height="5" fill="' + darken(c, .75) + '"/><circle cx="50" cy="44" r="7" fill="#444a54"/><rect x="2" y="48" width="14" height="3" fill="' + K + '"/>';
+    } else if (tipo === 'acc_rastra') {
+      s += '<rect x="10" y="42" width="80" height="4" fill="' + K + '"/><rect x="2" y="48" width="12" height="3" fill="' + K + '"/>' + [18, 34, 50, 66, 82].map(function (x) { return '<ellipse cx="' + x + '" cy="54" rx="4" ry="11" fill="#9aa1ab" stroke="#5b616b" stroke-width="1.5"/>'; }).join('');
+    } else if (tipo === 'acc_regador') {
+      s += wheel(52, 58, 7, st.rim) + '<rect x="14" y="30" width="72" height="26" rx="13" fill="' + c + '"/><rect x="14" y="40" width="72" height="5" fill="' + darken(c, .75) + '" opacity=".6"/><rect x="2" y="50" width="14" height="3" fill="' + K + '"/><rect x="84" y="50" width="12" height="3" fill="#9aa1ab"/>';
+    } else if (tipo === 'acc_casilla') {
+      s += '<rect x="16" y="56" width="68" height="4" fill="' + K + '"/><rect x="16" y="26" width="68" height="30" fill="' + c + '" stroke="#b9b4a2" stroke-width="1.5"/><rect x="12" y="22" width="76" height="6" fill="#7a8190"/><rect x="24" y="34" width="16" height="12" fill="' + GL + '"/><rect x="58" y="32" width="14" height="24" fill="#8a6a44"/>';
+    } else if (tipo === 'acc_tanque') {
+      s += '<rect x="22" y="58" width="56" height="4" fill="' + K + '"/><rect x="24" y="34" width="52" height="24" rx="4" fill="' + c + '"/><rect x="24" y="44" width="52" height="4" fill="' + darken(c, .7) + '"/><rect x="44" y="26" width="12" height="8" fill="#444a54"/><rect x="76" y="46" width="12" height="3" fill="' + K + '"/>';
     } else {
       s += wheel(28, 57, 8, st.rim) + wheel(72, 57, 8, st.rim) + '<rect x="14" y="36" width="68" height="20" rx="4" fill="' + c + '"/><rect x="22" y="28" width="26" height="10" fill="' + GL + '"/>';
     }
@@ -221,7 +232,7 @@
   var CW = 2.2, MG = 1, GLS = '#9fd0e6', KK = '#2b2f36';
   function angd(a, b) { var d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; }
 
-    /* ---- guion de trabajo (sin choques) ---- */
+      /* ---- guion de trabajo (sin choques) ---- */
   /* Guion de trabajo de cada terreno: cada máquina tiene su propio carril o zona para que no se crucen.
      Coordenadas en casillas (u,v) dentro del terreno de lado s. Todo es función del tiempo t (segundos). */
   var BAND = 3.1, SLOT = 13, RING = 0.5;
@@ -245,11 +256,16 @@
     var s0 = pa.L[i - 1], s1 = pa.L[i], f = s1 > s0 ? (d - s0) / (s1 - s0) : 0, a = pa.pts[i - 1], b = pa.pts[i], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1;
     return { u: a[0] + dx * f, v: a[1] + dy * f, hu: dx / l, hv: dy / l };
   }
+  var HOFF = 1.25;
+  function enganchable(t) { return t === 'acc_desmalezadora' || t === 'acc_rastra' || t === 'acc_regador'; }
+  function esCamp(t) { return t === 'acc_casilla' || t === 'acc_tanque'; }
   function needSide(c, cap) {
-    var nb = c.e > 0 ? c.e : (c.t > 0 ? 1 : 0), k = c.l + c.m + c.r, nl = Math.ceil(k / cap) + Math.ceil(c.g / 4), ev0 = 2.95;
-    var vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, need = c.g > 2 ? 8 : 6;
+    var nb = c.e > 0 ? c.e : (c.t > 0 ? 1 : 0), k = c.l + c.m + c.r, pal = (c.t > 0 && c.l > 0 && nb > 0) ? 1 : 0;
+    var nl = pal ? 1 + Math.ceil((k - 1) / cap) : Math.ceil(k / cap); nl += Math.ceil(c.g / 4) + Math.ceil(c.k / 4);
+    var ev0 = 2.95, vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, need = (c.g + c.k) > 2 ? 8 : 6;
     if (nl > 0) need = Math.max(need, vL0 + (nl - 1) * 1.05 + 1.5); else if (nb > 0) need = Math.max(need, ev0 + BAND * (nb - 1) + 2.2);
     if (nb > 0) need = Math.max(need, 8); else if (k > 0) need = Math.max(need, cap === 2 ? 11.4 : 7);
+    if (c.rr > 0) need = Math.max(need, Math.ceil((c.rr + 6) / 4));
     return Math.ceil(need);
   }
   function sizeFor(c) {
@@ -266,26 +282,38 @@
     }
     return { boom: 0.35, stick: -1, bucket: -0.6, dirt: 0, swing: 0 };
   }
-  /* c: cantidades por tipo. L: lista [{id,tipo}]. Devuelve el tamaño del terreno, el guion de cada máquina y los elementos del suelo. */
+  /* L: lista [{id,tipo,host}] (host = id de la máquina a la que va enganchado el accesorio). Devuelve tamaño, guion de cada máquina y elementos del suelo. */
   function workPlan(L) {
-    var by = { excavadora: [], camion: [], pala: [], moto: [], rodillo: [], tractor: [], camioneta: [], generico: [] };
-    L.forEach(function (m) { (by[m.tipo] || by.generico).push(m.id); });
+    var by = { excavadora: [], camion: [], pala: [], moto: [], rodillo: [], tractor: [], camioneta: [], generico: [] }, camp = [], accs = [], tipoDe = {};
+    L.forEach(function (m) {
+      tipoDe[m.id] = m.tipo;
+      if (esCamp(m.tipo)) camp.push(m.id); else if (enganchable(m.tipo)) accs.push(m); else (by[m.tipo] || by.generico).push(m.id);
+    });
     var ex = by.excavadora, tr = by.camion, ld = by.pala, mg = by.moto, rl = by.rodillo, tc = by.tractor, pk = by.camioneta, gn = by.generico;
     var MAXT = 3, nb0 = ex.length > 0 ? ex.length : (tr.length > 0 ? 1 : 0);
     if (tr.length > MAXT * nb0) { gn = gn.concat(tr.slice(MAXT * nb0)); tr = tr.slice(0, MAXT * nb0); }
-    var cnt = { e: ex.length, t: tr.length, l: ld.length, m: mg.length, r: rl.length, g: gn.length };
+    /* accesorios enganchados: uno por tractor/camioneta; los demás quedan estacionados */
+    var hosts = tc.concat(pk), accOf = {};
+    accs.forEach(function (a) { if (a.host !== undefined && hosts.indexOf(a.host) >= 0 && !accOf[a.host]) accOf[a.host] = a.id; else gn.push(a.id); });
+    hosts.sort(function (x, y) { return (accOf[y] ? 1 : 0) - (accOf[x] ? 1 : 0); });
+    var rr = 0; hosts.forEach(function (h) { rr += accOf[h] ? 2.7 : 1.5; });
+    var cnt = { e: ex.length, t: tr.length, l: ld.length, m: mg.length, r: rl.length, g: gn.length, k: camp.length, rr: rr };
     var sz = sizeFor(cnt), s = sz.s, cap = sz.cap, acts = {}, feats = [];
     var nb = cnt.e > 0 ? cnt.e : (cnt.t > 0 ? 1 : 0), ev0 = 2.95;
-    /* 1) anillo perimetral: tractores y camionetas recorren la obra, parejos y sin cruzarse con nada */
-    var ring = tc.concat(pk), rp = roundPoly([[RING, RING], [s - RING, RING], [s - RING, s - RING], [RING, s - RING]], 0.5, true);
-    ring.forEach(function (id, i) {
-      acts[id] = function (t) { var q = atPath(rp, ((t * 0.5 + i * rp.len / ring.length) % rp.len + rp.len) % rp.len); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
+    /* 1) anillo perimetral: tractores y camionetas (con su accesorio enganchado atrás), parejos y sin cruzarse */
+    var rp = roundPoly([[RING, RING], [s - RING, RING], [s - RING, s - RING], [RING, s - RING]], 0.9, true), fac = rr ? rp.len / rr : 1, cum = 0;
+    function ringAt(d) { return atPath(rp, ((d % rp.len) + rp.len) % rp.len); }
+    hosts.forEach(function (id) {
+      var hasA = !!accOf[id], d0 = cum * fac + (hasA ? 1.3 : 0.4); cum += hasA ? 2.7 : 1.5;
+      acts[id] = function (t) { var q = ringAt(d0 + t * 0.5); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
+      if (hasA) acts[accOf[id]] = function (t) { var q = ringAt(d0 - HOFF + t * 0.5); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
     });
     /* 2) zonas de excavación: cada retro con su pozo, su carril de ida, su carril de vuelta y su montón de descarga */
-    var su = 2.82, dpu = s - 2.2, Er = s - 1.5, Wq = su - 1.3;
+    var su = 2.82, dpu = s - 2.2, Er = s - 1.5, Wq = su - 1.3, lastM = 0;
     for (var b = 0; b < nb; b++) (function (b) {
       var ev = ev0 + BAND * b, vA = ev - 0.78, vB = ev - 1.45, exId = ex[b] || null, grp = tr.filter(function (id, i) { return i % nb === b; });
       var path = roundPoly([[su, vA], [Er, vA], [Er, vB], [Wq, vB], [Wq, vA], [su, vA]], 0.3, false), dtip = dpu - su, dQ = path.len - 1.3, m = grp.length;
+      if (m && b === nb - 1) lastM = 1;
       var Tmn = dQ / 1.1, Cyc = Math.max(m * SLOT, 9 + 3 + Tmn), Tm = Cyc - 12, t1 = Tm * dtip / dQ, t2 = Tm - t1;
       function tstate(j, t) {
         var tau = (((t - j * SLOT) % Cyc) + Cyc) % Cyc, st = { d: 0, bed: 0, lvl: 0, mov: 0, tau: tau, load: false };
@@ -318,34 +346,50 @@
       }
       if (m) feats.push({ k: 'heap', u: dpu, v: vA + 0.66, r: 0.85, h: 0.85, fn: function (t) { return 0.6 + 0.4 * tri(t / 40); } });
     })(b);
-    /* 3) carriles de trabajo: palas, motoniveladoras y compactadores, cada uno en su carril (o su mitad de carril) */
-    var vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, workers = [];
-    ld.forEach(function (id) { workers.push({ id: id, k: 'pala' }); }); mg.forEach(function (id) { workers.push({ id: id, k: 'moto' }); }); rl.forEach(function (id) { workers.push({ id: id, k: 'rodillo' }); });
-    var nLanes = Math.ceil(workers.length / cap);
+    /* 3) carriles de trabajo. La primera pala recoge la tierra que descargan los camiones y la lleva a su carril; la moto la estría y el rodillo la compacta */
+    var vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, workers = [], pal = (ld.length > 0 && lastM && nb > 0) ? ld[0] : null, lane0 = 0;
+    mg.forEach(function (id) { workers.push({ id: id, k: 'moto' }); }); rl.forEach(function (id) { workers.push({ id: id, k: 'rodillo' }); });
+    ld.forEach(function (id) { if (id !== pal) workers.push({ id: id, k: 'pala' }); });
+    if (pal) {
+      var vl = vL0, vP = ev0 + BAND * (nb - 1) - 0.78 + 1.55, u1 = 2.85, pth = roundPoly([[dpu, vP], [dpu, vl], [u1, vl]], 0.45, false), Ts = 2.4, Td = pth.len / 0.9, Tu = 2.4, TT = 2 * Td + Ts + Tu;
+      feats.push({ k: 'heap', u: 1.9, v: vl, r: 0.7, h: 0.7, fn: function (t) { return 0.55 + 0.45 * tri(t / TT * 0.5); } });
+      acts[pal] = function (t) {
+        var tt = ((t % TT) + TT) % TT, d, hu, hv, mov = 0, lift = -0.1, tilt = 0.2, dirt = 0, f;
+        if (tt < Ts) { d = 0; hu = 0; hv = -1; f = tt / Ts; tilt = lerp(-0.2, 0.6, ease(seg(f, 0.2, 0.7))); lift = f < 0.5 ? lerp(-0.45, -0.05, ease(f / 0.5)) : lerp(-0.05, 0.45, ease(seg(f, 0.6, 1))); dirt = f > 0.6 ? 1 : 0; }
+        else if (tt < Ts + Td) { d = pth.len * ease((tt - Ts) / Td); mov = 1; lift = 0.45; tilt = 0.6; dirt = 1; }
+        else if (tt < Ts + Td + Tu) { d = pth.len; f = (tt - Ts - Td) / Tu; lift = lerp(0.45, 0.7, ease(seg(f, 0, 0.4))); tilt = lerp(0.6, -0.8, ease(seg(f, 0.3, 0.8))); dirt = f < 0.6 ? 1 : 0; }
+        else { f = (tt - Ts - Td - Tu) / Td; d = pth.len * (1 - ease(f)); mov = 1; lift = lerp(0.7, -0.45, ease(seg(f, 0, 0.3))); tilt = lerp(-0.8, -0.2, ease(seg(f, 0, 0.4))); }
+        var q = atPath(pth, d);
+        if (tt >= Ts + Td + Tu) { q.hu = -q.hu; q.hv = -q.hv; }
+        if (tt < Ts) { q.hu = hu; q.hv = hv; }
+        return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: mov, lift: lift, tilt: tilt, dirt: dirt };
+      };
+      lane0 = 1;
+    }
+    var nLanes = lane0 + Math.ceil(workers.length / cap), cm = 0, cr = 0;
     workers.forEach(function (w, i) {
-      var lane = Math.floor(i / cap), slot = i % cap, inLane = Math.min(cap, workers.length - lane * cap), v = vL0 + lane * 1.05, xa = 1.9, xb = s - 1.9;
+      var lane = lane0 + Math.floor(i / cap), slot = i % cap, inLane = Math.min(cap, workers.length - Math.floor(i / cap) * cap), v = vL0 + lane * 1.05, xa = 1.9, xb = s - 1.9;
       if (inLane === 2) { var mid = s / 2; if (slot === 0) xb = mid - 0.2; else xa = mid + 0.2; }
-      var ph = (i % 2) * 0.5;
       if (w.k === 'pala') {
-        var u1 = xa + 0.95, u2 = xb - 0.95, T = 14;
+        var q1 = xa + 0.95, q2 = xb - 0.95, T = 14, ph = (i % 2) * 0.5;
         feats.push({ k: 'heap', u: xa, v: v, r: 0.7, h: 0.7, fn: function (t) { return 1.0 - 0.3 * tri(t / 28); } });
         feats.push({ k: 'heap', u: xb, v: v, r: 0.7, h: 0.7, fn: function (t) { return 0.72 + 0.3 * tri(t / 28); } });
         acts[w.id] = function (t) {
           var tt = (t + ph * T) % T, u, hu = 1, mov = 0, lift = -0.1, tilt = 0.2, dirt = 0;
-          if (tt < 2.2) { u = u1; hu = -1; var f = tt / 2.2; tilt = lerp(-0.2, 0.6, ease(seg(f, 0.2, 0.7))); lift = f < 0.5 ? lerp(-0.45, -0.05, ease(f / 0.5)) : lerp(-0.05, 0.45, ease(seg(f, 0.6, 1))); dirt = f > 0.6 ? 1 : 0; }
-          else if (tt < 6.2) { u = lerp(u1, u2, ease((tt - 2.2) / 4)); lift = 0.45; tilt = 0.6; dirt = 1; mov = 1; }
-          else if (tt < 8.2) { u = u2; var f3 = (tt - 6.2) / 2; lift = lerp(0.45, 0.7, ease(seg(f3, 0, 0.4))); tilt = lerp(0.6, -0.8, ease(seg(f3, 0.3, 0.8))); dirt = f3 < 0.6 ? 1 : 0; }
-          else { var f4 = ease((tt - 8.2) / 5.8); u = lerp(u2, u1, f4); hu = -1; lift = lerp(0.7, -0.45, ease(seg(f4, 0, 0.3))); tilt = lerp(-0.8, -0.2, ease(seg(f4, 0, 0.4))); mov = 1; }
+          if (tt < 2.2) { u = q1; hu = -1; var f = tt / 2.2; tilt = lerp(-0.2, 0.6, ease(seg(f, 0.2, 0.7))); lift = f < 0.5 ? lerp(-0.45, -0.05, ease(f / 0.5)) : lerp(-0.05, 0.45, ease(seg(f, 0.6, 1))); dirt = f > 0.6 ? 1 : 0; }
+          else if (tt < 6.2) { u = lerp(q1, q2, ease((tt - 2.2) / 4)); lift = 0.45; tilt = 0.6; dirt = 1; mov = 1; }
+          else if (tt < 8.2) { u = q2; var f3 = (tt - 6.2) / 2; lift = lerp(0.45, 0.7, ease(seg(f3, 0, 0.4))); tilt = lerp(0.6, -0.8, ease(seg(f3, 0.3, 0.8))); dirt = f3 < 0.6 ? 1 : 0; }
+          else { var f4 = ease((tt - 8.2) / 5.8); u = lerp(q2, q1, f4); hu = -1; lift = lerp(0.7, -0.45, ease(seg(f4, 0, 0.3))); tilt = lerp(-0.8, -0.2, ease(seg(f4, 0, 0.4))); mov = 1; }
           return { u: u, v: v, hu: hu, hv: 0, mov: mov, lift: lift, tilt: tilt, dirt: dirt };
         };
       } else {
-        var T2 = w.k === 'moto' ? 15 : 18, ua = xa + 0.5, ub = xb - 0.5, id = w.id;
+        var T2 = 15, ph2 = w.k === 'moto' ? (cm++ % 2) * 0.5 : (0.55 + (cr++ % 2) * 0.5) % 1, ua = xa + 0.5, ub = xb - 0.5;
         feats.push({ k: 'trail', u0: ua, v: v, color: w.k === 'moto' ? '#efe4c8' : '#8f7752', op: w.k === 'moto' ? 0.95 : 0.55, fn: function (t) {
-          var tt = (t + ph * T2) % T2, cov = tt < T2 * 0.42 ? ease(tt / (T2 * 0.42)) : 1, fade = tt > T2 * 0.92 ? 1 - (tt - T2 * 0.92) / (T2 * 0.08) : 1;
+          var tt = (t + ph2 * T2) % T2, cov = tt < T2 * 0.42 ? ease(tt / (T2 * 0.42)) : 1, fade = tt > T2 * 0.92 ? 1 - (tt - T2 * 0.92) / (T2 * 0.08) : 1;
           return { len: (ub - ua) * cov, op: fade };
         } });
         acts[w.id] = function (t) {
-          var tt = (t + ph * T2) % T2, u, hu = 1, mov = 1;
+          var tt = (t + ph2 * T2) % T2, u, hu = 1, mov = 1;
           if (tt < T2 * 0.42) u = lerp(ua, ub, ease(tt / (T2 * 0.42)));
           else if (tt < T2 * 0.5) { u = ub; mov = 0; }
           else if (tt < T2 * 0.92) { u = lerp(ub, ua, ease((tt - T2 * 0.5) / (T2 * 0.42))); hu = -1; }
@@ -354,10 +398,13 @@
         };
       }
     });
-    /* 4) otras máquinas: estacionadas en fila */
-    if (gn.length) {
-      var vG = vL0 + nLanes * 1.05, perRow = Math.max(1, Math.floor((s - 4) / 1.3) + 1);
-      gn.forEach(function (id, i) { var u = 2.0 + (i % perRow) * 1.3, v = vG + Math.floor(i / perRow) * 1.05; acts[id] = function () { return { u: u, v: v, hu: 1, hv: 0, mov: 0 }; }; });
+    /* 4) estacionados (otras máquinas, accesorios sin tractor) y campamento (casillas y tanques de combustible) */
+    var vG = vL0 + nLanes * 1.05, perRow = Math.max(1, Math.floor((s - 4) / 1.3) + 1);
+    gn.forEach(function (id, i) { var u = 2.0 + (i % perRow) * 1.3, v = vG + Math.floor(i / perRow) * 1.05; acts[id] = function () { return { u: u, v: v, hu: 1, hv: 0, mov: 0 }; }; });
+    if (camp.length) {
+      var vC = vG + Math.ceil(gn.length / perRow) * 1.05, rows = Math.ceil(camp.length / perRow), cols = Math.min(camp.length, perRow);
+      camp.forEach(function (id, i) { var u = 2.0 + (i % perRow) * 1.3, v = vC + Math.floor(i / perRow) * 1.05; acts[id] = function () { return { u: u, v: v, hu: 0, hv: 1, mov: 0 }; }; });
+      feats.push({ k: 'camp', u0: 1.35, u1: 2.0 + (cols - 1) * 1.3 + 0.65, v0: vC - 0.58, v1: vC + (rows - 1) * 1.05 + 0.58 });
     }
     return { s: s, acts: acts, feats: feats };
   }
@@ -469,6 +516,21 @@
         wheelM(g, W, 0.42, -0.55, 0.42, 0.4, 0.34, st.rim); wheelM(g, W, 0.42, -0.55, 0.42, -0.4, 0.34, st.rim);
         bx(g, 1.2, 0.46, 0.8, c, -0.1, 0.68, 0); bx(g, 0.6, 0.3, 0.7, c, 0.5, 0.58, 0); bx(g, 1.22, 0.05, 0.82, t, -0.1, 0.92, 0);
         bx(g, 0.5, 0.54, 0.54, c, -0.25, 1.2, 0); bx(g, 0.04, 0.36, 0.46, GLS, 0.0, 1.22, 0); bx(g, 0.54, 0.05, 0.58, d, -0.25, 1.5, 0);
+      } else if (tipo === 'acc_desmalezadora') {
+        wheelM(g, [], 0.16, -0.25, 0.16, 0.5, 0.12, st.rim); wheelM(g, [], 0.16, -0.25, 0.16, -0.5, 0.12, st.rim);
+        bx(g, 1.0, 0.3, 1.2, c, 0, 0.42, 0); bx(g, 1.02, 0.06, 1.22, d, 0, 0.26, 0); bx(g, 0.34, 0.12, 0.34, '#444a54', 0, 0.64, 0); bx(g, 0.7, 0.07, 0.07, KK, 0.8, 0.4, 0); bx(g, 0.1, 0.2, 0.7, d, -0.5, 0.45, 0);
+      } else if (tipo === 'acc_rastra') {
+        bx(g, 0.1, 0.1, 1.3, KK, 0.15, 0.55, 0); bx(g, 0.1, 0.1, 1.3, KK, -0.35, 0.55, 0); bx(g, 0.8, 0.07, 0.07, KK, 0.8, 0.5, 0);
+        for (var di = -3; di <= 3; di++) { var dk = new T.Mesh(geo('cy', 0.26, 0.04, 14), mat('#9aa1ab')); dk.rotation.x = 0.9; dk.rotation.z = Math.PI / 2 - 0.2; dk.position.set(0.15, 0.3, di * 0.19); g.add(dk); var dk2 = new T.Mesh(geo('cy', 0.26, 0.04, 14), mat('#9aa1ab')); dk2.rotation.x = -0.9; dk2.rotation.z = Math.PI / 2 - 0.2; dk2.position.set(-0.35, 0.3, di * 0.19); g.add(dk2); }
+      } else if (tipo === 'acc_regador') {
+        wheelM(g, [], 0.24, -0.1, 0.24, 0.5, 0.16, st.rim); wheelM(g, [], 0.24, -0.1, 0.24, -0.5, 0.16, st.rim);
+        var tk = new T.Mesh(geo('cy', 0.4, 1.2, 16), mat(c)); tk.rotation.x = Math.PI / 2; tk.position.set(-0.05, 0.62, 0); g.add(tk);
+        bx(g, 0.1, 0.1, 0.9, KK, -0.62, 0.3, 0); bx(g, 0.9, 0.07, 0.07, KK, 0.7, 0.35, 0); bx(g, 0.16, 0.08, 0.16, '#444a54', -0.05, 1.03, 0);
+      } else if (tipo === 'acc_casilla') {
+        bx(g, 1.3, 0.1, 0.8, KK, 0, 0.06, 0); bx(g, 1.2, 0.62, 0.78, c, 0, 0.42, 0); bx(g, 1.3, 0.07, 0.88, '#7a8190', 0, 0.78, 0);
+        bx(g, 0.3, 0.22, 0.04, GLS, -0.25, 0.5, 0.4); bx(g, 0.3, 0.22, 0.04, GLS, -0.25, 0.5, -0.4); bx(g, 0.28, 0.5, 0.04, '#8a6a44', 0.35, 0.34, 0.4);
+      } else if (tipo === 'acc_tanque') {
+        bx(g, 1.0, 0.07, 0.7, KK, 0, 0.04, 0); bx(g, 0.9, 0.46, 0.58, c, 0, 0.32, 0); bx(g, 0.9, 0.06, 0.6, darken(c, .7), 0, 0.42, 0); bx(g, 0.16, 0.1, 0.16, '#444a54', -0.2, 0.6, 0); bx(g, 0.1, 0.28, 0.1, KK, 0.5, 0.3, 0.2); bx(g, 0.34, 0.05, 0.05, KK, 0.62, 0.2, 0.2);
       } else {
         wheelM(g, W, 0.26, -0.45, 0.26, 0.4, 0.2, st.rim); wheelM(g, W, 0.26, 0.45, 0.26, 0.4, 0.2, st.rim); wheelM(g, W, 0.26, -0.45, 0.26, -0.4, 0.2, st.rim); wheelM(g, W, 0.26, 0.45, 0.26, -0.4, 0.2, st.rim);
         bx(g, 1.5, 0.6, 0.76, c, 0, 0.6, 0); bx(g, 0.5, 0.3, 0.6, GLS, 0.3, 1.05, 0);
@@ -556,7 +618,7 @@
       clearAll(); S.d = d; S.pinned = pinned;
       var MAXW = 44, GAPW = 2.6, rx = 0, rz = 0, rh = 0, tw = 0;
       d.plots.forEach(function (P) {
-        P.wp = workPlan(P.maqs.map(function (m, i) { return { id: i, tipo: tipoDibujo(m) }; })); P.side = P.wp.s; P.sz = (P.side + 2 * MG) * CW;
+        P.wp = workPlan(P.maqs.map(function (m, i) { var h = -1; if (m.acopladoA) P.maqs.forEach(function (x, j) { if (x.id === m.acopladoA) h = j; }); return { id: i, tipo: tipoDibujo(m), host: h >= 0 ? h : undefined }; })); P.side = P.wp.s; P.sz = (P.side + 2 * MG) * CW;
         if (rx > 0 && rx + P.sz > MAXW) { rz += rh + GAPW + 1.6; rx = 0; rh = 0; }
         P.wx = rx; P.wz = rz; rx += P.sz + GAPW; rh = Math.max(rh, P.sz); tw = Math.max(tw, rx - GAPW);
       });
@@ -637,6 +699,16 @@
         } else if (f.k === 'heap') {
           var hp = heap(par, ptX(P, f.u), ptZ(P, f.v), f.r, f.h);
           fe.push(function (t) { var k = f.fn(t); hp.scale.set(k, k, k); });
+        } else if (f.k === 'camp') {
+          var cw = (f.u1 - f.u0) * CW, cd = (f.v1 - f.v0) * CW, cx = ptX(P, (f.u0 + f.u1) / 2), cz = ptZ(P, (f.v0 + f.v1) / 2), pad = new T.Mesh(geo('b', cw, 0.04, cd), mat('#cfc3a4')); pad.position.set(cx, 0.06, cz); par.add(pad);
+          var nx = Math.max(2, Math.round(cw / 0.8)), nz = Math.max(2, Math.round(cd / 0.8)), k2;
+          function post(x, z) { var p = new T.Mesh(geo('b', 0.07, 0.4, 0.07), mat('#7a5a3a')); p.position.set(x, 0.26, z); par.add(p); }
+          for (k2 = 0; k2 <= nx; k2++) { post(cx - cw / 2 + cw * k2 / nx, cz + cd / 2); post(cx - cw / 2 + cw * k2 / nx, cz - cd / 2); }
+          for (k2 = 1; k2 < nz; k2++) { post(cx - cw / 2, cz - cd / 2 + cd * k2 / nz); post(cx + cw / 2, cz - cd / 2 + cd * k2 / nz); }
+          var rl1 = new T.Mesh(geo('b', cw, 0.04, 0.04), mat('#e9dfc4')); rl1.position.set(cx, 0.4, cz + cd / 2); par.add(rl1);
+          var rl2 = new T.Mesh(geo('b', cw, 0.04, 0.04), mat('#e9dfc4')); rl2.position.set(cx, 0.4, cz - cd / 2); par.add(rl2);
+          var mast = new T.Mesh(geo('b', 0.05, 0.9, 0.05), mat('#6b717b')); mast.position.set(cx - cw / 2 + 0.1, 0.5, cz - cd / 2 - 0.1); par.add(mast);
+          var flag = new T.Mesh(geo('b', 0.36, 0.2, 0.02), mat('#e31b1f')); flag.position.set(cx - cw / 2 + 0.3, 0.84, cz - cd / 2 - 0.1); par.add(flag);
         } else if (f.k === 'trail') {
           var tm = new T.MeshBasicMaterial({ color: f.color, transparent: true, opacity: 0, depthWrite: false }); S.own.push(tm);
           var trl = new T.Mesh(geo('b', 1, 0.03, 0.62), tm); trl.position.y = 0.085; par.add(trl);
@@ -949,7 +1021,7 @@
         var a = { m: m, tipo: tipoDibujo(m), el: el, u: 0, v: 0, face: 1, spin: 0, parts: {} };
         ['arm', 'stick', 'bucket', 'dirt', 'lift', 'tilt', 'bed', 'load', 'blade', 'bob', 'face'].forEach(function (k) { a.parts[k] = el.querySelector('[data-p="' + k + '"]'); });
         a.wheels = [].slice.call(el.querySelectorAll('[data-p="wh"]'));
-        P.acts.push(a); (by[a.tipo] = by[a.tipo] || []).push(a);
+        P.acts.push(a); var bt = String(a.tipo).indexOf('acc_') === 0 ? 'generico' : a.tipo; (by[bt] = by[bt] || []).push(a);
       });
       var ex = by.excavadora || [], tr = by.camion || [], ld = by.pala || [], mg = by.moto || [], rl = by.rodillo || [], tc = by.tractor || [], pk = by.camioneta || [], gn = by.generico || [];
       var fxs = '', I = P.idx, hasTrucks = tr.length > 0;

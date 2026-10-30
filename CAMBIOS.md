@@ -274,3 +274,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Máquinas que no se pisan en el mapa 3D:** cada máquina tiene su propio carril y horario. Los camiones esperan en fila, la retro los carga de a uno, salen cargados, dan la vuelta por el terreno hasta donde se descarga la tierra (donde está la pala), vuelcan y vuelven vacíos por otro carril. Palas, motoniveladoras y rodillos trabajan cada uno en su propia franja, y tractores y camionetas recorren el borde de la obra sin cruzarse con nada.
 - El terreno se agranda lo justo para que entren todos los carriles. Si una retro tiene más de 3 camiones asignados, los de más quedan estacionados en fila para que no se amontonen.
 - Probado con una simulación de 400 combinaciones de máquinas (sin ningún choque); no pude verlo en un navegador real con la librería 3D.
+
+## Codes 1.51 (30-oct-2026)
+- **Maquinaria → Accesorios:** nuevo grupo con botón "+ Nuevo accesorio". Tipos: desmalezadora, rastra, tanque regador, casilla y tanque de combustible. Los tres primeros se enganchan a un tractor o camioneta (se elige en "Enganchado a"); las casillas y los tanques de combustible no se enganchan.
+- **Mapa 3D:** los accesorios enganchados van atrás del tractor o camioneta y se mueven con él (si movés el tractor a otra obra, el accesorio va con él). Las casillas y tanques de combustible asignados a una obra aparecen juntos en un pequeño campamento con piso de ripio, vallado y bandera, en el terreno de esa obra.
+- **Tierra de punta a punta:** la pala ahora retira la tierra que descargan los camiones, la lleva a su carril y la deja en un montón; la motoniveladora la estría y después pasa el rodillo compactador por encima.
+- Los dibujos y chips de los accesorios también aparecen en la playa y en las fichas. Base: columna `acoplado_a` (sql/21_accesorios.sql, ya aplicada).
+- Probado con simulación de ~410 combinaciones (con accesorios y campamento) sin choques; no se vio en un navegador real con la librería 3D.
