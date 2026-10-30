@@ -292,3 +292,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Enganchar desde la ficha:** al tocar un accesorio (desmalezadora, rastra o regador) aparece "Enganchado a", con los tractores y camionetas de su obra.
 - **Cartel de la obra:** al hacer clic en un terreno, abajo aparece el cartel con todas las máquinas y accesorios de esa obra (con tipo y a qué están enganchados, o "campamento"). Tocando una máquina de la lista se abre su ficha.
 - La rastra se dibuja con discos bien visibles (antes parecían palitos).
+
+## Codes 1.54 (30-oct-2026)
+- Los accesorios enganchados (desmalezadora, rastra, regador) ahora van pegados al tractor o camioneta: la barra de tiro llega casi hasta el enganche.

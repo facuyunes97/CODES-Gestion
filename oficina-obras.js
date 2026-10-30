@@ -302,11 +302,12 @@
     var sz = sizeFor(cnt), s = sz.s, cap = sz.cap, acts = {}, feats = [];
     var nb = cnt.e > 0 ? cnt.e : (cnt.t > 0 ? 1 : 0), ev0 = 2.95;
     /* 1) anillo perimetral: tractores y camionetas (con su accesorio enganchado atrás), parejos y sin cruzarse */
-    var rp = roundPoly([[RING, RING], [s - RING, RING], [s - RING, s - RING], [RING, s - RING]], 0.9, true), fac = rr ? rp.len / rr : 1, cum = 0;
+    var hitched = {}, rp = roundPoly([[RING, RING], [s - RING, RING], [s - RING, s - RING], [RING, s - RING]], 0.9, true), fac = rr ? rp.len / rr : 1, cum = 0;
     function ringAt(d) { return atPath(rp, ((d % rp.len) + rp.len) % rp.len); }
     hosts.forEach(function (id) {
       var hasA = accOf[id] !== undefined, d0 = cum * fac + (hasA ? 1.3 : 0.4); cum += hasA ? 2.7 : 1.5;
       acts[id] = function (t) { var q = ringAt(d0 + t * 0.5); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
+      if (hasA) hitched[accOf[id]] = true;
       if (hasA) acts[accOf[id]] = function (t) { var q = ringAt(d0 - HOFF + t * 0.5); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
     });
     /* 2) zonas de excavación: cada retro con su pozo, su carril de ida, su carril de vuelta y su montón de descarga */
@@ -407,7 +408,7 @@
       camp.forEach(function (id, i) { var u = 2.0 + (i % perRow) * 1.3, v = vC + Math.floor(i / perRow) * 1.05; acts[id] = function () { return { u: u, v: v, hu: 0, hv: 1, mov: 0 }; }; });
       feats.push({ k: 'camp', u0: 1.35, u1: 2.0 + (cols - 1) * 1.3 + 0.65, v0: vC - 0.58, v1: vC + (rows - 1) * 1.05 + 0.58 });
     }
-    return { s: s, acts: acts, feats: feats };
+    return { s: s, acts: acts, feats: feats, hitched: hitched };
   }
   
 
@@ -689,6 +690,7 @@
       P.maqs.forEach(function (m, i) {
         var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)); a.P0 = P; world.add(a.root); S.actors.push(a); P.acts.push(a);
         var act = wp.acts[i]; if (!act) return;
+        if (wp.hitched[i]) a.body.position.x = 0.8;
         a.upd = function (t) {
           var q = act(t), pp = a.P;
           a.at(ptX(P, q.u), ptZ(P, q.v), q.mov, Math.atan2(-q.hv, q.hu));
