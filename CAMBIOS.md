@@ -159,3 +159,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.23 (30-oct-2026)
 - Recibos de sueldo: nueva opción **Jornada** (completa o media jornada). En media jornada se liquida el 50 % del sueldo básico y de la antigüedad; el recibo lo indica. Para jornales por hora (UOCRA) no aplica: se cargan las horas trabajadas.
 - UECARA: se cargó la escala de la **Zona I – Norte** (incluye Santiago del Estero) de octubre 2026 y queda como zona por defecto al elegir el convenio, al crear un legajo o al importar planillas. El legajo 010 pasó de Zona II – Centro a Zona I – Norte.
+
+## Codes 1.24 (30-oct-2026)
+- Recibos de sueldo: la impresión (y el PDF) sale en **una sola hoja A4 por recibo**. Se achicó la letra y los espacios, aportes y contribuciones van lado a lado, y se sacó el encabezado y pie del navegador (fecha y dirección web). Al imprimir varios recibos juntos, cada uno ocupa su propia hoja.
