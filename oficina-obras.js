@@ -30,7 +30,12 @@
     '.ob-pl-tray{border-style:dashed;pointer-events:none}' +
     '.ob-zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}' +
     '.ob-zoom button{width:34px;height:34px;border-radius:9px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);font:700 18px/1 system-ui;cursor:pointer;color:#1d2026}.ob-zoom button:hover{background:#fff;border-color:#e31b1f}' +
-    '.ob-hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:#555b66;background:rgba(255,255,255,.75);padding:4px 9px;border-radius:6px;pointer-events:none}' +
+    '.ob-bay{position:absolute;left:10px;bottom:10px;z-index:3;max-width:min(300px,60%);background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.14);border-radius:12px;padding:7px 9px;box-shadow:0 4px 14px rgba(0,0,0,.14);font:600 12px var(--o-body,system-ui);color:#1d2026}' +
+    '.ob-bay.hot{border-color:#e31b1f;box-shadow:0 0 0 2px #e31b1f}.ob-bay .bt{display:flex;gap:6px;align-items:center;margin-bottom:5px}.ob-bay .bt em{font-style:normal;background:#eceef2;border-radius:99px;padding:1px 7px}' +
+    '.ob-bay .bl{display:flex;flex-wrap:wrap;gap:5px}.ob-bay .bc{all:unset;cursor:grab;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;border:1px solid #c9ced6;background:#fff;font:700 12px var(--o-body,system-ui);touch-action:none}.ob-bay .bc:hover{border-color:#e31b1f}' +
+    '.ob-bay .bc i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}.ob-bay .bh{margin-top:5px;font-weight:500;color:#666c76}' +
+    '.ob-ghost{position:absolute;left:0;top:0;z-index:5;pointer-events:none;background:#1d2026;color:#fff;font:700 12px var(--o-body,system-ui);padding:5px 10px;border-radius:99px}' +
+    '.ob-hint{position:absolute;right:10px;bottom:8px;font-size:12px;color:#555b66;background:rgba(255,255,255,.75);padding:4px 9px;border-radius:6px;pointer-events:none}' +
     '.ob-add{font:700 13px var(--o-body,system-ui);padding:8px 14px;border-radius:9px;border:0;background:#e31b1f;color:#fff;cursor:pointer}.ob-add:hover{filter:brightness(1.08)}' +
     '.ob-edit{font:700 13px var(--o-body,system-ui);padding:7px 14px;border-radius:9px;border:1px solid var(--o-fg,#1d2026);background:var(--o-fg,#1d2026);color:var(--o-bg,#fff);cursor:pointer;margin-top:10px}' +
     '.ob-m{cursor:grab}.ob-m.drag{cursor:grabbing}.ob-m:focus{outline:none}.ob-m:focus-visible .ob-ring{opacity:1}' +
@@ -238,10 +243,11 @@
     var ov = document.createElement('div'); ov.className = 'ob-ov';
     var zoom = document.createElement('div'); zoom.className = 'ob-zoom';
     zoom.innerHTML = '<button type="button" data-z="in" aria-label="Acercar">+</button><button type="button" data-z="out" aria-label="Alejar">−</button><button type="button" data-z="home" aria-label="Vista general">⌂</button>';
+    var bay = document.createElement('div'); bay.className = 'ob-bay';
     var emptyEl = document.createElement('div'); emptyEl.className = 'ob-empty'; emptyEl.hidden = true;
     var hint = document.createElement('div'); hint.className = 'ob-hint'; hint.textContent = 'Arrastrá el fondo para girar · tocalá o arrastrá una máquina';
     stage.classList.add('gl'); stage.innerHTML = '';
-    stage.appendChild(cv); stage.appendChild(ov); stage.appendChild(zoom); stage.appendChild(hint); stage.appendChild(emptyEl);
+    stage.appendChild(cv); stage.appendChild(ov); stage.appendChild(zoom); stage.appendChild(hint); stage.appendChild(bay); stage.appendChild(emptyEl);
     var controls = new T.OrbitControls(camera, cv);
     controls.enableDamping = true; controls.dampingFactor = 0.12; controls.enableZoom = false;
     controls.minPolarAngle = 0.35; controls.maxPolarAngle = 1.3; controls.screenSpacePanning = false;
@@ -365,6 +371,38 @@
       var c1 = new T.Mesh(geo('cone', 0.55, 1.1, 7), mat('#4e9a5d')); c1.position.y = 1.15; gp.add(c1);
       var c2 = new T.Mesh(geo('cone', 0.42, 0.9, 7), mat('#63b072')); c2.position.y = 1.7; gp.add(c2);
     }
+    function fillBay(d) {
+      var ms = d.tray.maqs;
+      bay.innerHTML = '<div class="bt"><b>Sin obra</b><em>' + ms.length + '</em></div>' + (ms.length ? '<div class="bl">' + ms.map(function (m) {
+        var st = estilo(m, tipoDibujo(m));
+        return '<button type="button" class="bc" data-m="' + esc(m.id) + '" title="' + esc(m.nombre) + '"><i style="background:' + st.body + '"></i>' + esc(m.codigo) + '</button>';
+      }).join('') + '</div><div class="bh">Arrastr\u00e1 una a su obra</div>' : '<div class="bh">Todas tienen obra. Arrastr\u00e1 una ac\u00e1 para dejarla sin obra.</div>');
+    }
+    function overBay(ev) { var r = bay.getBoundingClientRect(); return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom; }
+    var bd = null;
+    bay.addEventListener('pointerdown', function (ev) {
+      var b = ev.target.closest && ev.target.closest('.bc'); if (!b || ev.button > 0) return;
+      bd = { id: b.getAttribute('data-m'), el: b, x0: ev.clientX, y0: ev.clientY, moved: false, ghost: null, to: null };
+      try { b.setPointerCapture(ev.pointerId); } catch (e) { }
+      api.hover(null);
+    });
+    bay.addEventListener('pointermove', function (ev) {
+      if (!bd) return;
+      if (!bd.moved && Math.hypot(ev.clientX - bd.x0, ev.clientY - bd.y0) < 6) return;
+      if (!api.puede()) return;
+      if (!bd.moved) { bd.moved = true; bd.ghost = document.createElement('div'); bd.ghost.className = 'ob-ghost'; bd.ghost.textContent = bd.el.textContent; stage.appendChild(bd.ghost); }
+      var r = stage.getBoundingClientRect(); bd.ghost.style.transform = 'translate(' + (ev.clientX - r.left) + 'px,' + (ev.clientY - r.top) + 'px) translate(-50%,-50%)';
+      var gp = ground(ev), to = gp && !overBay(ev) ? target(gp.x, gp.z) : null; bd.to = to;
+      if (to) { S.hl.visible = true; S.hl.scale.set(to.w, 1, to.h); S.hl.position.set(to.x + to.w / 2, 0.12, to.z + to.h / 2); } else if (S.hl) S.hl.visible = false;
+    });
+    function bayFin(ev) {
+      if (!bd) return; var D = bd; bd = null;
+      try { D.el.releasePointerCapture(ev.pointerId); } catch (e) { }
+      if (D.ghost) D.ghost.remove(); if (S.hl) S.hl.visible = false;
+      if (!D.moved) { api.click(D.id); return; }
+      if (D.to) api.drop(D.id, D.to.id);
+    }
+    bay.addEventListener('pointerup', bayFin); bay.addEventListener('pointercancel', bayFin);
     function addLabel(html, cls) { var e = document.createElement('div'); e.className = cls; e.innerHTML = html; ov.appendChild(e); return e; }
 
     function build(d, pinned) {
@@ -375,11 +413,9 @@
         if (rx > 0 && rx + P.sz > MAXW) { rz += rh + GAPW + 1.6; rx = 0; rh = 0; }
         P.wx = rx; P.wz = rz; rx += P.sz + GAPW; rh = Math.max(rh, P.sz); tw = Math.max(tw, rx - GAPW);
       });
-      var Tr = d.tray, W = Math.max(tw, 18), per = Math.max(1, Math.floor((W - 2) / 2.8));
-      Tr.per = per; Tr.rows = Math.max(1, Math.ceil(Tr.maqs.length / per));
-      Tr.wx = 0; Tr.wz = rz + rh + GAPW + 1.8; Tr.w = W; Tr.h = 1.8 + Tr.rows * 2.9;
-      S.ext = { x0: 0, z0: 0, x1: W, z1: Tr.wz + Tr.h };
-      var key = d.plots.map(function (p) { return p.id + ':' + p.side; }).join('|') + '/' + Tr.rows;
+      var W = Math.max(tw, 12);
+      S.ext = { x0: 0, z0: 0, x1: W, z1: rz + rh };
+      var key = d.plots.map(function (p) { return p.id + ':' + p.side; }).join('|');
       var ground = new T.Mesh(geo('b', 400, 0.2, 400), mat('#ecebe4')); ground.position.set(W / 2, -0.7, S.ext.z1 / 2); world.add(ground);
 
       d.plots.forEach(function (P) {
@@ -402,21 +438,8 @@
         lb.addEventListener('pointermove', function (e) { api.labelHover(P.id, e); });
         lb.addEventListener('pointerleave', function () { api.hover(null); });
       });
-      /* playa de máquinas */
-      var tg = new T.Group(); tg.position.set(Tr.wx, 0, Tr.wz); world.add(tg);
-      var tm = new T.MeshLambertMaterial({ color: '#f7f6f1' }); S.own.push(tm);
-      var tslab = new T.Mesh(geo('b', Tr.w, 0.3, Tr.h), tm); tslab.position.set(Tr.w / 2, -0.15, Tr.h / 2); tg.add(tslab);
-      var te = new T.EdgesGeometry(geo('b', Tr.w, 0.3, Tr.h)), tl = new T.LineBasicMaterial({ color: '#cfcbbd' }); S.own.push(te, tl);
-      var tls = new T.LineSegments(te, tl); tls.position.copy(tslab.position); tg.add(tls);
-      Tr.maqs.forEach(function (m, i) {
-        var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)), col = i % per, row = Math.floor(i / per);
-        a.at(Tr.wx + 1.7 + col * 2.8, Tr.wz + 1.7 + row * 2.9, 0, 0); world.add(a.root); S.actors.push(a);
-        a.upd = function (t) { a.at(Tr.wx + 1.7 + col * 2.8, Tr.wz + 1.7 + row * 2.9, 0, 0); };
-        a.home = true;
-      });
-      var tlab = addLabel('<i style="background:#9aa0ab"></i><b>Playa de máquinas</b><em>' + Tr.maqs.length + '</em>', 'ob-pl ob-pl-tray');
-      S.labels.push({ el: tlab, x: Tr.wx + Tr.w * 0.5, z: Tr.wz + Tr.h, dy: 0 });
-      S.tray = Tr;
+      /* máquinas sin obra: tabla chica en una esquina */
+      S.tray = d.tray; fillBay(d);
       /* resaltado al arrastrar */
       var hm = new T.MeshBasicMaterial({ color: 0xe31b1f, transparent: true, opacity: 0.18, depthWrite: false }); S.own.push(hm);
       S.hl = new T.Mesh(geo('b', 1, 0.2, 1), hm); S.hl.visible = false; world.add(S.hl);
@@ -587,7 +610,6 @@
     function ground(ev) { var p = ndc(ev); ray.setFromCamera(p, camera); return ray.ray.intersectPlane(plane, V) ? V.clone() : null; }
     function target(x, z) {
       for (var i = 0; i < S.plots.length; i++) { var P = S.plots[i]; if (x >= P.wx && x <= P.wx + P.sz && z >= P.wz && z <= P.wz + P.sz) return { id: P.id, x: P.wx, z: P.wz, w: P.sz, h: P.sz }; }
-      var T0 = S.tray; if (T0 && x >= T0.wx - 1 && x <= T0.wx + T0.w + 1 && z >= T0.wz - 1.5 && z <= T0.wz + T0.h + 1) return { id: '', x: T0.wx, z: T0.wz, w: T0.w, h: T0.h };
       return null;
     }
     cv.addEventListener('pointerdown', function (ev) {
@@ -606,8 +628,8 @@
         D.moved = true; cv.style.cursor = 'grabbing';
         var gp = ground(ev); if (!gp) return;
         D.a.root.position.set(gp.x, 0.35, gp.z); D.a.root.rotation.y = D.a.ry;
-        var to = target(gp.x, gp.z); D.to = to;
-        if (to) { S.hl.visible = true; S.hl.scale.set(to.w, 1, to.h); S.hl.position.set(to.x + to.w / 2, 0.12, to.z + to.h / 2); } else S.hl.visible = false;
+        var onBay = overBay(ev), to = onBay ? { id: '' } : target(gp.x, gp.z); D.to = to; bay.classList.toggle('hot', onBay);
+        if (to && !onBay) { S.hl.visible = true; S.hl.scale.set(to.w, 1, to.h); S.hl.position.set(to.x + to.w / 2, 0.12, to.z + to.h / 2); } else S.hl.visible = false;
         return;
       }
       var h = pick(ev); cv.style.cursor = h ? 'grab' : '';
@@ -616,7 +638,7 @@
     function fin(ev) {
       var D = S.drag; if (!D) return; S.drag = null; controls.enabled = true; cv.style.cursor = '';
       try { cv.releasePointerCapture(ev.pointerId); } catch (e) { }
-      if (S.hl) S.hl.visible = false;
+      if (S.hl) S.hl.visible = false; bay.classList.remove('hot');
       if (!D.moved) { api.click(D.a.m.id); return; }
       api.drop(D.a.m.id, D.to ? D.to.id : null);
     }

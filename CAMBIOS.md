@@ -242,3 +242,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Solapa limpia:** en «Obras y máquinas» ya no aparecen el chat con el Director, la barra de agentes ni el panel de anuncios (eso queda solo en la Oficina 3D y el Organigrama).
 - **Editar:** al tocar una máquina, en su ficha hay un botón «Editar datos de la máquina» que abre el formulario (marca, modelo, año, patente, notas) y al guardar o cancelar vuelve a la Oficina.
 - **Agregar obra:** botón «+ Agregar obra» arriba, abre el formulario de nueva obra (dueño e ingeniero) y vuelve a la Oficina al terminar.
+
+## Codes 1.43 (30-oct-2026)
+- **Obras y máquinas 3D:** se saca la playa de máquinas del escenario; ahora las máquinas sin obra están en una tabla chica abajo a la izquierda («Sin obra», con su código y color). Se arrastran desde ahí a la obra, y se puede arrastrar una máquina de una obra a la tabla para dejarla sin obra. Al tocar un código de la tabla se abre su ficha. Las obras en ejecución ocupan todo el espacio.
