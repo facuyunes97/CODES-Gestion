@@ -36,7 +36,7 @@
     '.ob-bay.hot{border-color:#e31b1f;box-shadow:0 0 0 2px #e31b1f}.ob-bay .bt{display:flex;gap:6px;align-items:center;margin-bottom:5px}.ob-bay .bt em{font-style:normal;background:#eceef2;border-radius:99px;padding:1px 7px}' +
     '.ob-bay .bl{display:flex;flex-wrap:wrap;gap:5px}.ob-bay .bc{all:unset;cursor:grab;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;border:1px solid #c9ced6;background:#fff;font:700 12px var(--o-body,system-ui);touch-action:none}.ob-bay .bc:hover{border-color:#e31b1f}' +
     '.ob-bay .bc i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}.ob-bay .bh{margin-top:5px;font-weight:500;color:#666c76}' +
-    '.ob-pick{position:absolute;inset:0;z-index:8;background:rgba(15,18,24,.45);display:flex;align-items:center;justify-content:center;padding:16px}.ob-pick>div{background:var(--o-card,#fff);color:var(--o-ink,#1d2026);border-radius:14px;padding:16px 18px;max-width:360px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);font:600 14px var(--o-body,system-ui)}.ob-pick h4{margin:0 0 4px;font-size:15px}.ob-pick p{margin:0 0 12px;font-weight:500;font-size:12.5px;opacity:.75}.ob-pick button{display:block;width:100%;text-align:left;margin:6px 0 0;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit;cursor:pointer}.ob-pick button:hover{border-color:#e31b1f}.ob-pick button[disabled]{opacity:.45;cursor:default}.ob-pick .x{border:0;opacity:.7;text-align:center}' +
+    '.pl-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.pl-it{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1.5px solid rgba(128,128,128,.35);background:transparent;color:inherit;font:600 13px var(--o-body,system-ui);cursor:pointer;text-align:left}.pl-it:hover{border-color:#e31b1f}.pl-it i{width:12px;height:12px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.25)}.pl-it small{display:block;font-weight:500;opacity:.7;font-size:11.5px}.ob-pick{position:absolute;inset:0;z-index:8;background:rgba(15,18,24,.45);display:flex;align-items:center;justify-content:center;padding:16px}.ob-pick>div{background:var(--o-card,#fff);color:var(--o-ink,#1d2026);border-radius:14px;padding:16px 18px;max-width:360px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);font:600 14px var(--o-body,system-ui)}.ob-pick h4{margin:0 0 4px;font-size:15px}.ob-pick p{margin:0 0 12px;font-weight:500;font-size:12.5px;opacity:.75}.ob-pick button{display:block;width:100%;text-align:left;margin:6px 0 0;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit;cursor:pointer}.ob-pick button:hover{border-color:#e31b1f}.ob-pick button[disabled]{opacity:.45;cursor:default}.ob-pick .x{border:0;opacity:.7;text-align:center}' +
     '.ob-ghost{position:absolute;left:0;top:0;z-index:5;pointer-events:none;background:#1d2026;color:#fff;font:700 12px var(--o-body,system-ui);padding:5px 10px;border-radius:99px}' +
     '.ob-hint{position:absolute;right:10px;bottom:8px;font-size:12px;color:#555b66;background:rgba(255,255,255,.75);padding:4px 9px;border-radius:6px;pointer-events:none}' +
     '.ob-add{font:700 13px var(--o-body,system-ui);padding:8px 14px;border-radius:9px;border:0;background:#e31b1f;color:#fff;cursor:pointer}.ob-add:hover{filter:brightness(1.08)}' +
@@ -295,9 +295,9 @@
     if (tr.length > MAXT * nb0) { gn = gn.concat(tr.slice(MAXT * nb0)); tr = tr.slice(0, MAXT * nb0); }
     /* accesorios enganchados: uno por tractor/camioneta; los demás quedan estacionados */
     var hosts = tc.concat(pk), accOf = {};
-    accs.forEach(function (a) { if (a.host !== undefined && hosts.indexOf(a.host) >= 0 && !accOf[a.host]) accOf[a.host] = a.id; else gn.push(a.id); });
-    hosts.sort(function (x, y) { return (accOf[y] ? 1 : 0) - (accOf[x] ? 1 : 0); });
-    var rr = 0; hosts.forEach(function (h) { rr += accOf[h] ? 2.7 : 1.5; });
+    accs.forEach(function (a) { if (a.host !== undefined && hosts.indexOf(a.host) >= 0 && accOf[a.host] === undefined) accOf[a.host] = a.id; else gn.push(a.id); });
+    hosts.sort(function (x, y) { return (accOf[y] !== undefined ? 1 : 0) - (accOf[x] !== undefined ? 1 : 0); });
+    var rr = 0; hosts.forEach(function (h) { rr += accOf[h] !== undefined ? 2.7 : 1.5; });
     var cnt = { e: ex.length, t: tr.length, l: ld.length, m: mg.length, r: rl.length, g: gn.length, k: camp.length, rr: rr };
     var sz = sizeFor(cnt), s = sz.s, cap = sz.cap, acts = {}, feats = [];
     var nb = cnt.e > 0 ? cnt.e : (cnt.t > 0 ? 1 : 0), ev0 = 2.95;
@@ -305,14 +305,14 @@
     var rp = roundPoly([[RING, RING], [s - RING, RING], [s - RING, s - RING], [RING, s - RING]], 0.9, true), fac = rr ? rp.len / rr : 1, cum = 0;
     function ringAt(d) { return atPath(rp, ((d % rp.len) + rp.len) % rp.len); }
     hosts.forEach(function (id) {
-      var hasA = !!accOf[id], d0 = cum * fac + (hasA ? 1.3 : 0.4); cum += hasA ? 2.7 : 1.5;
+      var hasA = accOf[id] !== undefined, d0 = cum * fac + (hasA ? 1.3 : 0.4); cum += hasA ? 2.7 : 1.5;
       acts[id] = function (t) { var q = ringAt(d0 + t * 0.5); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
       if (hasA) acts[accOf[id]] = function (t) { var q = ringAt(d0 - HOFF + t * 0.5); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
     });
     /* 2) zonas de excavación: cada retro con su pozo, su carril de ida, su carril de vuelta y su montón de descarga */
     var su = 2.82, dpu = s - 2.2, Er = s - 1.5, Wq = su - 1.3, lastM = 0;
     for (var b = 0; b < nb; b++) (function (b) {
-      var ev = ev0 + BAND * b, vA = ev - 0.78, vB = ev - 1.45, exId = ex[b] || null, grp = tr.filter(function (id, i) { return i % nb === b; });
+      var ev = ev0 + BAND * b, vA = ev - 0.78, vB = ev - 1.45, exId = ex[b] !== undefined ? ex[b] : null, grp = tr.filter(function (id, i) { return i % nb === b; });
       var path = roundPoly([[su, vA], [Er, vA], [Er, vB], [Wq, vB], [Wq, vA], [su, vA]], 0.3, false), dtip = dpu - su, dQ = path.len - 1.3, m = grp.length;
       if (m && b === nb - 1) lastM = 1;
       var Tmn = dQ / 1.1, Cyc = Math.max(m * SLOT, 9 + 3 + Tmn), Tm = Cyc - 12, t1 = Tm * dtip / dQ, t2 = Tm - t1;
@@ -332,7 +332,7 @@
         acts[id] = function (t) { var st = tstate(j, t), q = atPath(path, st.d); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: st.mov, bed: st.bed, lvl: st.lvl }; };
       });
       var eu = 2.2, pitU = eu + 0.62;
-      if (exId) {
+      if (exId !== null) {
         var swT = m ? Math.atan2(0.78, 0.62) : -Math.atan2(0.72, 0.74);
         acts[exId] = function (t) {
           var po = { boom: 0.32 + Math.sin(t * 2) * 0.02, stick: -1, bucket: -0.6, dirt: 0, swing: 0 };
@@ -351,7 +351,7 @@
     var vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, workers = [], pal = (ld.length > 0 && lastM && nb > 0) ? ld[0] : null, lane0 = 0;
     mg.forEach(function (id) { workers.push({ id: id, k: 'moto' }); }); rl.forEach(function (id) { workers.push({ id: id, k: 'rodillo' }); });
     ld.forEach(function (id) { if (id !== pal) workers.push({ id: id, k: 'pala' }); });
-    if (pal) {
+    if (pal !== null) {
       var vl = vL0, vP = ev0 + BAND * (nb - 1) - 0.78 + 1.55, u1 = 2.85, pth = roundPoly([[dpu, vP], [dpu, vl], [u1, vl]], 0.45, false), Ts = 2.4, Td = pth.len / 0.9, Tu = 2.4, TT = 2 * Td + Ts + Tu;
       feats.push({ k: 'heap', u: 1.9, v: vl, r: 0.7, h: 0.7, fn: function (t) { return 0.55 + 0.45 * tri(t / TT * 0.5); } });
       acts[pal] = function (t) {
@@ -446,9 +446,12 @@
     var controls = new T.OrbitControls(camera, cv);
     controls.enableDamping = true; controls.dampingFactor = 0.12; controls.enableZoom = false;
     controls.minPolarAngle = 0.35; controls.maxPolarAngle = 1.3; controls.screenSpacePanning = false;
+    if (window.__obDebug) window.__obS = null;
     var ray = new T.Raycaster(), V = new T.Vector3(), plane = new T.Plane(new T.Vector3(0, 1, 0), -0.25);
 
-    var S = { selPlot: null, slabs: [], bg: null, d: null, actors: [], plots: [], tray: null, labels: [], pinned: null, key: '', ext: null, hover: null, drag: null, hl: null, own: [], size: [0, 0] };
+    var S;
+    S = { selPlot: null, slabs: [], bg: null, d: null, actors: [], plots: [], tray: null, labels: [], pinned: null, key: '', ext: null, hover: null, drag: null, hl: null, own: [], size: [0, 0] };
+    if (window.__obDebug) window.__obS = S;
 
     /* ---------- modelos ---------- */
     function wheelM(g, W, r, x, y, z, w, rim) {
@@ -521,8 +524,11 @@
         wheelM(g, [], 0.16, -0.25, 0.16, 0.5, 0.12, st.rim); wheelM(g, [], 0.16, -0.25, 0.16, -0.5, 0.12, st.rim);
         bx(g, 1.0, 0.3, 1.2, c, 0, 0.42, 0); bx(g, 1.02, 0.06, 1.22, d, 0, 0.26, 0); bx(g, 0.34, 0.12, 0.34, '#444a54', 0, 0.64, 0); bx(g, 0.7, 0.07, 0.07, KK, 0.8, 0.4, 0); bx(g, 0.1, 0.2, 0.7, d, -0.5, 0.45, 0);
       } else if (tipo === 'acc_rastra') {
-        bx(g, 0.1, 0.1, 1.3, KK, 0.15, 0.55, 0); bx(g, 0.1, 0.1, 1.3, KK, -0.35, 0.55, 0); bx(g, 0.8, 0.07, 0.07, KK, 0.8, 0.5, 0);
-        for (var di = -3; di <= 3; di++) { var dk = new T.Mesh(geo('cy', 0.26, 0.04, 14), mat('#9aa1ab')); dk.rotation.x = 0.9; dk.rotation.z = Math.PI / 2 - 0.2; dk.position.set(0.15, 0.3, di * 0.19); g.add(dk); var dk2 = new T.Mesh(geo('cy', 0.26, 0.04, 14), mat('#9aa1ab')); dk2.rotation.x = -0.9; dk2.rotation.z = Math.PI / 2 - 0.2; dk2.position.set(-0.35, 0.3, di * 0.19); g.add(dk2); }
+        bx(g, 0.1, 0.1, 1.3, KK, 0.2, 0.52, 0); bx(g, 0.1, 0.1, 1.3, KK, -0.3, 0.52, 0); bx(g, 0.9, 0.07, 0.07, KK, 0.85, 0.46, 0); bx(g, 0.5, 0.06, 0.06, KK, 0.2, 0.58, 0); bx(g, 0.5, 0.06, 0.06, KK, -0.3, 0.58, 0);
+        for (var di = -3; di <= 3; di++) {
+          var dk = new T.Mesh(geo('cz', 0.3, 0.05, 14), mat('#aab1bb')); dk.rotation.y = 0.55; dk.position.set(0.2, 0.32, di * 0.18); g.add(dk);
+          var dk2 = new T.Mesh(geo('cz', 0.3, 0.05, 14), mat('#aab1bb')); dk2.rotation.y = -0.55; dk2.position.set(-0.3, 0.32, di * 0.18); g.add(dk2);
+        }
       } else if (tipo === 'acc_regador') {
         wheelM(g, [], 0.24, -0.1, 0.24, 0.5, 0.16, st.rim); wheelM(g, [], 0.24, -0.1, 0.24, -0.5, 0.16, st.rim);
         var tk = new T.Mesh(geo('cy', 0.4, 1.2, 16), mat(c)); tk.rotation.x = Math.PI / 2; tk.position.set(-0.05, 0.62, 0); g.add(tk);
@@ -793,6 +799,7 @@
       var p = ndc(ev); ray.setFromCamera(p, camera);
       var hits = ray.intersectObjects(S.slabs, false), pl = hits.length && hits[0].object.userData.plot;
       S.hover = null; S.selPlot = pl ? (S.selPlot === pl.id ? null : pl.id) : null;
+      if (api.plotSel) api.plotSel(S.selPlot);
     });
     cv.addEventListener('pointerleave', function () { if (!S.drag) { S.hover = null; api.hover(null); } });
 
@@ -818,6 +825,7 @@
     return {
       build: function (d, pinned) { emptyEl.hidden = true; cv.style.visibility = ''; ov.style.visibility = ''; hint.hidden = false; build(d, pinned); },
       empty: function (msg) { S.d = null; clearAll(); emptyEl.hidden = false; emptyEl.textContent = msg; cv.style.visibility = 'hidden'; hint.hidden = true; },
+      plot: function (pid) { S.selPlot = pid; },
       select: function (mid) { S.pinned = mid; S.actors.forEach(function (a) { a.ring.visible = mid === a.m.id; }); },
       frame: frame
     };
@@ -832,7 +840,7 @@
     var stage = document.createElement('div'); stage.className = 'ob-stage'; wrap.appendChild(stage);
     var panelEl = document.createElement('section'); panelEl.className = 'ob-panel'; panelEl.hidden = true; panelEl.setAttribute('aria-live', 'polite'); wrap.appendChild(panelEl);
     host.appendChild(wrap);
-    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now(), gl = null, hoverKey = '', adding = false, addTxt = '', glMsg = '';
+    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now(), gl = null, panelMode = '', plotSelId = null, hoverKey = '', adding = false, addTxt = '', glMsg = '';
 
     function datos() {
       var D = getD(), S = D.S;
@@ -906,6 +914,11 @@
         h += '<label for="ob-mv">Mover a</label><select id="ob-mv"><option value=""' + (!r.obra ? ' selected' : '') + '>Sin obra (playa)</option>' + d.plots.map(function (p) {
           return '<option value="' + esc(p.id) + '"' + (r.obra && r.obra.id === p.id ? ' selected' : '') + '>' + esc(p.codigo + ' · ' + p.nombre) + '</option>';
         }).join('') + '</select>';
+        var tpM = tipoDibujo(M);
+        if ((tpM === 'acc_desmalezadora' || tpM === 'acc_rastra' || tpM === 'acc_regador') && r.obra && d.D.maq.accesorio) {
+          var hs = (d.byId[r.obra.id] ? d.byId[r.obra.id].maqs : []).filter(function (x) { var t = tipoDibujo(x); return x.id !== M.id && (t === 'tractor' || t === 'camioneta'); });
+          h += '<label for="ob-hk" style="margin-top:8px">Enganchado a</label><select id="ob-hk"><option value="">Sin enganchar</option>' + hs.map(function (x) { return '<option value="' + esc(x.id) + '"' + (M.acopladoA === x.id ? ' selected' : '') + '>' + esc(x.codigo + ' \u00b7 ' + x.nombre) + '</option>'; }).join('') + '</select>' + (hs.length ? '' : '<div class="none" style="border:0;padding:4px 0 0">No hay tractor ni camioneta en esta obra.</div>');
+        }
       } else h += '<div class="none" style="border:0;padding:0">Solo el dueño y el ingeniero pueden mover máquinas.</div>';
       h += '</div><div><div class="sec">Aspecto en la Oficina</div>';
       if (d.puede) {
@@ -1211,7 +1224,7 @@
         } catch (e) { glFail(e); }
         if (gl) {
           var M0 = pinned && d.maqs.filter(function (m) { return m.id === pinned; })[0];
-          if (M0) { panelEl.hidden = false; panelEl.innerHTML = panelHTML(M0, d); bindPanel(M0); } else { pinned = null; panelEl.hidden = true; panelEl.innerHTML = ''; }
+          if (M0) { panelMode = ''; panelEl.hidden = false; panelEl.innerHTML = panelHTML(M0, d); bindPanel(M0); } else if (panelMode === 'plot' && plotSelId && d.byId[plotSelId] && d.byId[plotSelId].c) { mostrarPlot(plotSelId); } else { pinned = null; panelMode = ''; panelEl.hidden = true; panelEl.innerHTML = ''; }
           if (!raf && !REDUCED) raf = requestAnimationFrame(loop);
           return;
         }
@@ -1245,6 +1258,8 @@
       var x = panelEl.querySelector('.x'); if (x) x.onclick = function () { pinned = null; if (gl) { gl.select(null); panelEl.hidden = true; panelEl.innerHTML = ''; } else render(); };
       var sel = panelEl.querySelector('#ob-mv');
       if (sel) sel.onchange = function () { var d = stage.__d, r = moverMaq(d, M, sel.value); if (r) render(); };
+      var hk = panelEl.querySelector('#ob-hk');
+      if (hk) hk.onchange = function () { var d = stage.__d; if (d.D.maq.accesorio(M.id, M.obraActual || '', hk.value)) render(); };
       var fm = panelEl.querySelector('#ob-fm');
       if (fm) fm.onchange = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, M.colorMaq || '', fm.value)) render(); };
       [].forEach.call(panelEl.querySelectorAll('[data-color]'), function (b) { b.onclick = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, b.getAttribute('data-color'), M.formaMaq || '')) render(); }; });
@@ -1252,7 +1267,7 @@
       if (cc) cc.onchange = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, cc.value, M.formaMaq || '')) render(); };
     }
     function abrir(mid, scroll) {
-      pinned = mid; hideTip();
+      pinned = mid; hideTip(); panelMode = '';
       if (gl && stage.__d) {
         gl.select(mid); var d0 = stage.__d, M1 = d0.maqs.filter(function (m) { return m.id === mid; })[0];
         if (M1) { panelEl.hidden = false; panelEl.innerHTML = panelHTML(M1, d0); bindPanel(M1); }
@@ -1366,7 +1381,28 @@
       stage.appendChild(box);
       return false;
     }
+    function tipoNom(m) { var t = tipoDibujo(m), r = ''; FORMAS.forEach(function (f) { if (f[0] === t) r = f[1].replace('Accesorio: ', ''); }); return r || 'Máquina'; }
+    function plotPanel(P, d) {
+      var ms = P.maqs, hostNom = function (m) { var h = m.acopladoA && ms.filter(function (x) { return x.id === m.acopladoA; })[0]; return h ? h.codigo : ''; };
+      var h = '<button type="button" class="x" aria-label="Cerrar">\u00d7</button><div class="pn-head"><div><h3>' + esc(P.codigo) + ' \u00b7 ' + esc(P.nombre) + '</h3><div class="sub">' + (ms.length ? ms.length + ' m\u00e1quina' + (ms.length === 1 ? '' : 's') + ' en esta obra \u00b7 toc\u00e1 una para ver su ficha' : 'Esta obra todav\u00eda no tiene m\u00e1quinas. Arrastr\u00e1 una desde la playa.') + '</div></div></div>';
+      if (ms.length) h += '<div class="pl-list">' + ms.map(function (m) {
+        var tp = tipoDibujo(m), acc = String(tp).indexOf('acc_') === 0, st = estilo(m, tp), extra = '';
+        if (acc) extra = (tp === 'acc_casilla' || tp === 'acc_tanque') ? ' \u00b7 campamento' : (hostNom(m) ? ' \u00b7 enganchado a ' + hostNom(m) : ' \u00b7 sin enganchar');
+        return '<button type="button" class="pl-it" data-m="' + esc(m.id) + '"><i style="background:' + st.body + '"></i><span>' + esc(m.codigo + ' \u00b7 ' + m.nombre) + '<small>' + esc(tipoNom(m) + extra) + '</small></span></button>';
+      }).join('') + '</div>';
+      return h;
+    }
+    function mostrarPlot(pid) {
+      var d = stage.__d, P = pid && d && d.byId[pid]; plotSelId = pid || null;
+      if (!P || !P.c) { if (panelMode === 'plot') { panelEl.hidden = true; panelEl.innerHTML = ''; panelMode = ''; } return; }
+      pinned = null; if (gl) gl.select(null);
+      panelMode = 'plot'; panelEl.hidden = false; panelEl.innerHTML = plotPanel(P, d);
+      var x = panelEl.querySelector('.x'); if (x) x.onclick = function () { panelEl.hidden = true; panelEl.innerHTML = ''; panelMode = ''; if (gl) gl.plot(null); };
+      [].forEach.call(panelEl.querySelectorAll('.pl-it'), function (b) { b.onclick = function () { abrir(b.getAttribute('data-m'), true); }; });
+      if (panelEl.scrollIntoView) { try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { } }
+    }
     var api = {
+      plotSel: function (pid) { mostrarPlot(pid); },
       puede: function () { var d = stage.__d; return !!(d && d.puede); },
       hover: function (m, ev) {
         var d = stage.__d;

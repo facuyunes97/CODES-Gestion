@@ -286,3 +286,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Arrastrar un accesorio al mapa 3D:** al soltar una desmalezadora, rastra o tanque regador sobre una obra, aparece un cartel "¿A qué querés conectar…?" con los tractores y camionetas de esa obra (los que ya llevan un accesorio salen en gris), o la opción de dejarlo suelto. Si lo conectás, aparece enganchado atrás de ese tractor o camioneta.
 - Las casillas y los tanques de combustible no preguntan nada: al soltarlos en una obra quedan armados como campamento.
 - Si arrastrás un accesorio enganchado a otra obra, se desengancha del tractor y se vuelve a preguntar.
+
+## Codes 1.53 (30-oct-2026)
+- **Arreglado: accesorios enganchados quedaban quietos.** Cuando el accesorio (o la excavadora o pala principal) era el primero de la lista de la obra, el mapa 3D no lo ponía a trabajar. Ahora los accesorios enganchados se mueven atrás de su tractor o camioneta, y las excavadoras y palas del primer lugar también trabajan.
+- **Enganchar desde la ficha:** al tocar un accesorio (desmalezadora, rastra o regador) aparece "Enganchado a", con los tractores y camionetas de su obra.
+- **Cartel de la obra:** al hacer clic en un terreno, abajo aparece el cartel con todas las máquinas y accesorios de esa obra (con tipo y a qué están enganchados, o "campamento"). Tocando una máquina de la lista se abre su ficha.
+- La rastra se dibuja con discos bien visibles (antes parecían palitos).
