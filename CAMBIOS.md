@@ -281,3 +281,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Tierra de punta a punta:** la pala ahora retira la tierra que descargan los camiones, la lleva a su carril y la deja en un montón; la motoniveladora la estría y después pasa el rodillo compactador por encima.
 - Los dibujos y chips de los accesorios también aparecen en la playa y en las fichas. Base: columna `acoplado_a` (sql/21_accesorios.sql, ya aplicada).
 - Probado con simulación de ~410 combinaciones (con accesorios y campamento) sin choques; no se vio en un navegador real con la librería 3D.
+
+## Codes 1.52 (30-oct-2026)
+- **Arrastrar un accesorio al mapa 3D:** al soltar una desmalezadora, rastra o tanque regador sobre una obra, aparece un cartel "¿A qué querés conectar…?" con los tractores y camionetas de esa obra (los que ya llevan un accesorio salen en gris), o la opción de dejarlo suelto. Si lo conectás, aparece enganchado atrás de ese tractor o camioneta.
+- Las casillas y los tanques de combustible no preguntan nada: al soltarlos en una obra quedan armados como campamento.
+- Si arrastrás un accesorio enganchado a otra obra, se desengancha del tractor y se vuelve a preguntar.

@@ -36,6 +36,7 @@
     '.ob-bay.hot{border-color:#e31b1f;box-shadow:0 0 0 2px #e31b1f}.ob-bay .bt{display:flex;gap:6px;align-items:center;margin-bottom:5px}.ob-bay .bt em{font-style:normal;background:#eceef2;border-radius:99px;padding:1px 7px}' +
     '.ob-bay .bl{display:flex;flex-wrap:wrap;gap:5px}.ob-bay .bc{all:unset;cursor:grab;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;border:1px solid #c9ced6;background:#fff;font:700 12px var(--o-body,system-ui);touch-action:none}.ob-bay .bc:hover{border-color:#e31b1f}' +
     '.ob-bay .bc i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}.ob-bay .bh{margin-top:5px;font-weight:500;color:#666c76}' +
+    '.ob-pick{position:absolute;inset:0;z-index:8;background:rgba(15,18,24,.45);display:flex;align-items:center;justify-content:center;padding:16px}.ob-pick>div{background:var(--o-card,#fff);color:var(--o-ink,#1d2026);border-radius:14px;padding:16px 18px;max-width:360px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);font:600 14px var(--o-body,system-ui)}.ob-pick h4{margin:0 0 4px;font-size:15px}.ob-pick p{margin:0 0 12px;font-weight:500;font-size:12.5px;opacity:.75}.ob-pick button{display:block;width:100%;text-align:left;margin:6px 0 0;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit;cursor:pointer}.ob-pick button:hover{border-color:#e31b1f}.ob-pick button[disabled]{opacity:.45;cursor:default}.ob-pick .x{border:0;opacity:.7;text-align:center}' +
     '.ob-ghost{position:absolute;left:0;top:0;z-index:5;pointer-events:none;background:#1d2026;color:#fff;font:700 12px var(--o-body,system-ui);padding:5px 10px;border-radius:99px}' +
     '.ob-hint{position:absolute;right:10px;bottom:8px;font-size:12px;color:#555b66;background:rgba(255,255,255,.75);padding:4px 9px;border-radius:6px;pointer-events:none}' +
     '.ob-add{font:700 13px var(--o-body,system-ui);padding:8px 14px;border-radius:9px;border:0;background:#e31b1f;color:#fff;cursor:pointer}.ob-add:hover{filter:brightness(1.08)}' +
@@ -1243,7 +1244,7 @@
     function bindPanel(M) {
       var x = panelEl.querySelector('.x'); if (x) x.onclick = function () { pinned = null; if (gl) { gl.select(null); panelEl.hidden = true; panelEl.innerHTML = ''; } else render(); };
       var sel = panelEl.querySelector('#ob-mv');
-      if (sel) sel.onchange = function () { var d = stage.__d; if (d.D.maq.mover(M.id, sel.value)) render(); };
+      if (sel) sel.onchange = function () { var d = stage.__d, r = moverMaq(d, M, sel.value); if (r) render(); };
       var fm = panelEl.querySelector('#ob-fm');
       if (fm) fm.onchange = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, M.colorMaq || '', fm.value)) render(); };
       [].forEach.call(panelEl.querySelectorAll('[data-color]'), function (b) { b.onclick = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, b.getAttribute('data-color'), M.formaMaq || '')) render(); }; });
@@ -1336,12 +1337,35 @@
       D0.g.__drag = false;
       if (!D0.moved) { abrir(D0.mid, true); return; }
       var M = d.maqs.filter(function (m) { return m.id === D0.mid; })[0], to = D0.to;
-      if (M && to && (M.obraActual || '') !== to.id) { d.D.maq.mover(M.id, to.id); pinned = M.id; }
+      if (M && to && (M.obraActual || '') !== to.id) { if (moverMaq(d, M, to.id)) pinned = M.id; else return; }
       render();
     }
     stage.addEventListener('pointerup', fin);
     stage.addEventListener('pointercancel', fin);
 
+    /* mueve una máquina; si es un accesorio que se engancha, pregunta a qué tractor o camioneta de esa obra lo conecta */
+    function pickEl() { var e = stage.querySelector('.ob-pick'); if (e) e.remove(); return e; }
+    function moverMaq(d, M, toId) {
+      pickEl();
+      var tp = tipoDibujo(M), esAccM = String(tp).indexOf('acc_') === 0, engancha = tp === 'acc_desmalezadora' || tp === 'acc_rastra' || tp === 'acc_regador';
+      if (!esAccM || !d.D.maq.accesorio) return d.D.maq.mover(M.id, toId);
+      if (!engancha || !toId) { if (d.D.maq.accesorio(M.id, toId, '')) { pinned = M.id; } return true; }
+      var P = d.byId[toId], hosts = P ? P.maqs.filter(function (x) { var t = tipoDibujo(x); return x.id !== M.id && (t === 'tractor' || t === 'camioneta'); }) : [];
+      var busy = {}; (P ? P.maqs : []).forEach(function (x) { if (x.acopladoA && x.id !== M.id && String(tipoDibujo(x)).indexOf('acc_') === 0) busy[x.acopladoA] = true; });
+      var box = document.createElement('div'); box.className = 'ob-pick';
+      box.innerHTML = '<div><h4>\u00bfA qu\u00e9 quer\u00e9s conectar ' + esc(M.nombre) + '?</h4><p>Va a quedar enganchado atr\u00e1s y se mueve con \u00e9l.</p>' +
+        (hosts.length ? hosts.map(function (h) { return '<button type="button" data-host="' + esc(h.id) + '"' + (busy[h.id] ? ' disabled' : '') + '>' + esc(h.codigo + ' \u00b7 ' + h.nombre) + (busy[h.id] ? ' (ya lleva un accesorio)' : '') + '</button>'; }).join('') : '<p>No hay un tractor ni una camioneta en esta obra. Llev\u00e1 primero uno a esta obra.</p>') +
+        '<button type="button" data-host="">Dejarlo suelto en la obra (sin enganchar)</button><button type="button" class="x" data-cancel="1">Cancelar</button></div>';
+      box.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+      box.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('button'); if (!b || b.disabled) return;
+        box.remove();
+        if (b.hasAttribute('data-host')) { if (d.D.maq.accesorio(M.id, toId, b.getAttribute('data-host'))) pinned = M.id; }
+        render();
+      });
+      stage.appendChild(box);
+      return false;
+    }
     var api = {
       puede: function () { var d = stage.__d; return !!(d && d.puede); },
       hover: function (m, ev) {
@@ -1357,7 +1381,7 @@
       click: function (mid) { abrir(mid, true); },
       drop: function (mid, toId) {
         var d = stage.__d, M = d && d.maqs.filter(function (m) { return m.id === mid; })[0];
-        if (M && toId !== null && toId !== undefined && (M.obraActual || '') !== toId && d.D.maq.mover(M.id, toId)) pinned = M.id;
+        if (M && toId !== null && toId !== undefined && (M.obraActual || '') !== toId) { var r = moverMaq(d, M, toId); if (r === false) return; if (r) pinned = M.id; }
         render();
       },
       hide: function (pid) { var d = stage.__d; hideTip(); if (d && d.puede && d.D.maq.ocultar(pid, true)) render(); }
