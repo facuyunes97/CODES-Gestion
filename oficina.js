@@ -94,7 +94,13 @@
     add('cobros', 'info', 'Las ' + certCli + ' certificaciones cargadas son de subcontratistas. Los certificados de obra emitidos a clientes no se registran en el sistema, por eso no se puede seguir certificado → factura → cobro.');
 
     /* ===== COMPRAS ===== */
-    var salPorTer = agrupar(sal.filter(function (t) { return !excl(t.terceroId); }), function (t) { return t.terceroId; });
+    /* Con factura / sin factura (en negro): lo marca el usuario en cada transacción. Lo declarado sin factura no se reclama como «falta factura». */
+    var conF = function (t) { return !t.auto && t.tipo !== 'interna' && t.tipo !== 'inicial'; };
+    var salNeg = sal.filter(function (t) { return conF(t) && t.conFact === 'no'; });
+    var salND = sal.filter(function (t) { return conF(t) && !t.conFact; });
+    var entNeg = ent.filter(function (t) { return conF(t) && t.conFact === 'no'; });
+    var entND = ent.filter(function (t) { return conF(t) && !t.conFact; });
+    var salPorTer = agrupar(sal.filter(function (t) { return !excl(t.terceroId) && t.conFact !== 'no'; }), function (t) { return t.terceroId; });
     var comPorTer = agrupar(compras, function (f) { return f.terceroId; });
     var faltan = Object.keys(salPorTer).map(function (id) {
       var pag = suma(salPorTer[id], function (t) { return t.total; }), fac = suma(comPorTer[id] || [], function (f) { return f.total; });
@@ -105,6 +111,14 @@
         : esc(tn(x.id)) + ': pagos por ' + mm(x.pag) + ' y facturas cargadas por ' + mm(x.fac) + '. Faltan comprobantes por unos ' + mm(x.dif) + '.');
     });
     var totSal = suma(sal.filter(function (t) { return !(ter[t.terceroId] && ter[t.terceroId].sistema); }), function (t) { return t.total; });
+    var negTot = suma(salNeg, function (t) { return t.total; }), conTot = suma(sal.filter(function (t) { return conF(t) && t.conFact === 'si'; }), function (t) { return t.total; });
+    var negPorTer = agrupar(salNeg, function (t) { return t.terceroId; });
+    var negRank = Object.keys(negPorTer).map(function (id) { return { id: id, s: suma(negPorTer[id], function (t) { return t.total; }), n: negPorTer[id].length }; }).sort(function (a, b) { return b.s - a.s; }).slice(0, 3);
+    if (salNeg.length) add('compras', 'info', 'Pagos marcados sin factura (en negro): ' + mm(negTot) + ' en ' + salNeg.length + ' pagos, ' + (negTot + conTot ? Math.round(negTot / (negTot + conTot) * 100) : 0) + '% de lo definido con o sin factura en pesos. Los mayores: ' + negRank.map(function (x) { return esc(tn(x.id)) + ' ' + mm(x.s); }).join('; ') + '.');
+    chk('compras', salND.length > 0, 'media', function () { return salND.length + ' pago' + (salND.length === 1 ? '' : 's') + ' en pesos por ' + mm(suma(salND, function (t) { return t.total; })) + ' sin marcar si tienen factura o van sin factura. Hay que definirlos en Transacciones → Modificar (columna «¿Tiene factura?»).'; });
+    if (entNeg.length) add('cobros', 'info', 'Cobros marcados sin factura (en negro): ' + mm(suma(entNeg, function (t) { return t.total; })) + ' en ' + entNeg.length + ' cobros.');
+    chk('cobros', entND.length > 0, 'media', function () { return entND.length + ' cobro' + (entND.length === 1 ? '' : 's') + ' en pesos por ' + mm(suma(entND, function (t) { return t.total; })) + ' sin marcar si tienen factura o van sin factura. Definirlos en Transacciones → Modificar.'; });
+    if (salNeg.length || entNeg.length) add('impuestos', 'info', 'Marcado sin factura en el sistema (en pesos): egresos ' + mm(negTot) + ' y cobros ' + mm(suma(entNeg, function (t) { return t.total; })) + '. No se descuentan como gasto ni se suman a las ventas declaradas.');
     var rank = Object.keys(salPorTer).map(function (id) { return { id: id, s: suma(salPorTer[id], function (t) { return t.total; }) }; }).sort(function (a, b) { return b.s - a.s; });
     var top3 = rank.slice(0, 3), sh3 = totSal ? suma(top3, function (x) { return x.s; }) / totSal : 0;
     chk('compras', sh3 > 0.35, 'media', function () { return 'Tres proveedores (' + top3.map(function (x) { return esc(tn(x.id)); }).join(', ') + ') se llevan ' + mm(suma(top3, function (x) { return x.s; })) + ': el ' + Math.round(sh3 * 100) + '% de lo que salió en pesos. Son los candidatos para negociar precio y plazo.'; });

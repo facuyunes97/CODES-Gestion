@@ -168,3 +168,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.26 (30-oct-2026)
 - Oficina: Michael ya tiene confirmado el Instagram de CODES (@codesconstrucciones); se saca ese pendiente de su ficha.
+
+## Codes 1.27 (30-oct-2026)
+- Transacciones: nuevo dato **«¿Tiene factura?»** con dos opciones: Con factura o Sin factura (en negro). Es obligatorio al cargar un ingreso o un egreso nuevo. Los traspasos internos no lo llevan.
+- Las transacciones que ya existían quedan en «Sin definir» hasta que se marquen: se puede hacer desde Modificar (también de a varias a la vez, con la columna nueva). Solo el dueño puede modificar transacciones.
+- En la lista de Transacciones hay un filtro nuevo «Factura» (Todas, Con factura, Sin factura, Sin definir) y cada fila y cada detalle muestran la marca.
+- Oficina: Compras ya no reclama factura de lo que se marcó sin factura a propósito; muestra aparte cuánto se pagó en negro y avisa cuántos pagos y cobros todavía no se definieron. Cobros e Impuestos muestran lo mismo de su lado.
