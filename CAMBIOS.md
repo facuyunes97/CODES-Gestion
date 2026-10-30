@@ -224,3 +224,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Se arrastra una máquina de un terreno a otro** para cambiarla de obra (también desde la ficha, con «Mover a»). La ubicación queda guardada y registrada en Auditoría. Lo pueden mover el dueño y el ingeniero; el contador la ve.
 - **Al pasar el mouse por una máquina** (o tocarla en el celular) se abre su ficha: marca, modelo, año y patente; en qué obra está; litros y gasto de los últimos 30 días y totales; cantidad de cargas; precio medio por litro; litros cargados en esa obra; última carga y litros por tipo de combustible. Al pasar por el nombre de una obra se ve el combustible de esa obra.
 - Base de datos: nueva columna `obra_actual_id` en centros de costo (`sql/18_maquina_obra_actual.sql`, ya aplicada).
+
+## Codes 1.40 (30-oct-2026)
+- **Obras y máquinas rediseñado como la oficina:** cada obra es un terreno con **piso de color por área** (azul, amarillo, verde, naranja, lila, como los pisos de la Oficina), con baldosas y su cartel de código y nombre.
+- **Playa de máquinas abajo:** todas las máquinas sin obra aparecen abajo como dibujo con su código. Se **arrastran al terreno de su obra**, y se pueden volver a arrastrar a la playa para dejarlas sin obra. Ya no hay un terreno de depósito.
+- **Ficha abajo:** al tocar una máquina, abajo se abre su ficha completa (dibujo, datos, obra actual, combustible últimos 30 días y totales, última carga, litros por tipo) y el selector «Mover a». Al pasar el mouse sigue saliendo un resumen corto.
+- El **vibrador/compactador Dynamac** ahora se dibuja como compactador de suelo vial, con el rodillo al frente, y los camiones (incluido «Camiones Alquiler») se dibujan como camión.
