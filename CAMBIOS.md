@@ -295,3 +295,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.54 (30-oct-2026)
 - Los accesorios enganchados (desmalezadora, rastra, regador) ahora van pegados al tractor o camioneta: la barra de tiro llega casi hasta el enganche.
+
+## Codes 1.55 (31-oct-2026)
+- **Tanque regador:** tira gotas de agua por atrás mientras anda y deja el piso mojado (huella oscura azulada que se va secando de a poco).
+- **Rastra y desmalezadora:** dejan un rastro detrás (tierra removida y pasto cortado) que se va borrando.
+- **Arreglado:** la rastra ahora cambia de color cuando elegís un color (el bastidor toma el color; los discos quedan grises).

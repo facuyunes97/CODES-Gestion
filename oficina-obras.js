@@ -203,7 +203,7 @@
     } else if (tipo === 'acc_desmalezadora') {
       s += wheel(34, 58, 6, st.rim) + wheel(70, 58, 6, st.rim) + '<rect x="14" y="40" width="72" height="14" rx="3" fill="' + c + '"/><rect x="14" y="48" width="72" height="5" fill="' + darken(c, .75) + '"/><circle cx="50" cy="44" r="7" fill="#444a54"/><rect x="2" y="48" width="14" height="3" fill="' + K + '"/>';
     } else if (tipo === 'acc_rastra') {
-      s += '<rect x="10" y="42" width="80" height="4" fill="' + K + '"/><rect x="2" y="48" width="12" height="3" fill="' + K + '"/>' + [18, 34, 50, 66, 82].map(function (x) { return '<ellipse cx="' + x + '" cy="54" rx="4" ry="11" fill="#9aa1ab" stroke="#5b616b" stroke-width="1.5"/>'; }).join('');
+      s += '<rect x="10" y="42" width="80" height="4" fill="' + c + '"/><rect x="2" y="48" width="12" height="3" fill="' + c + '"/>' + [18, 34, 50, 66, 82].map(function (x) { return '<ellipse cx="' + x + '" cy="54" rx="4" ry="11" fill="#9aa1ab" stroke="#5b616b" stroke-width="1.5"/>'; }).join('');
     } else if (tipo === 'acc_regador') {
       s += wheel(52, 58, 7, st.rim) + '<rect x="14" y="30" width="72" height="26" rx="13" fill="' + c + '"/><rect x="14" y="40" width="72" height="5" fill="' + darken(c, .75) + '" opacity=".6"/><rect x="2" y="50" width="14" height="3" fill="' + K + '"/><rect x="84" y="50" width="12" height="3" fill="#9aa1ab"/>';
     } else if (tipo === 'acc_casilla') {
@@ -525,7 +525,7 @@
         wheelM(g, [], 0.16, -0.25, 0.16, 0.5, 0.12, st.rim); wheelM(g, [], 0.16, -0.25, 0.16, -0.5, 0.12, st.rim);
         bx(g, 1.0, 0.3, 1.2, c, 0, 0.42, 0); bx(g, 1.02, 0.06, 1.22, d, 0, 0.26, 0); bx(g, 0.34, 0.12, 0.34, '#444a54', 0, 0.64, 0); bx(g, 0.7, 0.07, 0.07, KK, 0.8, 0.4, 0); bx(g, 0.1, 0.2, 0.7, d, -0.5, 0.45, 0);
       } else if (tipo === 'acc_rastra') {
-        bx(g, 0.1, 0.1, 1.3, KK, 0.2, 0.52, 0); bx(g, 0.1, 0.1, 1.3, KK, -0.3, 0.52, 0); bx(g, 0.9, 0.07, 0.07, KK, 0.85, 0.46, 0); bx(g, 0.5, 0.06, 0.06, KK, 0.2, 0.58, 0); bx(g, 0.5, 0.06, 0.06, KK, -0.3, 0.58, 0);
+        bx(g, 0.12, 0.12, 1.3, c, 0.2, 0.52, 0); bx(g, 0.12, 0.12, 1.3, c, -0.3, 0.52, 0); bx(g, 0.9, 0.08, 0.08, c, 0.85, 0.46, 0); bx(g, 0.5, 0.07, 0.07, d, 0.2, 0.6, 0); bx(g, 0.5, 0.07, 0.07, d, -0.3, 0.6, 0);
         for (var di = -3; di <= 3; di++) {
           var dk = new T.Mesh(geo('cz', 0.3, 0.05, 14), mat('#aab1bb')); dk.rotation.y = 0.55; dk.position.set(0.2, 0.32, di * 0.18); g.add(dk);
           var dk2 = new T.Mesh(geo('cz', 0.3, 0.05, 14), mat('#aab1bb')); dk2.rotation.y = -0.55; dk2.position.set(-0.3, 0.32, di * 0.18); g.add(dk2);
@@ -691,6 +691,30 @@
         var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)); a.P0 = P; world.add(a.root); S.actors.push(a); P.acts.push(a);
         var act = wp.acts[i]; if (!act) return;
         if (wp.hitched[i]) a.body.position.x = 0.8;
+        var TR = { acc_regador: { c: '#4d7396', o: 0.4, w: 1.15, life: 26 }, acc_rastra: { c: '#7d5f3c', o: 0.55, w: 1.25, life: 36 }, acc_desmalezadora: { c: '#a9c46f', o: 0.65, w: 1.2, life: 36 } }[tp];
+        if (TR && wp.hitched[i]) {
+          var N = 56, marks = [], head = 0, lx = null, lz = null, k;
+          for (k = 0; k < N; k++) {
+            var mm = new T.MeshBasicMaterial({ color: TR.c, transparent: true, opacity: 0, depthWrite: false }); S.own.push(mm);
+            var mk = new T.Mesh(geo('b', 0.7, 0.02, TR.w), mm); mk.position.y = 0.07 + k * 0.0004; mk.visible = false; par.add(mk); marks.push({ m: mk, mat: mm, t0: -1e9 });
+          }
+          var drops = [];
+          if (tp === 'acc_regador') for (k = 0; k < 16; k++) { var dm = new T.Mesh(geo('b', 0.08, 0.08, 0.08), mat('#8fd3f5')); dm.visible = false; par.add(dm); drops.push(dm); }
+          var base = a.upd;
+          a.upd = function (t) {
+            base(t);
+            var rx = a.root.position.x, rz = a.root.position.z, ry = a.ry, ca = Math.cos(ry), sa = Math.sin(ry), cxp = rx + 0.8 * ca, czp = rz - 0.8 * sa;
+            if (lx === null || Math.hypot(cxp - lx, czp - lz) >= 0.6) {
+              if (lx !== null && Math.hypot(cxp - lx, czp - lz) < 6) { var mk2 = marks[head % N]; head++; mk2.t0 = t; mk2.m.position.x = cxp; mk2.m.position.z = czp; mk2.m.rotation.y = ry; mk2.m.visible = true; }
+              lx = cxp; lz = czp;
+            }
+            for (var q = 0; q < N; q++) { var M2 = marks[q], ag = t - M2.t0; if (ag > TR.life || ag < 0) { if (M2.m.visible) { M2.m.visible = false; M2.mat.opacity = 0; } } else { M2.mat.opacity = TR.o * Math.min(1, ag * 3) * (1 - ag / TR.life); } }
+            drops.forEach(function (dm, j) {
+              var ph = (t * 1.3 + j / drops.length) % 1, side = ((j % 4) - 1.5) * 0.36, bx0 = -0.7 - ph * 1.1, by0 = 0.42 + 0.55 * ph - 0.9 * ph * ph, bz0 = side * (1 + ph * 0.5);
+              dm.position.set(rx + bx0 * ca + bz0 * sa + 0.8 * ca, by0 > 0.06 ? by0 : 0.06, rz - bx0 * sa + bz0 * ca - 0.8 * sa); dm.visible = true; var sc = 1 - ph * 0.5; dm.scale.set(sc, sc, sc);
+            });
+          };
+        }
         a.upd = function (t) {
           var q = act(t), pp = a.P;
           a.at(ptX(P, q.u), ptZ(P, q.v), q.mov, Math.atan2(-q.hv, q.hu));
