@@ -21,6 +21,18 @@
     '.ob-hid button:hover{border-color:#e31b1f}.ob-hid button:disabled{cursor:default;opacity:.7}' +
     '.ob-stage{position:relative;border-radius:14px;background:#ecebe4;border:1px solid var(--o-line,#d9dce1);overflow:hidden;touch-action:pan-y}' +
     '.ob-stage svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}' +
+    '.ob-stage.gl{height:clamp(480px,74vh,800px);touch-action:none;background:#ecebe4}.ob-stage canvas{display:block;width:100%;height:100%}' +
+    '.ob-ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}' +
+    '.ob-cd{position:absolute;left:0;top:0;background:rgba(18,21,28,.88);color:#fff;font:700 11px/1 var(--o-body,system-ui);padding:4px 8px;border-radius:99px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);will-change:transform}' +
+    '.ob-pl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:8px;background:rgba(18,21,28,.94);color:#fff;border:2px solid var(--ac,#9aa0ab);border-radius:12px;padding:6px 8px 6px 10px;font:700 13px/1 var(--o-body,system-ui);white-space:nowrap;pointer-events:auto;box-shadow:0 6px 18px rgba(0,0,0,.28);will-change:transform}' +
+    '.ob-pl i{width:9px;height:9px;border-radius:50%}.ob-pl em{font-style:normal;color:#ffd34d}' +
+    '.ob-pl .x{all:unset;cursor:pointer;width:20px;height:20px;border-radius:50%;background:#3a3f4a;text-align:center;line-height:20px;font-size:15px}.ob-pl .x:hover{background:#e31b1f}' +
+    '.ob-pl-tray{border-style:dashed;pointer-events:none}' +
+    '.ob-zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}' +
+    '.ob-zoom button{width:34px;height:34px;border-radius:9px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);font:700 18px/1 system-ui;cursor:pointer;color:#1d2026}.ob-zoom button:hover{background:#fff;border-color:#e31b1f}' +
+    '.ob-hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:#555b66;background:rgba(255,255,255,.75);padding:4px 9px;border-radius:6px;pointer-events:none}' +
+    '.ob-add{font:700 13px var(--o-body,system-ui);padding:8px 14px;border-radius:9px;border:0;background:#e31b1f;color:#fff;cursor:pointer}.ob-add:hover{filter:brightness(1.08)}' +
+    '.ob-edit{font:700 13px var(--o-body,system-ui);padding:7px 14px;border-radius:9px;border:1px solid var(--o-fg,#1d2026);background:var(--o-fg,#1d2026);color:var(--o-bg,#fff);cursor:pointer;margin-top:10px}' +
     '.ob-m{cursor:grab}.ob-m.drag{cursor:grabbing}.ob-m:focus{outline:none}.ob-m:focus-visible .ob-ring{opacity:1}' +
     '.ob-ring{fill:none;stroke:#e31b1f;stroke-width:2;opacity:0;stroke-dasharray:4 3}.ob-m.sel .ob-ring{opacity:1}' +
     '.ob-m:hover .ob-ring{opacity:1}' +
@@ -192,6 +204,452 @@
   var COLORES = ['#ffcd11', '#f2b705', '#e8731a', '#d6281f', '#367c2b', '#2f7d4f', '#1f5fae', '#f4f4f0', '#8a9099', '#2b2f36'];
   var SC = 0.72, STEP = 92;
 
+  /* ======== Motor 3D (three.js): escenario low-poly como el de la Oficina ======== */
+  function webglOK() {
+    try { var c = document.createElement('canvas'); return !!(window.THREE && window.THREE.OrbitControls && window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; }
+  }
+  var CW = 2.2, GLS = '#9fd0e6', KK = '#2b2f36';
+  function angd(a, b) { var d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; }
+
+  function engine3D(stage, api) {
+    var T = window.THREE, GC = {}, MC = {};
+    function geo(k, a, b, c) {
+      var key = k + [a, b, c].join(':'); if (GC[key]) return GC[key];
+      var g;
+      if (k === 'b') g = new T.BoxGeometry(a, b, c);
+      else if (k === 'cz') { g = new T.CylinderGeometry(a, a, b, c || 14); g.rotateX(Math.PI / 2); }
+      else if (k === 'cy') g = new T.CylinderGeometry(a, a, b, c || 18);
+      else if (k === 'cone') g = new T.ConeGeometry(a, b, c || 7);
+      else g = new T.SphereGeometry(a, 10, 8);
+      return (GC[key] = g);
+    }
+    function mat(c) { return MC[c] || (MC[c] = new T.MeshLambertMaterial({ color: c })); }
+    function bx(g, w, h, d, c, x, y, z) { var m = new T.Mesh(geo('b', w, h, d), mat(c)); m.position.set(x || 0, y || 0, z || 0); g.add(m); return m; }
+
+    var renderer = new T.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0xecebe4, 1);
+    var cv = renderer.domElement;
+    var scene = new T.Scene();
+    var camera = new T.PerspectiveCamera(26, 1, 1, 600);
+    scene.add(new T.HemisphereLight(0xffffff, 0xd8d1c0, 0.92));
+    var sun = new T.DirectionalLight(0xffffff, 0.7); sun.position.set(-14, 26, 10); scene.add(sun);
+    var world = new T.Group(); scene.add(world);
+    var ov = document.createElement('div'); ov.className = 'ob-ov';
+    var zoom = document.createElement('div'); zoom.className = 'ob-zoom';
+    zoom.innerHTML = '<button type="button" data-z="in" aria-label="Acercar">+</button><button type="button" data-z="out" aria-label="Alejar">−</button><button type="button" data-z="home" aria-label="Vista general">⌂</button>';
+    var emptyEl = document.createElement('div'); emptyEl.className = 'ob-empty'; emptyEl.hidden = true;
+    var hint = document.createElement('div'); hint.className = 'ob-hint'; hint.textContent = 'Arrastrá el fondo para girar · tocalá o arrastrá una máquina';
+    stage.classList.add('gl'); stage.innerHTML = '';
+    stage.appendChild(cv); stage.appendChild(ov); stage.appendChild(zoom); stage.appendChild(hint); stage.appendChild(emptyEl);
+    var controls = new T.OrbitControls(camera, cv);
+    controls.enableDamping = true; controls.dampingFactor = 0.12; controls.enableZoom = false;
+    controls.minPolarAngle = 0.35; controls.maxPolarAngle = 1.3; controls.screenSpacePanning = false;
+    var ray = new T.Raycaster(), V = new T.Vector3(), plane = new T.Plane(new T.Vector3(0, 1, 0), -0.25);
+
+    var S = { d: null, actors: [], plots: [], tray: null, labels: [], pinned: null, key: '', ext: null, hover: null, drag: null, hl: null, own: [], size: [0, 0] };
+
+    /* ---------- modelos ---------- */
+    function wheelM(g, W, r, x, y, z, w, rim) {
+      var gp = new T.Group(); gp.position.set(x, y, z); g.add(gp);
+      var tire = new T.Mesh(geo('cz', r, w, 14), mat(KK)); gp.add(tire);
+      var hub = new T.Mesh(geo('cz', r * 0.55, w + 0.03, 12), mat(rim || '#aeb4bd')); gp.add(hub);
+      bx(gp, r * 1.5, 0.06, w + 0.05, KK, 0, 0, 0);
+      W.push(gp); return gp;
+    }
+    function model(tipo, st) {
+      var g = new T.Group(), P = {}, W = [], c = st.body, d = st.dark, t = st.trim;
+      if (tipo === 'excavadora') {
+        bx(g, 1.3, 0.28, 0.34, KK, 0, 0.16, 0.36); bx(g, 1.3, 0.28, 0.34, KK, 0, 0.16, -0.36);
+        bx(g, 1.2, 0.04, 0.2, '#6b717b', 0, 0.3, 0.36); bx(g, 1.2, 0.04, 0.2, '#6b717b', 0, 0.3, -0.36);
+        var up = new T.Group(); up.position.y = 0.3; g.add(up); P.up = up;
+        bx(up, 0.98, 0.34, 0.8, c, -0.05, 0.19, 0); bx(up, 0.36, 0.4, 0.8, d, -0.52, 0.22, 0); bx(up, 1.0, 0.05, 0.82, t, -0.05, 0.36, 0);
+        bx(up, 0.44, 0.46, 0.44, c, 0.1, 0.63, 0.17); bx(up, 0.46, 0.06, 0.48, d, 0.1, 0.89, 0.17);
+        bx(up, 0.04, 0.3, 0.36, GLS, 0.33, 0.66, 0.17);
+        var boom = new T.Group(); boom.position.set(0.38, 0.32, -0.16); up.add(boom); P.boom = boom;
+        bx(boom, 1.05, 0.16, 0.16, c, 0.52, 0, 0);
+        var stick = new T.Group(); stick.position.set(1.04, 0, 0); boom.add(stick); P.stick = stick;
+        bx(stick, 0.86, 0.11, 0.12, d, 0.43, 0, 0);
+        var bucket = new T.Group(); bucket.position.set(0.86, 0, 0); stick.add(bucket); P.bucket = bucket;
+        bx(bucket, 0.32, 0.26, 0.42, KK, 0.1, -0.1, 0);
+        var dirt = new T.Mesh(geo('s', 0.2), mat('#8b6b4a')); dirt.position.set(0.12, 0.02, 0); dirt.visible = false; bucket.add(dirt); P.dirt = dirt;
+      } else if (tipo === 'pala') {
+        [-0.5, 0.5].forEach(function (x) { wheelM(g, W, 0.3, x, 0.3, 0.48, 0.24, st.rim); wheelM(g, W, 0.3, x, 0.3, -0.48, 0.24, st.rim); });
+        bx(g, 0.86, 0.42, 0.74, c, -0.28, 0.55, 0); bx(g, 0.78, 0.26, 0.62, c, 0.42, 0.42, 0); bx(g, 1.7, 0.06, 0.66, d, 0.05, 0.28, 0);
+        bx(g, 0.88, 0.05, 0.76, t, -0.28, 0.77, 0);
+        bx(g, 0.42, 0.5, 0.52, c, -0.3, 1.02, 0); bx(g, 0.04, 0.34, 0.44, GLS, -0.08, 1.04, 0); bx(g, 0.46, 0.05, 0.56, d, -0.3, 1.29, 0);
+        var lift = new T.Group(); lift.position.set(0.55, 0.5, 0); g.add(lift); P.lift = lift;
+        bx(lift, 0.78, 0.1, 0.1, c, 0.39, 0, 0.36); bx(lift, 0.78, 0.1, 0.1, c, 0.39, 0, -0.36);
+        var tilt = new T.Group(); tilt.position.set(0.78, 0, 0); lift.add(tilt); P.tilt = tilt;
+        bx(tilt, 0.34, 0.4, 1.0, KK, 0.1, -0.02, 0); bx(tilt, 0.26, 0.3, 0.86, '#555b66', 0.12, 0.02, 0);
+        var dirtP = new T.Mesh(geo('s', 0.3), mat('#8b6b4a')); dirtP.position.set(0.12, 0.2, 0); dirtP.scale.set(1, 0.7, 1.4); dirtP.visible = false; tilt.add(dirtP); P.dirt = dirtP;
+      } else if (tipo === 'moto') {
+        [-0.75, -0.4].forEach(function (x) { wheelM(g, W, 0.26, x, 0.26, 0.44, 0.2, st.rim); wheelM(g, W, 0.26, x, 0.26, -0.44, 0.2, st.rim); });
+        wheelM(g, W, 0.26, 0.85, 0.26, 0.4, 0.2, st.rim); wheelM(g, W, 0.26, 0.85, 0.26, -0.4, 0.2, st.rim);
+        bx(g, 2.05, 0.14, 0.24, c, 0.05, 0.62, 0); bx(g, 0.9, 0.46, 0.76, c, -0.55, 0.62, 0); bx(g, 0.9, 0.05, 0.78, t, -0.55, 0.86, 0);
+        bx(g, 0.44, 0.5, 0.5, c, -0.62, 1.08, 0); bx(g, 0.04, 0.34, 0.42, GLS, -0.4, 1.1, 0); bx(g, 0.48, 0.05, 0.54, d, -0.62, 1.35, 0);
+        bx(g, 0.2, 0.32, 0.2, d, 0.85, 0.5, 0);
+        var blade = new T.Group(); blade.position.set(0.2, 0.28, 0); g.add(blade); P.blade = blade;
+        bx(blade, 0.1, 0.26, 1.15, KK, 0, 0, 0); bx(blade, 0.12, 0.05, 1.15, '#8a9099', 0, -0.13, 0); bx(blade, 0.06, 0.16, 0.1, d, 0, 0.2, 0);
+      } else if (tipo === 'camion') {
+        bx(g, 2.1, 0.16, 0.72, KK, 0, 0.42, 0);
+        [-0.75, -0.38].forEach(function (x) { wheelM(g, W, 0.27, x, 0.27, 0.42, 0.24, st.rim); wheelM(g, W, 0.27, x, 0.27, -0.42, 0.24, st.rim); });
+        wheelM(g, W, 0.27, 0.72, 0.27, 0.42, 0.24, st.rim); wheelM(g, W, 0.27, 0.72, 0.27, -0.42, 0.24, st.rim);
+        bx(g, 0.62, 0.72, 0.78, c, 0.78, 0.9, 0); bx(g, 0.04, 0.34, 0.66, GLS, 1.1, 1.05, 0); bx(g, 0.64, 0.06, 0.8, t, 0.78, 1.28, 0); bx(g, 0.1, 0.12, 0.7, KK, 1.12, 0.55, 0);
+        var bed = new T.Group(); bed.position.set(-1.0, 0.54, 0); g.add(bed); P.bed = bed;
+        bx(bed, 1.45, 0.1, 0.84, st.bed, 0.72, 0.05, 0); bx(bed, 1.45, 0.5, 0.08, st.bed, 0.72, 0.3, 0.38); bx(bed, 1.45, 0.5, 0.08, st.bed, 0.72, 0.3, -0.38);
+        bx(bed, 0.08, 0.55, 0.84, st.bed, 0, 0.3, 0); bx(bed, 0.08, 0.5, 0.84, st.bed, 1.44, 0.3, 0);
+        var load = new T.Mesh(geo('b', 1.3, 0.4, 0.72), mat('#8b6b4a')); load.position.set(0.72, 0.28, 0); load.visible = false; bed.add(load); P.load = load;
+      } else if (tipo === 'camioneta') {
+        wheelM(g, W, 0.24, -0.5, 0.24, 0.4, 0.2, st.rim); wheelM(g, W, 0.24, -0.5, 0.24, -0.4, 0.2, st.rim); wheelM(g, W, 0.24, 0.55, 0.24, 0.4, 0.2, st.rim); wheelM(g, W, 0.24, 0.55, 0.24, -0.4, 0.2, st.rim);
+        bx(g, 1.7, 0.34, 0.8, c, 0, 0.46, 0); bx(g, 0.62, 0.36, 0.74, c, 0.18, 0.82, 0); bx(g, 0.04, 0.26, 0.64, GLS, 0.5, 0.84, 0);
+        bx(g, 0.04, 0.24, 0.66, GLS, -0.12, 0.84, 0); bx(g, 0.64, 0.05, 0.76, d, 0.18, 1.02, 0);
+        bx(g, 0.5, 0.18, 0.76, d, -0.6, 0.66, 0); bx(g, 1.72, 0.06, 0.82, t, 0, 0.5, 0); bx(g, 0.05, 0.1, 0.5, '#ffd34d', 0.86, 0.5, 0);
+      } else if (tipo === 'tractor') {
+        wheelM(g, W, 0.52, -0.35, 0.52, 0.58, 0.3, st.rim); wheelM(g, W, 0.52, -0.35, 0.52, -0.58, 0.3, st.rim);
+        wheelM(g, W, 0.28, 0.78, 0.28, 0.4, 0.2, st.rim); wheelM(g, W, 0.28, 0.78, 0.28, -0.4, 0.2, st.rim);
+        bx(g, 1.2, 0.34, 0.5, c, 0.3, 0.6, 0); bx(g, 0.3, 0.2, 0.46, d, 0.9, 0.5, 0); bx(g, 1.2, 0.04, 0.52, t, 0.3, 0.78, 0);
+        bx(g, 0.54, 0.62, 0.62, c, -0.3, 1.0, 0); bx(g, 0.04, 0.4, 0.5, GLS, -0.03, 1.02, 0); bx(g, 0.6, 0.06, 0.68, d, -0.3, 1.33, 0); bx(g, 0.06, 0.4, 0.06, KK, 0.7, 0.98, 0);
+      } else if (tipo === 'rodillo') {
+        var drum = new T.Mesh(geo('cz', 0.48, 1.0, 20), mat('#7f8792')); drum.position.set(0.8, 0.48, 0); g.add(drum); W.push(drum);
+        bx(g, 0.1, 0.5, 1.1, KK, 0.8, 0.5, 0);
+        wheelM(g, W, 0.42, -0.55, 0.42, 0.4, 0.34, st.rim); wheelM(g, W, 0.42, -0.55, 0.42, -0.4, 0.34, st.rim);
+        bx(g, 1.2, 0.46, 0.8, c, -0.1, 0.68, 0); bx(g, 0.6, 0.3, 0.7, c, 0.5, 0.58, 0); bx(g, 1.22, 0.05, 0.82, t, -0.1, 0.92, 0);
+        bx(g, 0.5, 0.54, 0.54, c, -0.25, 1.2, 0); bx(g, 0.04, 0.36, 0.46, GLS, 0.0, 1.22, 0); bx(g, 0.54, 0.05, 0.58, d, -0.25, 1.5, 0);
+      } else {
+        wheelM(g, W, 0.26, -0.45, 0.26, 0.4, 0.2, st.rim); wheelM(g, W, 0.26, 0.45, 0.26, 0.4, 0.2, st.rim); wheelM(g, W, 0.26, -0.45, 0.26, -0.4, 0.2, st.rim); wheelM(g, W, 0.26, 0.45, 0.26, -0.4, 0.2, st.rim);
+        bx(g, 1.5, 0.6, 0.76, c, 0, 0.6, 0); bx(g, 0.5, 0.3, 0.6, GLS, 0.3, 1.05, 0);
+      }
+      g.scale.setScalar(0.92);
+      return { g: g, P: P, W: W };
+    }
+
+    /* ---------- actor ---------- */
+    function mkActor(m, tipo, st) {
+      var M = model(tipo, st), root = new T.Group(), a = { m: m, tipo: tipo, root: root, P: M.P, W: M.W, spin: 0, ry: 0, px: null, pz: null, u: 0, v: 0 };
+      var sh = new T.Mesh(new T.CircleGeometry(1, 20), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2, depthWrite: false }));
+      sh.rotation.x = -Math.PI / 2; sh.scale.set(1.25, 0.8, 1); sh.position.y = 0.02; root.add(sh); S.own.push(sh.material);
+      var ring = new T.Mesh(new T.RingGeometry(1.3, 1.45, 28), new T.MeshBasicMaterial({ color: 0xe31b1f, side: T.DoubleSide, transparent: true, opacity: 0.95 }));
+      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.04; ring.visible = false; root.add(ring); S.own.push(ring.material, ring.geometry); a.ring = ring;
+      root.add(M.g); root.userData.actor = a; a.body = M.g;
+      a.at = function (x, z, mov, ang) {
+        if (a.px !== null && ang === undefined) { var dx = x - a.px, dz = z - a.pz; if (dx * dx + dz * dz > 1e-6) a.th = Math.atan2(-dz, dx); }
+        if (ang !== undefined) a.th = ang;
+        if (a.th !== undefined) a.ry += angd(a.ry, a.th) * 0.22;
+        a.px = x; a.pz = z;
+        if (S.drag && S.drag.a === a && S.drag.moved) return;
+        root.position.set(x, 0, z); root.rotation.y = a.ry;
+        if (mov) { a.spin += 0.2; a.W.forEach(function (w) { w.rotation.z = -a.spin; }); }
+      };
+      var lab = document.createElement('div'); lab.className = 'ob-cd'; lab.textContent = m.codigo; ov.appendChild(lab); a.lab = lab;
+      return a;
+    }
+
+    /* ---------- construcción ---------- */
+    function clearAll() {
+      while (world.children.length) world.remove(world.children[0]);
+      S.own.forEach(function (o) { if (o.dispose) o.dispose(); }); S.own = [];
+      ov.innerHTML = ''; S.actors = []; S.plots = []; S.labels = []; S.hl = null;
+    }
+    function ptX(P, u) { return P.wx + u * CW; }
+    function ptZ(P, v) { return P.wz + v * CW; }
+    function heap(parent, x, z, r, h) {
+      var gp = new T.Group(); gp.position.set(x, 0.05, z); parent.add(gp);
+      var a = new T.Mesh(geo('cone', r, h, 8), mat('#9b7b55')); a.position.y = h / 2; gp.add(a);
+      var b = new T.Mesh(geo('cone', r * 0.55, h * 0.7, 7), mat('#b08d63')); b.position.set(r * 0.12, h * 0.35, 0); gp.add(b);
+      return gp;
+    }
+    function tree(parent, x, z, k) {
+      var gp = new T.Group(); gp.position.set(x, 0, z); gp.scale.setScalar(k || 1); parent.add(gp);
+      var tr = new T.Mesh(geo('cy', 0.1, 0.7, 6), mat('#7a5a3a')); tr.position.y = 0.35; gp.add(tr);
+      var c1 = new T.Mesh(geo('cone', 0.55, 1.1, 7), mat('#4e9a5d')); c1.position.y = 1.15; gp.add(c1);
+      var c2 = new T.Mesh(geo('cone', 0.42, 0.9, 7), mat('#63b072')); c2.position.y = 1.7; gp.add(c2);
+    }
+    function addLabel(html, cls) { var e = document.createElement('div'); e.className = cls; e.innerHTML = html; ov.appendChild(e); return e; }
+
+    function build(d, pinned) {
+      clearAll(); S.d = d; S.pinned = pinned;
+      var MAXW = 44, GAPW = 2.6, rx = 0, rz = 0, rh = 0, tw = 0;
+      d.plots.forEach(function (P) {
+        var n = P.maqs.length; P.side = n ? Math.max(4, Math.ceil(Math.sqrt(n)) + 1) : 4; P.sz = P.side * CW;
+        if (rx > 0 && rx + P.sz > MAXW) { rz += rh + GAPW + 1.6; rx = 0; rh = 0; }
+        P.wx = rx; P.wz = rz; rx += P.sz + GAPW; rh = Math.max(rh, P.sz); tw = Math.max(tw, rx - GAPW);
+      });
+      var Tr = d.tray, W = Math.max(tw, 18), per = Math.max(1, Math.floor((W - 2) / 2.8));
+      Tr.per = per; Tr.rows = Math.max(1, Math.ceil(Tr.maqs.length / per));
+      Tr.wx = 0; Tr.wz = rz + rh + GAPW + 1.8; Tr.w = W; Tr.h = 1.8 + Tr.rows * 2.9;
+      S.ext = { x0: 0, z0: 0, x1: W, z1: Tr.wz + Tr.h };
+      var key = d.plots.map(function (p) { return p.id + ':' + p.side; }).join('|') + '/' + Tr.rows;
+      var ground = new T.Mesh(geo('b', 400, 0.2, 400), mat('#ecebe4')); ground.position.set(W / 2, -0.7, S.ext.z1 / 2); world.add(ground);
+
+      d.plots.forEach(function (P) {
+        var A = P.area, g = new T.Group(); g.position.set(P.wx, 0, P.wz); world.add(g); P.g = g; S.plots.push(P);
+        var side = new T.MeshLambertMaterial({ color: A.lado }), side2 = new T.MeshLambertMaterial({ color: A.lado2 }), top = new T.MeshLambertMaterial({ color: A.piso });
+        S.own.push(side, side2, top);
+        var slab = new T.Mesh(geo('b', P.sz, 0.55, P.sz), [side2, side, top, side, side2, side]); slab.position.set(P.sz / 2, -0.275, P.sz / 2); g.add(slab);
+        var lines = [], k;
+        for (k = 0; k <= P.side; k++) { lines.push(k * CW, 0.012, 0, k * CW, 0.012, P.sz, 0, 0.012, k * CW, P.sz, 0.012, k * CW); }
+        var lg = new T.BufferGeometry(); lg.setAttribute('position', new T.Float32BufferAttribute(lines, 3));
+        var lm = new T.LineBasicMaterial({ color: A.borde, transparent: true, opacity: 0.7 }); S.own.push(lg, lm); g.add(new T.LineSegments(lg, lm));
+        var ins = 0.32 * CW; bx(g, P.sz - ins * 2, 0.07, P.sz - ins * 2, '#cdb48d', P.sz / 2, 0.035, P.sz / 2);
+        tree(g, 0.35, 0.35, 1); tree(g, P.sz - 0.35, 0.35, 0.85);
+        plan(P);
+        var lb = addLabel('<i style="background:' + A.acento + '"></i><b>' + esc((P.codigo + ' · ' + P.nombre).slice(0, 36)) + '</b><em>' + P.maqs.length + '</em>' + (d.puede ? '<button type="button" class="x" title="Quitar esta obra del gráfico" aria-label="Quitar esta obra del gráfico">×</button>' : ''), 'ob-pl');
+        lb.style.setProperty('--ac', A.acento); lb.setAttribute('data-plot', P.id);
+        S.labels.push({ el: lb, x: P.wx + P.sz * 0.5, z: P.wz + P.sz, dy: 0, plot: P });
+        var xb = lb.querySelector('.x'); if (xb) xb.addEventListener('click', function (e) { e.stopPropagation(); api.hide(P.id); });
+        lb.addEventListener('pointerenter', function (e) { api.labelHover(P.id, e); });
+        lb.addEventListener('pointermove', function (e) { api.labelHover(P.id, e); });
+        lb.addEventListener('pointerleave', function () { api.hover(null); });
+      });
+      /* playa de máquinas */
+      var tg = new T.Group(); tg.position.set(Tr.wx, 0, Tr.wz); world.add(tg);
+      var tm = new T.MeshLambertMaterial({ color: '#f7f6f1' }); S.own.push(tm);
+      var tslab = new T.Mesh(geo('b', Tr.w, 0.3, Tr.h), tm); tslab.position.set(Tr.w / 2, -0.15, Tr.h / 2); tg.add(tslab);
+      var te = new T.EdgesGeometry(geo('b', Tr.w, 0.3, Tr.h)), tl = new T.LineBasicMaterial({ color: '#cfcbbd' }); S.own.push(te, tl);
+      var tls = new T.LineSegments(te, tl); tls.position.copy(tslab.position); tg.add(tls);
+      Tr.maqs.forEach(function (m, i) {
+        var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)), col = i % per, row = Math.floor(i / per);
+        a.at(Tr.wx + 1.7 + col * 2.8, Tr.wz + 1.7 + row * 2.9, 0, 0); world.add(a.root); S.actors.push(a);
+        a.upd = function (t) { a.at(Tr.wx + 1.7 + col * 2.8, Tr.wz + 1.7 + row * 2.9, 0, 0); };
+        a.home = true;
+      });
+      var tlab = addLabel('<i style="background:#9aa0ab"></i><b>Playa de máquinas</b><em>' + Tr.maqs.length + '</em>', 'ob-pl ob-pl-tray');
+      S.labels.push({ el: tlab, x: Tr.wx + Tr.w * 0.5, z: Tr.wz + Tr.h, dy: 0 });
+      S.tray = Tr;
+      /* resaltado al arrastrar */
+      var hm = new T.MeshBasicMaterial({ color: 0xe31b1f, transparent: true, opacity: 0.18, depthWrite: false }); S.own.push(hm);
+      S.hl = new T.Mesh(geo('b', 1, 0.2, 1), hm); S.hl.visible = false; world.add(S.hl);
+      S.actors.forEach(function (a) { a.ring.visible = S.pinned === a.m.id; });
+      S.size = [0, 0]; resize();
+      if (S.key !== key) { S.key = key; fit(); }
+    }
+
+    /* ---------- guion de trabajo ---------- */
+    var KF = [[0, 0.35, -1.0, -0.6, 0, 0], [0.3, -0.2, -0.3, 0.3, 0, 0], [0.45, -0.3, -0.05, -0.9, 1, 0], [0.62, 0.6, -0.6, -0.9, 1, 1], [0.8, 0.5, -0.5, 0.7, 0, 1], [1, 0.35, -1.0, -0.6, 0, 0]];
+    function pose(p) {
+      for (var k = 1; k < KF.length; k++) if (p <= KF[k][0]) {
+        var a0 = KF[k - 1], a1 = KF[k], f = ease((p - a0[0]) / (a1[0] - a0[0]));
+        return [lerp(a0[1], a1[1], f), lerp(a0[2], a1[2], f), lerp(a0[3], a1[3], f), (p > 0.44 && p < 0.74) ? 1 : 0, lerp(a0[5], a1[5], f)];
+      }
+      return [0.35, -1, -0.6, 0, 0];
+    }
+    function plan(P) {
+      var s = P.side, by = {}; P.acts = [];
+      P.maqs.forEach(function (m) {
+        var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)); a.P0 = P; world.add(a.root); S.actors.push(a); P.acts.push(a); (by[tp] = by[tp] || []).push(a);
+      });
+      var g = P.g, ex = by.excavadora || [], tr = by.camion || [], ld = by.pala || [], mg = by.moto || [], rl = by.rodillo || [], tc = by.tractor || [], pk = by.camioneta || [], gn = by.generico || [];
+      var DU = s - 0.65, DV = s - 0.65, cap = Math.max(1, Math.floor((s - 2) / 1.5) + 1), spots = [];
+      ex.forEach(function (a, i) {
+        var col = i % cap, row = Math.floor(i / cap);
+        a.eu = 0.75 + col * 1.55; a.ev = 1.5 + row * 1.15; a.pit = { u: a.eu + 0.62, v: a.ev }; a.group = [];
+        spots.push({ u: a.eu + 0.62, v: a.ev - 0.78, ex: a, group: [] });
+      });
+      var hasT = tr.length > 0;
+      if (!spots.length && hasT) spots.push({ u: 1.6, v: 0.95, ex: null, src: true, group: [] });
+      tr.forEach(function (a, i) { var sp = spots[i % spots.length]; a.spot = sp; sp.group.push(a); if (sp.ex) sp.ex.group.push(a); });
+      ex.forEach(function (a) {
+        var pg = new T.Group(); pg.position.set(ptX(P, a.pit.u), 0.07, ptZ(P, a.pit.v)); g.parent.add(pg);
+        var o1 = new T.Mesh(geo('cy', 0.95, 0.04, 20), mat('#9c8058')), o2 = new T.Mesh(geo('cy', 0.74, 0.07, 20), mat('#5d4630')), o3 = new T.Mesh(geo('cy', 0.44, 0.09, 16), mat('#473524'));
+        pg.add(o1); pg.add(o2); pg.add(o3); a.pitG = pg;
+        a.mound = heap(g.parent, ptX(P, a.pit.u + 0.12), ptZ(P, a.pit.v + 0.72), 0.78, 0.75);
+      });
+      spots.forEach(function (sp) { if (sp.src) sp.hp = heap(g.parent, ptX(P, sp.u - 0.35), ptZ(P, sp.v + 0.55), 0.8, 0.8); });
+      if (hasT) P.dump = heap(g.parent, ptX(P, DU + 0.05), ptZ(P, DV + 0.2), 0.85, 0.85);
+      var lanes = [ld, mg, rl].filter(function (q) { return q.length; });
+      lanes.forEach(function (grp, li) {
+        var v = s - 0.6 - li * 0.8; if (v < 2.6) v = 2.6 + (li % 2) * 0.4;
+        grp.forEach(function (a, k) { a.lane = v; a.ph = k * 0.5; });
+        if (grp === ld) { grp.h1 = heap(g.parent, ptX(P, 0.75), ptZ(P, v + 0.05), 0.8, 0.8); grp.h2 = heap(g.parent, ptX(P, s - 0.75), ptZ(P, v + 0.05), 0.8, 0.8); }
+        else {
+          var tm = new T.MeshBasicMaterial({ color: grp === mg ? '#efe4c8' : '#8f7752', transparent: true, opacity: 0, depthWrite: false }); S.own.push(tm);
+          var trl = new T.Mesh(geo('b', 1, 0.03, 0.62), tm); trl.position.y = 0.085; g.parent.add(trl);
+          grp.forEach(function (a) { a.trail = trl; a.tm = tm; a.tOp = grp === mg ? 0.95 : 0.55; });
+        }
+      });
+      /* camiones: cargados por la retro, llevan la tierra al rincón y la vuelcan */
+      tr.forEach(function (a) {
+        var sp = a.spot, m = sp.group.length, Tc = m * 9 + 12, j = sp.group.indexOf(a), w0 = j * 9;
+        var L1 = Math.abs(DU - sp.u), L2 = Math.abs(DV - 0.62 - sp.v), LT = L1 + L2;
+        function along(f) { var dd = f * LT; if (dd <= L1) return [sp.u + (DU - sp.u) * (dd / (L1 || 1)), sp.v]; return [DU, sp.v + (dd - L1)]; }
+        a.upd = function (t) {
+          var tt = t % Tc, pos = [sp.u, sp.v], lvl = 0, bed = 0, mov = 0, ang;
+          if (tt >= w0 && tt < w0 + 9) { var k = Math.floor((tt - w0) / 3), fr = ((tt - w0) % 3) / 3; lvl = (k + ease(seg(fr, 0.62, 0.85))) / 3; ang = 0; }
+          else if (tt >= w0 + 9 && tt < w0 + 13) { pos = along(ease((tt - w0 - 9) / 4)); lvl = 1; mov = 1; }
+          else if (tt >= w0 + 13 && tt < w0 + 16) { pos = along(1); var dd = tt - w0 - 13; bed = ease(seg(dd, 0, 1)) * (1 - ease(seg(dd, 2, 3))); lvl = 1 - ease(seg(dd, 0.7, 2.2)); ang = -Math.PI / 2; }
+          else if (tt >= w0 + 16 && tt < w0 + 21) { pos = along(1 - ease((tt - w0 - 16) / 5)); mov = 1; }
+          else { pos = [sp.u + 0.95, sp.v]; ang = 0; }
+          a.at(ptX(P, pos[0]), ptZ(P, pos[1]), mov, ang);
+          a.P.bed.rotation.z = 0.5 * bed; a.P.load.visible = lvl > 0.03; a.P.load.scale.y = Math.max(0.05, lvl); a.P.load.position.y = 0.1 + 0.18 * lvl;
+        };
+      });
+      ex.forEach(function (a) {
+        var m = a.group.length, swT = m ? Math.atan2(0.78, 0.62) : -Math.atan2(0.72, 0.5);
+        a.upd = function (t) {
+          var active = true, p;
+          if (m) { var Tc = m * 9 + 12, tt = t % Tc; active = tt < m * 9; p = (tt % 3) / 3; } else p = (t % 3.4) / 3.4;
+          var po = active ? pose(p) : [0.3 + Math.sin(t * 2) * 0.02, -1, -0.6, 0, 0];
+          a.P.boom.rotation.z = po[0]; a.P.stick.rotation.z = po[1]; a.P.bucket.rotation.z = po[2]; a.P.dirt.visible = !!po[3];
+          a.P.up.rotation.y = swT * po[4];
+          a.at(ptX(P, a.eu), ptZ(P, a.ev), 0, 0);
+          var sc = 0.62 + 0.38 * tri(t / 36); a.pitG.scale.set(sc, 1, sc);
+          var ms = 0.55 + 0.45 * tri(t / 36 + 0.5); a.mound.scale.set(ms, ms, ms);
+        };
+      });
+      ld.forEach(function (a) {
+        var v = a.lane, u1 = 1.2, u2 = s - 1.2, T0 = 14;
+        a.upd = function (t) {
+          var tt = (t + a.ph * T0) % T0, u, mov = 0, lift = -0.1, tilt = 0.2, dirt = 0, ang;
+          if (tt < 2.2) { u = u1; var f = tt / 2.2; ang = 0; tilt = lerp(-0.2, 0.6, ease(seg(f, 0.2, 0.7))); lift = f < 0.5 ? lerp(-0.45, -0.05, ease(f / 0.5)) : lerp(-0.05, 0.45, ease(seg(f, 0.6, 1))); dirt = f > 0.6 ? 1 : 0; }
+          else if (tt < 6.2) { u = lerp(u1, u2, ease((tt - 2.2) / 4)); lift = 0.45; tilt = 0.6; dirt = 1; mov = 1; }
+          else if (tt < 8.2) { u = u2; var f3 = (tt - 6.2) / 2; ang = 0; lift = lerp(0.45, 0.7, ease(seg(f3, 0, 0.4))); tilt = lerp(0.6, -0.8, ease(seg(f3, 0.3, 0.8))); dirt = f3 < 0.6 ? 1 : 0; }
+          else { var f4 = ease((tt - 8.2) / 5.8); u = lerp(u2, u1, f4); lift = lerp(0.7, -0.45, ease(seg(f4, 0, 0.3))); tilt = lerp(-0.8, -0.2, ease(seg(f4, 0, 0.4))); mov = 1; }
+          a.at(ptX(P, u), ptZ(P, v), mov, ang);
+          a.P.lift.rotation.z = lift; a.P.tilt.rotation.z = -tilt; a.P.dirt.visible = !!dirt;
+        };
+      });
+      ld.forEach(function (a, k) { if (k === 0) { var q = ld; var pu = a.upd; a.upd = function (t) { pu(t); var s1 = 1.0 - 0.3 * tri(t / 28), s2 = 0.72 + 0.3 * tri(t / 28); q.h1.scale.set(s1, s1, s1); q.h2.scale.set(s2, s2, s2); }; } });
+      function sweeper(arr, T0, shake) {
+        arr.forEach(function (a) {
+          var v = a.lane, u1 = 1.0, u2 = s - 1.0;
+          a.upd = function (t) {
+            var tt = (t + a.ph * T0) % T0, u, mov = 1, ang;
+            if (tt < T0 * 0.42) u = lerp(u1, u2, ease(tt / (T0 * 0.42)));
+            else if (tt < T0 * 0.5) { u = u2; mov = 0; ang = 0; }
+            else if (tt < T0 * 0.92) u = lerp(u2, u1, ease((tt - T0 * 0.5) / (T0 * 0.42)));
+            else { u = u1; mov = 0; ang = Math.PI; }
+            a.at(ptX(P, u), ptZ(P, v), mov, ang);
+            a.body.position.y = shake && mov ? Math.sin(t * 55) * 0.012 : 0;
+            if (a.P.blade) a.P.blade.rotation.x = Math.sin(t * 3) * 0.03;
+            if (a.trail) {
+              var cov = tt < T0 * 0.42 ? ease(tt / (T0 * 0.42)) : 1, ub = lerp(u1, u2, cov), fade = tt > T0 * 0.92 ? 1 - (tt - T0 * 0.92) / (T0 * 0.08) : 1;
+              a.trail.scale.x = Math.max(0.01, (ub - u1) * CW); a.trail.position.x = ptX(P, u1) + (ub - u1) * CW / 2; a.trail.position.z = ptZ(P, v); a.tm.opacity = a.tOp * fade;
+            }
+          };
+        });
+      }
+      sweeper(mg, 15, false); sweeper(rl, 18, true);
+      tc.forEach(function (a, k) {
+        var m = 0.6, c4 = [[m, m], [s - m, m], [s - m, s - m], [m, s - m]], sd = s - 2 * m, per = sd * 4, spd = 0.45;
+        a.upd = function (t) {
+          var d0 = (t * spd + k * per / Math.max(1, tc.length)) % per, i4 = Math.floor(d0 / sd), r = d0 - i4 * sd, A0 = c4[i4], A1 = c4[(i4 + 1) % 4];
+          var du = A1[0] - A0[0], dv = A1[1] - A0[1], len = Math.hypot(du, dv) || 1;
+          a.at(ptX(P, A0[0] + du / len * r), ptZ(P, A0[1] + dv / len * r), 1);
+        };
+      });
+      pk.forEach(function (a, k) {
+        var u1 = 0.8, u2 = s - 0.8, v = 0.55, T0 = 22;
+        a.upd = function (t) {
+          var tt = (t + k * 7) % T0, u, mov = 1, ang;
+          if (tt < 5) u = lerp(u1, s / 2, ease(tt / 5)); else if (tt < 8) { u = s / 2; mov = 0; ang = 0; }
+          else if (tt < 12) u = lerp(s / 2, u2, ease((tt - 8) / 4)); else if (tt < 14) { u = u2; mov = 0; ang = 0; }
+          else u = lerp(u2, u1, ease((tt - 14) / 8));
+          a.at(ptX(P, u), ptZ(P, v), mov, ang);
+        };
+      });
+      gn.forEach(function (a, k) { a.upd = function (t) { a.at(ptX(P, 0.9 + k * 1.2), ptZ(P, s - 1.4), 0, 0); }; });
+      /* apila las máquinas sin guion propio (rodillo/moto sin camión, etc.) */
+      P.dumpAnim = function (t) { if (P.dump) { var sc = 0.6 + 0.4 * tri(t / 40); P.dump.scale.set(sc, sc, sc); } };
+    }
+
+    /* ---------- cámara ---------- */
+    function fit() {
+      if (!S.ext) return;
+      var cx = (S.ext.x0 + S.ext.x1) / 2, cz = (S.ext.z0 + S.ext.z1) / 2, w = S.ext.x1 - S.ext.x0, h = S.ext.z1 - S.ext.z0;
+      var R = Math.hypot(w, h) / 2 * 0.86, asp = camera.aspect || 1, fov = camera.fov * Math.PI / 180;
+      var dist = R / Math.sin(fov / 2 * Math.min(1, asp * 0.9));
+      var dir = new T.Vector3(1, 0.85, 1).normalize();
+      controls.target.set(cx, 0, cz); camera.position.set(cx, 0, cz).addScaledVector(dir, dist);
+      camera.near = Math.max(1, dist / 40); camera.far = dist * 6; camera.updateProjectionMatrix(); controls.update();
+    }
+    function resize() {
+      var w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+      if (S.size[0] === w && S.size[1] === h) return; S.size = [w, h];
+      renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    if (window.ResizeObserver) new ResizeObserver(function () { var f = !S.size[0]; resize(); if (f) fit(); }).observe(stage);
+    zoom.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return; var z = b.getAttribute('data-z');
+      if (z === 'home') { fit(); return; }
+      var off = camera.position.clone().sub(controls.target), k = z === 'in' ? 0.8 : 1.25; off.multiplyScalar(k);
+      var l = off.length(); if (l < 8 || l > 400) return; camera.position.copy(controls.target).add(off); controls.update();
+    });
+
+    /* ---------- interacción ---------- */
+    function ndc(ev) { var r = cv.getBoundingClientRect(); return { x: ((ev.clientX - r.left) / r.width) * 2 - 1, y: -((ev.clientY - r.top) / r.height) * 2 + 1 }; }
+    function pick(ev) {
+      var p = ndc(ev); ray.setFromCamera(p, camera);
+      var hits = ray.intersectObjects(S.actors.map(function (a) { return a.root; }), true);
+      for (var i = 0; i < hits.length; i++) { var o = hits[i].object; while (o && !(o.userData && o.userData.actor)) o = o.parent; if (o) return o.userData.actor; }
+      return null;
+    }
+    function ground(ev) { var p = ndc(ev); ray.setFromCamera(p, camera); return ray.ray.intersectPlane(plane, V) ? V.clone() : null; }
+    function target(x, z) {
+      for (var i = 0; i < S.plots.length; i++) { var P = S.plots[i]; if (x >= P.wx && x <= P.wx + P.sz && z >= P.wz && z <= P.wz + P.sz) return { id: P.id, x: P.wx, z: P.wz, w: P.sz, h: P.sz }; }
+      var T0 = S.tray; if (T0 && x >= T0.wx - 1 && x <= T0.wx + T0.w + 1 && z >= T0.wz - 1.5 && z <= T0.wz + T0.h + 1) return { id: '', x: T0.wx, z: T0.wz, w: T0.w, h: T0.h };
+      return null;
+    }
+    cv.addEventListener('pointerdown', function (ev) {
+      if (ev.button > 0) return;
+      var a = pick(ev); if (!a) return;
+      ev.stopImmediatePropagation();
+      S.drag = { a: a, x0: ev.clientX, y0: ev.clientY, moved: false, to: null }; controls.enabled = false;
+      try { cv.setPointerCapture(ev.pointerId); } catch (e) { }
+      api.hover(null);
+    }, true);
+    cv.addEventListener('pointermove', function (ev) {
+      var D = S.drag;
+      if (D) {
+        if (!D.moved && Math.hypot(ev.clientX - D.x0, ev.clientY - D.y0) < 6) return;
+        if (!api.puede()) return;
+        D.moved = true; cv.style.cursor = 'grabbing';
+        var gp = ground(ev); if (!gp) return;
+        D.a.root.position.set(gp.x, 0.35, gp.z); D.a.root.rotation.y = D.a.ry;
+        var to = target(gp.x, gp.z); D.to = to;
+        if (to) { S.hl.visible = true; S.hl.scale.set(to.w, 1, to.h); S.hl.position.set(to.x + to.w / 2, 0.12, to.z + to.h / 2); } else S.hl.visible = false;
+        return;
+      }
+      var h = pick(ev); cv.style.cursor = h ? 'grab' : '';
+      api.hover(h ? h.m : null, ev);
+    });
+    function fin(ev) {
+      var D = S.drag; if (!D) return; S.drag = null; controls.enabled = true; cv.style.cursor = '';
+      try { cv.releasePointerCapture(ev.pointerId); } catch (e) { }
+      if (S.hl) S.hl.visible = false;
+      if (!D.moved) { api.click(D.a.m.id); return; }
+      api.drop(D.a.m.id, D.to ? D.to.id : null);
+    }
+    cv.addEventListener('pointerup', fin); cv.addEventListener('pointercancel', fin);
+    cv.addEventListener('pointerleave', function () { if (!S.drag) api.hover(null); });
+
+    /* ---------- cuadro a cuadro ---------- */
+    function frame(t) {
+      if (!S.d) return;
+      resize();
+      S.plots.forEach(function (P) { if (P.dumpAnim) P.dumpAnim(t); });
+      S.actors.forEach(function (a) { if (a.upd) a.upd(t); });
+      controls.update(); renderer.render(scene, camera);
+      var w = S.size[0], h = S.size[1];
+      S.actors.forEach(function (a) {
+        V.set(a.root.position.x, 1.9, a.root.position.z).project(camera);
+        a.lab.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h).toFixed(1) + 'px) translate(-50%,-100%)';
+        a.lab.style.display = V.z > 1 ? 'none' : '';
+      });
+      S.labels.forEach(function (L) {
+        V.set(L.x, 0, L.z).project(camera);
+        L.el.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h + 12).toFixed(1) + 'px) translate(-50%,0)';
+        L.el.style.display = V.z > 1 ? 'none' : '';
+      });
+    }
+    return {
+      build: function (d, pinned) { emptyEl.hidden = true; cv.style.visibility = ''; ov.style.visibility = ''; hint.hidden = false; build(d, pinned); },
+      empty: function (msg) { S.d = null; clearAll(); emptyEl.hidden = false; emptyEl.textContent = msg; cv.style.visibility = 'hidden'; hint.hidden = true; },
+      select: function (mid) { S.pinned = mid; S.actors.forEach(function (a) { a.ring.visible = mid === a.m.id; }); },
+      frame: frame
+    };
+  }
+
   function mount(host, getD) {
     var wrap = document.createElement('div'); wrap.className = 'ob';
     var st = document.createElement('style'); st.textContent = CSS;
@@ -201,7 +659,7 @@
     var stage = document.createElement('div'); stage.className = 'ob-stage'; wrap.appendChild(stage);
     var panelEl = document.createElement('section'); panelEl.className = 'ob-panel'; panelEl.hidden = true; panelEl.setAttribute('aria-live', 'polite'); wrap.appendChild(panelEl);
     host.appendChild(wrap);
-    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now();
+    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now(), gl = null, hoverKey = '';
 
     function datos() {
       var D = getD(), S = D.S;
@@ -283,6 +741,7 @@
           COLORES.map(function (c) { return '<button type="button" data-color="' + c + '" class="' + (M.colorMaq === c ? 'on' : '') + '" style="background:' + c + '" aria-label="Color ' + c + '"></button>'; }).join('') +
           '<input type="color" id="ob-cc" value="' + (M.colorMaq || stl.body) + '" aria-label="Otro color"></div>';
       } else h += '<div class="none" style="border:0;padding:0">' + (stl.brand ? 'Estilo de ' + esc(stl.brand) + '.' : 'Estilo estándar.') + '</div>';
+      if (d.D.maq.editar && d.D.maq.puedeEditar) h += '<button type="button" class="ob-edit" data-edit="1">Editar datos de la máquina</button>';
       return h + '</div></div>';
     }
     function fichaObra(P, d) {
@@ -305,7 +764,7 @@
       if (y + h > vh - 8) y = Math.max(8, vh - h - 8);
       tip.style.left = x + 'px'; tip.style.top = y + 'px';
     }
-    function hideTip() { if (tip) { tip.remove(); tip = null; } }
+    function hideTip() { hoverKey = ''; if (tip) { tip.remove(); tip = null; } }
 
     /* ---------- escena ---------- */
     function pt(P, u, v) { return [P.x + (u - v) * HX, P.y + (u + v) * HY]; }
@@ -547,20 +1006,41 @@
       if (document.hidden || wrap.offsetParent === null) return;
       var d = stage.__d; if (!d) return;
       var t = (now - T0) / 1000;
+      if (gl) { try { gl.frame(t); } catch (e) { glFail(e); render(); } return; }
       d.plots.forEach(function (P) { if (P.acts) tickPlot(P, t); });
+    }
+    function glFail(e) {
+      if (window.console) console.error('Obras 3D: se vuelve al dibujo plano', e);
+      gl = null; hideTip(); stage.classList.remove('gl'); stage.innerHTML = ''; stage.__d = null;
+    }
+    function vacio(msg) {
+      if (gl) { gl.empty(msg); return; }
+      stage.innerHTML = '<div class="ob-empty">' + msg + '</div>';
     }
 
     function render() {
       var d = datos();
       var nHid = d.ocultas.length;
       bar.innerHTML = '<p>' + (d.puede ? 'Arrastrá cada máquina desde la playa (abajo) al terreno de su obra, o de una obra a otra. Tocá una máquina para ver su ficha de combustible abajo y cambiarle el color o la forma. Con la × del cartel quitás una obra del gráfico.' : 'Tocá una máquina para ver su ficha de combustible abajo. Mover máquinas, cambiar su aspecto y quitar obras del gráfico lo hace el dueño o el ingeniero.') + '</p>' +
-        '<div class="ob-leg">' + d.plots.map(function (P) { return '<span><i style="background:' + P.area.acento + '"></i>' + esc(P.codigo) + '</span>'; }).join('') + '<span>' + d.maqs.length + ' máquinas · ' + d.plots.length + ' obras en el gráfico</span></div>';
+        (d.D.maq.nuevaObra && d.D.maq.puedeEditar ? '<button type="button" class="ob-add" data-add="1">+ Agregar obra</button>' : '') + '<div class="ob-leg">' + d.plots.map(function (P) { return '<span><i style="background:' + P.area.acento + '"></i>' + esc(P.codigo) + '</span>'; }).join('') + '<span>' + d.maqs.length + ' máquinas · ' + d.plots.length + ' obras en el gráfico</span></div>';
       if (nHid) {
         hidBox.hidden = false;
         hidBox.innerHTML = '<span>Obras fuera del gráfico:</span>' + d.ocultas.map(function (o) { return '<button type="button" data-show="' + esc(o.id) + '"' + (d.puede ? '' : ' disabled') + ' title="' + (d.puede ? 'Volver a poner en el gráfico' : '') + '">' + esc(o.codigo + ' · ' + o.nombre) + (d.puede ? ' ↺' : '') + '</button>'; }).join('');
       } else { hidBox.hidden = true; hidBox.innerHTML = ''; }
-      if (!d.maqs.length) { stage.innerHTML = '<div class="ob-empty">Todavía no hay máquinas cargadas. Se cargan en Centros de costo → Máquina.</div>'; panelEl.hidden = true; stage.__d = null; return; }
-      if (!d.plots.length) { stage.innerHTML = '<div class="ob-empty">No hay obras en el gráfico. ' + (nHid ? 'Podés volver a ponerlas con los botones de arriba.' : 'Cargá una obra en Centros de costo.') + '</div>'; panelEl.hidden = true; stage.__d = null; return; }
+      if (!d.maqs.length) { vacio('Todavía no hay máquinas cargadas. Se cargan en Centros de costo → Máquina.'); panelEl.hidden = true; stage.__d = null; return; }
+      if (!d.plots.length) { vacio('No hay obras en el gráfico. ' + (nHid ? 'Podés volver a ponerlas con los botones de arriba.' : 'Usá «Agregar obra» para crear una.')); panelEl.hidden = true; stage.__d = null; return; }
+      if (gl) {
+        try {
+          stage.__d = d; gl.build(d, pinned);
+          if (REDUCED) gl.frame(3);
+        } catch (e) { glFail(e); }
+        if (gl) {
+          var M0 = pinned && d.maqs.filter(function (m) { return m.id === pinned; })[0];
+          if (M0) { panelEl.hidden = false; panelEl.innerHTML = panelHTML(M0, d); bindPanel(M0); } else { pinned = null; panelEl.hidden = true; panelEl.innerHTML = ''; }
+          if (!raf && !REDUCED) raf = requestAnimationFrame(loop);
+          return;
+        }
+      }
       var L = layout(d, 1500), pad = 30, vw = L.w + pad * 2;
       var h = '<svg xmlns="' + NS + '" viewBox="' + (-pad) + ' 0 ' + vw + ' ' + L.h + '" role="img" aria-label="Obras con su maquinaria">';
       d.plots.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }).forEach(function (P) { h += plotSVG(P); });
@@ -587,7 +1067,7 @@
       return null;
     }
     function bindPanel(M) {
-      var x = panelEl.querySelector('.x'); if (x) x.onclick = function () { pinned = null; render(); };
+      var x = panelEl.querySelector('.x'); if (x) x.onclick = function () { pinned = null; if (gl) { gl.select(null); panelEl.hidden = true; panelEl.innerHTML = ''; } else render(); };
       var sel = panelEl.querySelector('#ob-mv');
       if (sel) sel.onchange = function () { var d = stage.__d; if (d.D.maq.mover(M.id, sel.value)) render(); };
       var fm = panelEl.querySelector('#ob-fm');
@@ -597,9 +1077,21 @@
       if (cc) cc.onchange = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, cc.value, M.formaMaq || '')) render(); };
     }
     function abrir(mid, scroll) {
-      pinned = mid; hideTip(); render();
+      pinned = mid; hideTip();
+      if (gl && stage.__d) {
+        gl.select(mid); var d0 = stage.__d, M1 = d0.maqs.filter(function (m) { return m.id === mid; })[0];
+        if (M1) { panelEl.hidden = false; panelEl.innerHTML = panelHTML(M1, d0); bindPanel(M1); }
+      } else render();
       if (scroll && panelEl.scrollIntoView) { try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { } }
     }
+    bar.addEventListener('click', function (ev) {
+      var b = ev.target.closest && ev.target.closest('[data-add]'); if (!b) return;
+      var d = datos(); if (d.D.maq.nuevaObra) d.D.maq.nuevaObra();
+    });
+    panelEl.addEventListener('click', function (ev) {
+      var b = ev.target.closest && ev.target.closest('[data-edit]'); if (!b || !pinned) return;
+      var d = datos(); if (d.D.maq.editar) d.D.maq.editar(pinned);
+    });
     hidBox.addEventListener('click', function (ev) {
       var b = ev.target.closest && ev.target.closest('[data-show]'); if (!b) return;
       var d = datos(); if (d.puede && d.D.maq.ocultar(b.getAttribute('data-show'), false)) render();
@@ -669,6 +1161,27 @@
     stage.addEventListener('pointerup', fin);
     stage.addEventListener('pointercancel', fin);
 
+    var api = {
+      puede: function () { var d = stage.__d; return !!(d && d.puede); },
+      hover: function (m, ev) {
+        var d = stage.__d;
+        if (!m || !d) { if (hoverKey) hideTip(); return; }
+        if (pinned === m.id) { if (hoverKey) hideTip(); return; }
+        if (hoverKey !== 'm' + m.id) { showTip(fichaCorta(m, d), ev); hoverKey = 'm' + m.id; } else placeTip(ev);
+      },
+      labelHover: function (pid, ev) {
+        var d = stage.__d; if (!d || !d.byId[pid]) return;
+        if (hoverKey !== 'p' + pid) { showTip(fichaObra(d.byId[pid], d), ev); hoverKey = 'p' + pid; } else placeTip(ev);
+      },
+      click: function (mid) { abrir(mid, true); },
+      drop: function (mid, toId) {
+        var d = stage.__d, M = d && d.maqs.filter(function (m) { return m.id === mid; })[0];
+        if (M && toId !== null && toId !== undefined && (M.obraActual || '') !== toId && d.D.maq.mover(M.id, toId)) pinned = M.id;
+        render();
+      },
+      hide: function (pid) { var d = stage.__d; hideTip(); if (d && d.puede && d.D.maq.ocultar(pid, true)) render(); }
+    };
+    if (webglOK()) { try { gl = engine3D(stage, api); } catch (e) { gl = null; stage.classList.remove('gl'); stage.innerHTML = ''; if (window.console) console.error(e); } }
     render();
     return { refresh: function () { if (!drag) render(); } };
   }

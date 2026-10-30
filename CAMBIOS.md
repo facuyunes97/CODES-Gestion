@@ -236,3 +236,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Quitar una obra del gráfico:** con la × del cartel de cada terreno (dueño e ingeniero). Sus máquinas pasan a la playa. Arriba aparecen las obras quitadas para volver a ponerlas con un toque (↺).
 - **Aspecto de cada máquina:** al tocarla, en la ficha se elige la **forma** (excavadora, pala, motoniveladora, camión, camioneta, tractor, compactador) y el **color** (paleta o color libre). Por defecto toma la **pintura de su marca** (Caterpillar amarillo, John Deere verde y amarillo, Komatsu, XCMG, Lonking, Liugong, Dynapac, Deutz-Fahr, Zanello, Chery, Mercedes-Benz, Toyota, Ford). Son colores aproximados, sin logos.
 - Base de datos: `sql/19_obras_maquinas_aspecto.sql` (columnas `oculta_mapa`, `color_maquina`, `forma_maquina` en centros de costo; ya aplicada).
+
+## Codes 1.42 (30-oct-2026)
+- **Obras y máquinas en 3D** (como la Oficina y el video): cada obra es un terreno con piso de color, árboles y su cartel flotante; las máquinas son modelos 3D con su pintura de marca, y trabajan igual que antes (retros que cavan y cargan, camiones que descargan, palas, motoniveladoras, compactadores). Se gira con el mouse arrastrando el fondo, con los botones +, − y ⌂ (vista general) se acerca, aleja y vuelve. Se sigue arrastrando cada máquina de una obra a otra, y los códigos flotan arriba de cada una. Si el navegador no soporta 3D, se ve el dibujo plano de antes.
+- **Solapa limpia:** en «Obras y máquinas» ya no aparecen el chat con el Director, la barra de agentes ni el panel de anuncios (eso queda solo en la Oficina 3D y el Organigrama).
+- **Editar:** al tocar una máquina, en su ficha hay un botón «Editar datos de la máquina» que abre el formulario (marca, modelo, año, patente, notas) y al guardar o cancelar vuelve a la Oficina.
+- **Agregar obra:** botón «+ Agregar obra» arriba, abre el formulario de nueva obra (dueño e ingeniero) y vuelve a la Oficina al terminar.
