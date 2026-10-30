@@ -221,6 +221,148 @@
   var CW = 2.2, MG = 1, GLS = '#9fd0e6', KK = '#2b2f36';
   function angd(a, b) { var d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; }
 
+    /* ---- guion de trabajo (sin choques) ---- */
+  /* Guion de trabajo de cada terreno: cada máquina tiene su propio carril o zona para que no se crucen.
+     Coordenadas en casillas (u,v) dentro del terreno de lado s. Todo es función del tiempo t (segundos). */
+  var BAND = 3.1, SLOT = 13, RING = 0.5;
+  function roundPoly(P, r, closed) {
+    var n = P.length, out = [], i, k;
+    function corner(a0, c0, b0) {
+      var a = [c0[0] - a0[0], c0[1] - a0[1]], b = [b0[0] - c0[0], b0[1] - c0[1]];
+      var la = Math.hypot(a[0], a[1]), lb = Math.hypot(b[0], b[1]), rr = Math.min(r, la / 2, lb / 2);
+      var p1 = [c0[0] - a[0] / la * rr, c0[1] - a[1] / la * rr], p2 = [c0[0] + b[0] / lb * rr, c0[1] + b[1] / lb * rr], res = [];
+      for (k = 0; k <= 8; k++) { var t = k / 8, q = 1 - t; res.push([q * q * p1[0] + 2 * q * t * c0[0] + t * t * p2[0], q * q * p1[1] + 2 * q * t * c0[1] + t * t * p2[1]]); }
+      return res;
+    }
+    if (closed) { for (i = 0; i < n; i++) out = out.concat(corner(P[(i + n - 1) % n], P[i], P[(i + 1) % n])); out.push(out[0]); }
+    else { out.push(P[0]); for (i = 1; i < n - 1; i++) out = out.concat(corner(P[i - 1], P[i], P[i + 1])); out.push(P[n - 1]); }
+    var L = [0]; for (i = 1; i < out.length; i++) L.push(L[i - 1] + Math.hypot(out[i][0] - out[i - 1][0], out[i][1] - out[i - 1][1]));
+    return { pts: out, L: L, len: L[L.length - 1] };
+  }
+  function atPath(pa, d) {
+    d = Math.max(0, Math.min(pa.len, d)); var i = 1;
+    while (i < pa.L.length - 1 && pa.L[i] < d) i++;
+    var s0 = pa.L[i - 1], s1 = pa.L[i], f = s1 > s0 ? (d - s0) / (s1 - s0) : 0, a = pa.pts[i - 1], b = pa.pts[i], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1;
+    return { u: a[0] + dx * f, v: a[1] + dy * f, hu: dx / l, hv: dy / l };
+  }
+  function needSide(c, cap) {
+    var nb = c.e > 0 ? c.e : (c.t > 0 ? 1 : 0), k = c.l + c.m + c.r, nl = Math.ceil(k / cap) + Math.ceil(c.g / 4), ev0 = 2.95;
+    var vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, need = c.g > 2 ? 8 : 6;
+    if (nl > 0) need = Math.max(need, vL0 + (nl - 1) * 1.05 + 1.5); else if (nb > 0) need = Math.max(need, ev0 + BAND * (nb - 1) + 2.2);
+    if (nb > 0) need = Math.max(need, 8); else if (k > 0) need = Math.max(need, cap === 2 ? 11.4 : 7);
+    return Math.ceil(need);
+  }
+  function sizeFor(c) {
+    var s1 = needSide(c, 1);
+    if (s1 <= 10) return { s: s1, cap: 1 };
+    var s2 = Math.max(needSide(c, 2), 12);
+    return s2 < s1 ? { s: s2, cap: 2 } : { s: s1, cap: 1 };
+  }
+  var KF = [[0, 0.35, -1.0, -0.6, 0, 0], [0.3, -0.2, -0.3, 0.3, 0, 0], [0.45, -0.3, -0.05, -0.9, 1, 0], [0.62, 0.6, -0.6, -0.9, 1, 1], [0.8, 0.5, -0.5, 0.7, 0, 1], [1, 0.35, -1.0, -0.6, 0, 0]];
+  function pose(p) {
+    for (var k = 1; k < KF.length; k++) if (p <= KF[k][0]) {
+      var a0 = KF[k - 1], a1 = KF[k], f = ease((p - a0[0]) / (a1[0] - a0[0]));
+      return { boom: lerp(a0[1], a1[1], f), stick: lerp(a0[2], a1[2], f), bucket: lerp(a0[3], a1[3], f), dirt: (p > 0.44 && p < 0.74) ? 1 : 0, swing: lerp(a0[5], a1[5], f) };
+    }
+    return { boom: 0.35, stick: -1, bucket: -0.6, dirt: 0, swing: 0 };
+  }
+  /* c: cantidades por tipo. L: lista [{id,tipo}]. Devuelve el tamaño del terreno, el guion de cada máquina y los elementos del suelo. */
+  function workPlan(L) {
+    var by = { excavadora: [], camion: [], pala: [], moto: [], rodillo: [], tractor: [], camioneta: [], generico: [] };
+    L.forEach(function (m) { (by[m.tipo] || by.generico).push(m.id); });
+    var ex = by.excavadora, tr = by.camion, ld = by.pala, mg = by.moto, rl = by.rodillo, tc = by.tractor, pk = by.camioneta, gn = by.generico;
+    var MAXT = 3, nb0 = ex.length > 0 ? ex.length : (tr.length > 0 ? 1 : 0);
+    if (tr.length > MAXT * nb0) { gn = gn.concat(tr.slice(MAXT * nb0)); tr = tr.slice(0, MAXT * nb0); }
+    var cnt = { e: ex.length, t: tr.length, l: ld.length, m: mg.length, r: rl.length, g: gn.length };
+    var sz = sizeFor(cnt), s = sz.s, cap = sz.cap, acts = {}, feats = [];
+    var nb = cnt.e > 0 ? cnt.e : (cnt.t > 0 ? 1 : 0), ev0 = 2.95;
+    /* 1) anillo perimetral: tractores y camionetas recorren la obra, parejos y sin cruzarse con nada */
+    var ring = tc.concat(pk), rp = roundPoly([[RING, RING], [s - RING, RING], [s - RING, s - RING], [RING, s - RING]], 0.5, true);
+    ring.forEach(function (id, i) {
+      acts[id] = function (t) { var q = atPath(rp, ((t * 0.5 + i * rp.len / ring.length) % rp.len + rp.len) % rp.len); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: 1 }; };
+    });
+    /* 2) zonas de excavación: cada retro con su pozo, su carril de ida, su carril de vuelta y su montón de descarga */
+    var su = 2.82, dpu = s - 2.2, Er = s - 1.5, Wq = su - 1.3;
+    for (var b = 0; b < nb; b++) (function (b) {
+      var ev = ev0 + BAND * b, vA = ev - 0.78, vB = ev - 1.45, exId = ex[b] || null, grp = tr.filter(function (id, i) { return i % nb === b; });
+      var path = roundPoly([[su, vA], [Er, vA], [Er, vB], [Wq, vB], [Wq, vA], [su, vA]], 0.3, false), dtip = dpu - su, dQ = path.len - 1.3, m = grp.length;
+      var Tmn = dQ / 1.1, Cyc = Math.max(m * SLOT, 9 + 3 + Tmn), Tm = Cyc - 12, t1 = Tm * dtip / dQ, t2 = Tm - t1;
+      function tstate(j, t) {
+        var tau = (((t - j * SLOT) % Cyc) + Cyc) % Cyc, st = { d: 0, bed: 0, lvl: 0, mov: 0, tau: tau, load: false };
+        if (tau < 1.5) { st.d = dQ + 1.3 * ease(tau / 1.5); st.mov = 1; }
+        else if (tau < 9) { st.d = 0; var p = tau - 1.5, k = Math.floor(p / 2.5), fr = (p % 2.5) / 2.5; st.lvl = (k + ease(seg(fr, 0.62, 0.85))) / 3; st.load = true; }
+        else {
+          var q = tau - 9; st.lvl = 1;
+          if (q < t1) { st.d = q < 2 ? 1.1 * q : 2.2 + (dtip - 2.2) * (q - 2) / Math.max(0.1, t1 - 2); st.mov = 1; }
+          else if (q < t1 + 3) { var pp = q - t1; st.d = dtip; st.bed = ease(seg(pp, 0, 1)) * (1 - ease(seg(pp, 2, 3))); st.lvl = 1 - ease(seg(pp, 0.7, 2.2)); }
+          else { var r = q - t1 - 3; st.d = r > t2 - 2 ? dQ - 2.2 + 1.1 * (r - (t2 - 2)) : dtip + (dQ - 2.2 - dtip) * r / Math.max(0.1, t2 - 2); st.mov = 1; st.lvl = 0; }
+        }
+        return st;
+      }
+      grp.forEach(function (id, j) {
+        acts[id] = function (t) { var st = tstate(j, t), q = atPath(path, st.d); return { u: q.u, v: q.v, hu: q.hu, hv: q.hv, mov: st.mov, bed: st.bed, lvl: st.lvl }; };
+      });
+      var eu = 2.2, pitU = eu + 0.62;
+      if (exId) {
+        var swT = m ? Math.atan2(0.78, 0.62) : -Math.atan2(0.72, 0.74);
+        acts[exId] = function (t) {
+          var po = { boom: 0.32 + Math.sin(t * 2) * 0.02, stick: -1, bucket: -0.6, dirt: 0, swing: 0 };
+          if (m) { for (var j = 0; j < m; j++) { var st = tstate(j, t); if (st.load) { var p = st.tau - 1.5; po = pose((p % 2.5) / 2.5); break; } } }
+          else po = pose((t % 3.4) / 3.4);
+          return { u: eu, v: ev, hu: 1, hv: 0, mov: 0, pose: po, swing: swT * po.swing };
+        };
+        feats.push({ k: 'pit', u: pitU, v: ev, fn: function (t) { return 0.62 + 0.38 * tri(t / 36); } });
+        feats.push({ k: 'heap', u: pitU + 0.12, v: ev + 0.72, r: 0.78, h: 0.75, fn: function (t) { return 0.55 + 0.45 * tri(t / 36 + 0.5); } });
+      } else if (m) {
+        feats.push({ k: 'heap', u: su + 0.3, v: vA + 0.85, r: 0.8, h: 0.8, fn: function () { return 1; } });
+      }
+      if (m) feats.push({ k: 'heap', u: dpu, v: vA + 0.66, r: 0.85, h: 0.85, fn: function (t) { return 0.6 + 0.4 * tri(t / 40); } });
+    })(b);
+    /* 3) carriles de trabajo: palas, motoniveladoras y compactadores, cada uno en su carril (o su mitad de carril) */
+    var vL0 = nb > 0 ? ev0 + BAND * nb - 1.38 : 1.5, workers = [];
+    ld.forEach(function (id) { workers.push({ id: id, k: 'pala' }); }); mg.forEach(function (id) { workers.push({ id: id, k: 'moto' }); }); rl.forEach(function (id) { workers.push({ id: id, k: 'rodillo' }); });
+    var nLanes = Math.ceil(workers.length / cap);
+    workers.forEach(function (w, i) {
+      var lane = Math.floor(i / cap), slot = i % cap, inLane = Math.min(cap, workers.length - lane * cap), v = vL0 + lane * 1.05, xa = 1.9, xb = s - 1.9;
+      if (inLane === 2) { var mid = s / 2; if (slot === 0) xb = mid - 0.2; else xa = mid + 0.2; }
+      var ph = (i % 2) * 0.5;
+      if (w.k === 'pala') {
+        var u1 = xa + 0.95, u2 = xb - 0.95, T = 14;
+        feats.push({ k: 'heap', u: xa, v: v, r: 0.7, h: 0.7, fn: function (t) { return 1.0 - 0.3 * tri(t / 28); } });
+        feats.push({ k: 'heap', u: xb, v: v, r: 0.7, h: 0.7, fn: function (t) { return 0.72 + 0.3 * tri(t / 28); } });
+        acts[w.id] = function (t) {
+          var tt = (t + ph * T) % T, u, hu = 1, mov = 0, lift = -0.1, tilt = 0.2, dirt = 0;
+          if (tt < 2.2) { u = u1; hu = -1; var f = tt / 2.2; tilt = lerp(-0.2, 0.6, ease(seg(f, 0.2, 0.7))); lift = f < 0.5 ? lerp(-0.45, -0.05, ease(f / 0.5)) : lerp(-0.05, 0.45, ease(seg(f, 0.6, 1))); dirt = f > 0.6 ? 1 : 0; }
+          else if (tt < 6.2) { u = lerp(u1, u2, ease((tt - 2.2) / 4)); lift = 0.45; tilt = 0.6; dirt = 1; mov = 1; }
+          else if (tt < 8.2) { u = u2; var f3 = (tt - 6.2) / 2; lift = lerp(0.45, 0.7, ease(seg(f3, 0, 0.4))); tilt = lerp(0.6, -0.8, ease(seg(f3, 0.3, 0.8))); dirt = f3 < 0.6 ? 1 : 0; }
+          else { var f4 = ease((tt - 8.2) / 5.8); u = lerp(u2, u1, f4); hu = -1; lift = lerp(0.7, -0.45, ease(seg(f4, 0, 0.3))); tilt = lerp(-0.8, -0.2, ease(seg(f4, 0, 0.4))); mov = 1; }
+          return { u: u, v: v, hu: hu, hv: 0, mov: mov, lift: lift, tilt: tilt, dirt: dirt };
+        };
+      } else {
+        var T2 = w.k === 'moto' ? 15 : 18, ua = xa + 0.5, ub = xb - 0.5, id = w.id;
+        feats.push({ k: 'trail', u0: ua, v: v, color: w.k === 'moto' ? '#efe4c8' : '#8f7752', op: w.k === 'moto' ? 0.95 : 0.55, fn: function (t) {
+          var tt = (t + ph * T2) % T2, cov = tt < T2 * 0.42 ? ease(tt / (T2 * 0.42)) : 1, fade = tt > T2 * 0.92 ? 1 - (tt - T2 * 0.92) / (T2 * 0.08) : 1;
+          return { len: (ub - ua) * cov, op: fade };
+        } });
+        acts[w.id] = function (t) {
+          var tt = (t + ph * T2) % T2, u, hu = 1, mov = 1;
+          if (tt < T2 * 0.42) u = lerp(ua, ub, ease(tt / (T2 * 0.42)));
+          else if (tt < T2 * 0.5) { u = ub; mov = 0; }
+          else if (tt < T2 * 0.92) { u = lerp(ub, ua, ease((tt - T2 * 0.5) / (T2 * 0.42))); hu = -1; }
+          else { u = ua; mov = 0; hu = -1; }
+          return { u: u, v: v, hu: hu, hv: 0, mov: mov, shake: w.k === 'rodillo' && mov ? 1 : 0 };
+        };
+      }
+    });
+    /* 4) otras máquinas: estacionadas en fila */
+    if (gn.length) {
+      var vG = vL0 + nLanes * 1.05, perRow = Math.max(1, Math.floor((s - 4) / 1.3) + 1);
+      gn.forEach(function (id, i) { var u = 2.0 + (i % perRow) * 1.3, v = vG + Math.floor(i / perRow) * 1.05; acts[id] = function () { return { u: u, v: v, hu: 1, hv: 0, mov: 0 }; }; });
+    }
+    return { s: s, acts: acts, feats: feats };
+  }
+  
+
   function engine3D(stage, api) {
     var T = window.THREE, GC = {}, MC = {};
     function geo(k, a, b, c) {
@@ -414,7 +556,7 @@
       clearAll(); S.d = d; S.pinned = pinned;
       var MAXW = 44, GAPW = 2.6, rx = 0, rz = 0, rh = 0, tw = 0;
       d.plots.forEach(function (P) {
-        var n = P.maqs.length; P.side = n ? Math.max(6, Math.ceil(Math.sqrt(n) * 2) + 2) : 6; P.sz = (P.side + 2 * MG) * CW;
+        P.wp = workPlan(P.maqs.map(function (m, i) { return { id: i, tipo: tipoDibujo(m) }; })); P.side = P.wp.s; P.sz = (P.side + 2 * MG) * CW;
         if (rx > 0 && rx + P.sz > MAXW) { rz += rh + GAPW + 1.6; rx = 0; rh = 0; }
         P.wx = rx; P.wz = rz; rx += P.sz + GAPW; rh = Math.max(rh, P.sz); tw = Math.max(tw, rx - GAPW);
       });
@@ -474,122 +616,34 @@
       return [0.35, -1, -0.6, 0, 0];
     }
     function plan(P) {
-      var s = P.side, by = {}; P.acts = [];
-      P.maqs.forEach(function (m) {
-        var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)); a.P0 = P; world.add(a.root); S.actors.push(a); P.acts.push(a); (by[tp] = by[tp] || []).push(a);
+      var wp = P.wp, g = P.g, par = g.parent, fe = []; P.acts = [];
+      P.maqs.forEach(function (m, i) {
+        var tp = tipoDibujo(m), a = mkActor(m, tp, estilo(m, tp)); a.P0 = P; world.add(a.root); S.actors.push(a); P.acts.push(a);
+        var act = wp.acts[i]; if (!act) return;
+        a.upd = function (t) {
+          var q = act(t), pp = a.P;
+          a.at(ptX(P, q.u), ptZ(P, q.v), q.mov, Math.atan2(-q.hv, q.hu));
+          if (tp === 'camion') { pp.bed.rotation.z = 0.5 * q.bed; pp.load.visible = q.lvl > 0.03; pp.load.scale.y = Math.max(0.05, q.lvl); pp.load.position.y = 0.1 + 0.18 * q.lvl; }
+          else if (tp === 'excavadora' && q.pose) { pp.boom.rotation.z = q.pose.boom; pp.stick.rotation.z = q.pose.stick; pp.bucket.rotation.z = q.pose.bucket; pp.dirt.visible = !!q.pose.dirt; pp.up.rotation.y = q.swing; }
+          else if (tp === 'pala') { pp.lift.rotation.z = q.lift; pp.tilt.rotation.z = -q.tilt; pp.dirt.visible = !!q.dirt; }
+          else if (tp === 'moto' || tp === 'rodillo') { a.body.position.y = q.shake ? Math.sin(t * 55) * 0.012 : 0; if (pp.blade) pp.blade.rotation.x = Math.sin(t * 3) * 0.03; }
+        };
       });
-      var g = P.g, ex = by.excavadora || [], tr = by.camion || [], ld = by.pala || [], mg = by.moto || [], rl = by.rodillo || [], tc = by.tractor || [], pk = by.camioneta || [], gn = by.generico || [];
-      var DU = s - 0.65, DV = s - 0.65, cap = Math.max(1, Math.floor((s - 2) / 1.5) + 1), spots = [];
-      ex.forEach(function (a, i) {
-        var col = i % cap, row = Math.floor(i / cap);
-        a.eu = 0.75 + col * 1.55; a.ev = 1.5 + row * 1.15; a.pit = { u: a.eu + 0.62, v: a.ev }; a.group = [];
-        spots.push({ u: a.eu + 0.62, v: a.ev - 0.78, ex: a, group: [] });
-      });
-      var hasT = tr.length > 0;
-      if (!spots.length && hasT) spots.push({ u: 1.6, v: 0.95, ex: null, src: true, group: [] });
-      tr.forEach(function (a, i) { var sp = spots[i % spots.length]; a.spot = sp; sp.group.push(a); if (sp.ex) sp.ex.group.push(a); });
-      ex.forEach(function (a) {
-        var pg = new T.Group(); pg.position.set(ptX(P, a.pit.u), 0.07, ptZ(P, a.pit.v)); g.parent.add(pg);
-        var o1 = new T.Mesh(geo('cy', 0.95, 0.04, 20), mat('#9c8058')), o2 = new T.Mesh(geo('cy', 0.74, 0.07, 20), mat('#5d4630')), o3 = new T.Mesh(geo('cy', 0.44, 0.09, 16), mat('#473524'));
-        pg.add(o1); pg.add(o2); pg.add(o3); a.pitG = pg;
-        a.mound = heap(g.parent, ptX(P, a.pit.u + 0.12), ptZ(P, a.pit.v + 0.72), 0.78, 0.75);
-      });
-      spots.forEach(function (sp) { if (sp.src) sp.hp = heap(g.parent, ptX(P, sp.u - 0.35), ptZ(P, sp.v + 0.55), 0.8, 0.8); });
-      if (hasT) P.dump = heap(g.parent, ptX(P, DU + 0.05), ptZ(P, DV + 0.2), 0.85, 0.85);
-      var lanes = [ld, mg, rl].filter(function (q) { return q.length; });
-      lanes.forEach(function (grp, li) {
-        var v = s - 0.6 - li * 0.8; if (v < 2.6) v = 2.6 + (li % 2) * 0.4;
-        grp.forEach(function (a, k) { a.lane = v; a.ph = k * 0.5; });
-        if (grp === ld) { grp.h1 = heap(g.parent, ptX(P, 0.75), ptZ(P, v + 0.05), 0.8, 0.8); grp.h2 = heap(g.parent, ptX(P, s - 0.75), ptZ(P, v + 0.05), 0.8, 0.8); }
-        else {
-          var tm = new T.MeshBasicMaterial({ color: grp === mg ? '#efe4c8' : '#8f7752', transparent: true, opacity: 0, depthWrite: false }); S.own.push(tm);
-          var trl = new T.Mesh(geo('b', 1, 0.03, 0.62), tm); trl.position.y = 0.085; g.parent.add(trl);
-          grp.forEach(function (a) { a.trail = trl; a.tm = tm; a.tOp = grp === mg ? 0.95 : 0.55; });
+      wp.feats.forEach(function (f) {
+        if (f.k === 'pit') {
+          var pg = new T.Group(); pg.position.set(ptX(P, f.u), 0.07, ptZ(P, f.v)); par.add(pg);
+          pg.add(new T.Mesh(geo('cy', 0.95, 0.04, 20), mat('#9c8058'))); pg.add(new T.Mesh(geo('cy', 0.74, 0.07, 20), mat('#5d4630'))); pg.add(new T.Mesh(geo('cy', 0.44, 0.09, 16), mat('#473524')));
+          fe.push(function (t) { var k = f.fn(t); pg.scale.set(k, 1, k); });
+        } else if (f.k === 'heap') {
+          var hp = heap(par, ptX(P, f.u), ptZ(P, f.v), f.r, f.h);
+          fe.push(function (t) { var k = f.fn(t); hp.scale.set(k, k, k); });
+        } else if (f.k === 'trail') {
+          var tm = new T.MeshBasicMaterial({ color: f.color, transparent: true, opacity: 0, depthWrite: false }); S.own.push(tm);
+          var trl = new T.Mesh(geo('b', 1, 0.03, 0.62), tm); trl.position.y = 0.085; par.add(trl);
+          fe.push(function (t) { var r = f.fn(t); trl.scale.x = Math.max(0.01, r.len * CW); trl.position.x = ptX(P, f.u0) + r.len * CW / 2; trl.position.z = ptZ(P, f.v); tm.opacity = f.op * r.op; });
         }
       });
-      /* camiones: cargados por la retro, llevan la tierra al rincón y la vuelcan */
-      tr.forEach(function (a) {
-        var sp = a.spot, m = sp.group.length, Tc = m * 9 + 12, j = sp.group.indexOf(a), w0 = j * 9;
-        var L1 = Math.abs(DU - sp.u), L2 = Math.abs(DV - 0.62 - sp.v), LT = L1 + L2;
-        function along(f) { var dd = f * LT; if (dd <= L1) return [sp.u + (DU - sp.u) * (dd / (L1 || 1)), sp.v]; return [DU, sp.v + (dd - L1)]; }
-        a.upd = function (t) {
-          var tt = t % Tc, pos = [sp.u, sp.v], lvl = 0, bed = 0, mov = 0, ang;
-          if (tt >= w0 && tt < w0 + 9) { var k = Math.floor((tt - w0) / 3), fr = ((tt - w0) % 3) / 3; lvl = (k + ease(seg(fr, 0.62, 0.85))) / 3; ang = 0; }
-          else if (tt >= w0 + 9 && tt < w0 + 13) { pos = along(ease((tt - w0 - 9) / 4)); lvl = 1; mov = 1; }
-          else if (tt >= w0 + 13 && tt < w0 + 16) { pos = along(1); var dd = tt - w0 - 13; bed = ease(seg(dd, 0, 1)) * (1 - ease(seg(dd, 2, 3))); lvl = 1 - ease(seg(dd, 0.7, 2.2)); ang = -Math.PI / 2; }
-          else if (tt >= w0 + 16 && tt < w0 + 21) { pos = along(1 - ease((tt - w0 - 16) / 5)); mov = 1; }
-          else { pos = [sp.u + 0.95, sp.v]; ang = 0; }
-          a.at(ptX(P, pos[0]), ptZ(P, pos[1]), mov, ang);
-          a.P.bed.rotation.z = 0.5 * bed; a.P.load.visible = lvl > 0.03; a.P.load.scale.y = Math.max(0.05, lvl); a.P.load.position.y = 0.1 + 0.18 * lvl;
-        };
-      });
-      ex.forEach(function (a) {
-        var m = a.group.length, swT = m ? Math.atan2(0.78, 0.62) : -Math.atan2(0.72, 0.5);
-        a.upd = function (t) {
-          var active = true, p;
-          if (m) { var Tc = m * 9 + 12, tt = t % Tc; active = tt < m * 9; p = (tt % 3) / 3; } else p = (t % 3.4) / 3.4;
-          var po = active ? pose(p) : [0.3 + Math.sin(t * 2) * 0.02, -1, -0.6, 0, 0];
-          a.P.boom.rotation.z = po[0]; a.P.stick.rotation.z = po[1]; a.P.bucket.rotation.z = po[2]; a.P.dirt.visible = !!po[3];
-          a.P.up.rotation.y = swT * po[4];
-          a.at(ptX(P, a.eu), ptZ(P, a.ev), 0, 0);
-          var sc = 0.62 + 0.38 * tri(t / 36); a.pitG.scale.set(sc, 1, sc);
-          var ms = 0.55 + 0.45 * tri(t / 36 + 0.5); a.mound.scale.set(ms, ms, ms);
-        };
-      });
-      ld.forEach(function (a) {
-        var v = a.lane, u1 = 1.2, u2 = s - 1.2, T0 = 14;
-        a.upd = function (t) {
-          var tt = (t + a.ph * T0) % T0, u, mov = 0, lift = -0.1, tilt = 0.2, dirt = 0, ang;
-          if (tt < 2.2) { u = u1; var f = tt / 2.2; ang = 0; tilt = lerp(-0.2, 0.6, ease(seg(f, 0.2, 0.7))); lift = f < 0.5 ? lerp(-0.45, -0.05, ease(f / 0.5)) : lerp(-0.05, 0.45, ease(seg(f, 0.6, 1))); dirt = f > 0.6 ? 1 : 0; }
-          else if (tt < 6.2) { u = lerp(u1, u2, ease((tt - 2.2) / 4)); lift = 0.45; tilt = 0.6; dirt = 1; mov = 1; }
-          else if (tt < 8.2) { u = u2; var f3 = (tt - 6.2) / 2; ang = 0; lift = lerp(0.45, 0.7, ease(seg(f3, 0, 0.4))); tilt = lerp(0.6, -0.8, ease(seg(f3, 0.3, 0.8))); dirt = f3 < 0.6 ? 1 : 0; }
-          else { var f4 = ease((tt - 8.2) / 5.8); u = lerp(u2, u1, f4); lift = lerp(0.7, -0.45, ease(seg(f4, 0, 0.3))); tilt = lerp(-0.8, -0.2, ease(seg(f4, 0, 0.4))); mov = 1; }
-          a.at(ptX(P, u), ptZ(P, v), mov, ang);
-          a.P.lift.rotation.z = lift; a.P.tilt.rotation.z = -tilt; a.P.dirt.visible = !!dirt;
-        };
-      });
-      ld.forEach(function (a, k) { if (k === 0) { var q = ld; var pu = a.upd; a.upd = function (t) { pu(t); var s1 = 1.0 - 0.3 * tri(t / 28), s2 = 0.72 + 0.3 * tri(t / 28); q.h1.scale.set(s1, s1, s1); q.h2.scale.set(s2, s2, s2); }; } });
-      function sweeper(arr, T0, shake) {
-        arr.forEach(function (a) {
-          var v = a.lane, u1 = 1.0, u2 = s - 1.0;
-          a.upd = function (t) {
-            var tt = (t + a.ph * T0) % T0, u, mov = 1, ang;
-            if (tt < T0 * 0.42) u = lerp(u1, u2, ease(tt / (T0 * 0.42)));
-            else if (tt < T0 * 0.5) { u = u2; mov = 0; ang = 0; }
-            else if (tt < T0 * 0.92) u = lerp(u2, u1, ease((tt - T0 * 0.5) / (T0 * 0.42)));
-            else { u = u1; mov = 0; ang = Math.PI; }
-            a.at(ptX(P, u), ptZ(P, v), mov, ang);
-            a.body.position.y = shake && mov ? Math.sin(t * 55) * 0.012 : 0;
-            if (a.P.blade) a.P.blade.rotation.x = Math.sin(t * 3) * 0.03;
-            if (a.trail) {
-              var cov = tt < T0 * 0.42 ? ease(tt / (T0 * 0.42)) : 1, ub = lerp(u1, u2, cov), fade = tt > T0 * 0.92 ? 1 - (tt - T0 * 0.92) / (T0 * 0.08) : 1;
-              a.trail.scale.x = Math.max(0.01, (ub - u1) * CW); a.trail.position.x = ptX(P, u1) + (ub - u1) * CW / 2; a.trail.position.z = ptZ(P, v); a.tm.opacity = a.tOp * fade;
-            }
-          };
-        });
-      }
-      sweeper(mg, 15, false); sweeper(rl, 18, true);
-      tc.forEach(function (a, k) {
-        var m = 0.6, c4 = [[m, m], [s - m, m], [s - m, s - m], [m, s - m]], sd = s - 2 * m, per = sd * 4, spd = 0.45;
-        a.upd = function (t) {
-          var d0 = (t * spd + k * per / Math.max(1, tc.length)) % per, i4 = Math.floor(d0 / sd), r = d0 - i4 * sd, A0 = c4[i4], A1 = c4[(i4 + 1) % 4];
-          var du = A1[0] - A0[0], dv = A1[1] - A0[1], len = Math.hypot(du, dv) || 1;
-          a.at(ptX(P, A0[0] + du / len * r), ptZ(P, A0[1] + dv / len * r), 1);
-        };
-      });
-      pk.forEach(function (a, k) {
-        var u1 = 0.8, u2 = s - 0.8, v = 0.55, T0 = 22;
-        a.upd = function (t) {
-          var tt = (t + k * 7) % T0, u, mov = 1, ang;
-          if (tt < 5) u = lerp(u1, s / 2, ease(tt / 5)); else if (tt < 8) { u = s / 2; mov = 0; ang = 0; }
-          else if (tt < 12) u = lerp(s / 2, u2, ease((tt - 8) / 4)); else if (tt < 14) { u = u2; mov = 0; ang = 0; }
-          else u = lerp(u2, u1, ease((tt - 14) / 8));
-          a.at(ptX(P, u), ptZ(P, v), mov, ang);
-        };
-      });
-      gn.forEach(function (a, k) { a.upd = function (t) { a.at(ptX(P, 0.9 + k * 1.2), ptZ(P, s - 1.4), 0, 0); }; });
-      /* apila las máquinas sin guion propio (rodillo/moto sin camión, etc.) */
-      P.dumpAnim = function (t) { if (P.dump) { var sc = 0.6 + 0.4 * tri(t / 40); P.dump.scale.set(sc, sc, sc); } if (P.ripples) P.ripples.forEach(function (r) { r.position.x = ((t * 0.5 + r.userData.k * (P.sz / 7)) % (P.sz - 1.6)) + 0.8; }); };
+      P.dumpAnim = function (t) { fe.forEach(function (f) { f(t); }); if (P.ripples) P.ripples.forEach(function (r) { r.position.x = ((t * 0.5 + r.userData.k * (P.sz / 7)) % (P.sz - 1.6)) + 0.8; }); };
     }
 
     /* ---------- cámara ---------- */

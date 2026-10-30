@@ -269,3 +269,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.49 (30-oct-2026)
 - **Obras y máquinas 3D, más limpio:** el código de cada máquina aparece solo cuando pasás el mouse por arriba de ella (o mientras la arrastrás). El cartel con el nombre de la obra aparece solo cuando hacés clic en ese terreno (con su línea al terreno); otro clic en el mismo terreno o en el fondo lo oculta. Al arrancar no hay ningún cartel.
+
+## Codes 1.50 (30-oct-2026)
+- **Máquinas que no se pisan en el mapa 3D:** cada máquina tiene su propio carril y horario. Los camiones esperan en fila, la retro los carga de a uno, salen cargados, dan la vuelta por el terreno hasta donde se descarga la tierra (donde está la pala), vuelcan y vuelven vacíos por otro carril. Palas, motoniveladoras y rodillos trabajan cada uno en su propia franja, y tractores y camionetas recorren el borde de la obra sin cruzarse con nada.
+- El terreno se agranda lo justo para que entren todos los carriles. Si una retro tiene más de 3 camiones asignados, los de más quedan estacionados en fila para que no se amontonen.
+- Probado con una simulación de 400 combinaciones de máquinas (sin ningún choque); no pude verlo en un navegador real con la librería 3D.
