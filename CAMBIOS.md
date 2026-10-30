@@ -180,3 +180,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Al asociar una factura, la transacción pasa sola a «Con factura». Queda anotado en Auditoría qué facturas tenía antes y cuáles tiene ahora.
 - Se controla que las facturas no sumen más que el total de la transacción y que cada una tenga saldo suficiente.
 - Arreglo: el filtro «Factura» de Transacciones usaba el mismo nombre interno que el de la pantalla Facturas y podía dejar la lista vacía. Ya están separados.
+
+## Codes 1.29 (30-oct-2026)
+- Transacciones: en la columna Factura, lo que va sin factura ahora dice «Sin fact.» con la misma letra que el número de una factura cargada (antes era una etiqueta de color).
