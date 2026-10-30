@@ -3914,7 +3914,7 @@ document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.datase
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
 /* Versión visible del programa: subir en cada entrega (Codes 0.1 → 0.2 … 0.9 → 1.0 → 1.1 … hasta 100). BUILD fuerza el aviso de "versión nueva". */
 const VERSION='Codes 1.38';
-const BUILD='30-oct 19:00';
+const BUILD='30-oct 19:15';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
