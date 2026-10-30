@@ -218,3 +218,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.38 (30-oct-2026)
 - Recibo de sueldo: arriba a la derecha, en lugar del texto «CODES SRL», va el **logo completo de la empresa**; debajo siguen el CUIT y el domicilio cargados en Convenios. Sigue entrando en una sola hoja A4.
+
+## Codes 1.39 (30-oct-2026)
+- **Oficina → solapa «Obras y máquinas»:** cada obra activa es un terreno en isométrico y hay un terreno de **depósito / taller** para las máquinas paradas. Cada máquina tiene su dibujo (excavadora, pala cargadora, motoniveladora, camión, camioneta, tractor, rodillo/vibrador) y **trabaja** (se mueve) mientras está en una obra.
+- **Se arrastra una máquina de un terreno a otro** para cambiarla de obra (también desde la ficha, con «Mover a»). La ubicación queda guardada y registrada en Auditoría. Lo pueden mover el dueño y el ingeniero; el contador la ve.
+- **Al pasar el mouse por una máquina** (o tocarla en el celular) se abre su ficha: marca, modelo, año y patente; en qué obra está; litros y gasto de los últimos 30 días y totales; cantidad de cargas; precio medio por litro; litros cargados en esa obra; última carga y litros por tipo de combustible. Al pasar por el nombre de una obra se ve el combustible de esa obra.
+- Base de datos: nueva columna `obra_actual_id` en centros de costo (`sql/18_maquina_obra_actual.sql`, ya aplicada).
