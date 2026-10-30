@@ -191,3 +191,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.31 (30-oct-2026)
 - Facturas: cada mes tiene ahora una **orejita** (flecha) para abrirlo o cerrarlo, así la lista no queda larguísima. Al entrar se ve abierto el mes más reciente y los demás cerrados; al lado de los filtros hay botones **«Abrir todos los meses»** y **«Cerrar todos»**. Cada mes cerrado sigue mostrando la cantidad de facturas, el débito y el crédito fiscal y el IVA del mes.
+
+## Codes 1.32 (30-oct-2026)
+- El **contador** ahora puede asociar o crear una factura en una transacción que ya está hecha (botón «Asociar a una factura o crear una» en el detalle). Sirve para cuando primero se paga y la factura llega días después.
+- Solo puede hacer eso: no puede cambiar importes, fechas, medios de pago ni nada más de la transacción; eso sigue siendo del dueño. Al asociar la factura, la transacción queda marcada «con factura».
+- Base de datos: nueva función `asociar_facturas` (valida proveedor, saldo de la factura y que no supere el total).
