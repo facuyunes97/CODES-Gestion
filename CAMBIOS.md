@@ -248,3 +248,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.44 (30-oct-2026)
 - **Obras y máquinas:** el fondo del escenario pasa a ser el mismo gris de la Oficina 3D (y sigue el modo claro/oscuro), en vez del fondo claro anterior.
+
+## Codes 1.45 (30-oct-2026)
+- **Obras y máquinas 3D:** el recuadro es más alto y la cámara arranca más cerca, así las obras y las máquinas se ven bastante más grandes y ocupan casi todo el espacio.
