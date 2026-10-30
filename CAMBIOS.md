@@ -207,3 +207,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.35 (30-oct-2026)
 - Una factura **cancelada** (le falta menos de $1) ya no se ofrece ni se puede asociar a otro pago. Antes, por centavos de redondeo, la factura B 0001-00000103 quedaba con $0,01 de saldo y el sistema se la pegaba a otro cobro (Certificado N.3 del 22/10). Ese vínculo de 1 centavo se sacó; esa transacción queda «Con fact., sin cargar» hasta que le asocien su factura real.
 - Al asociar facturas a una transacción ya hecha (dueño y contadores), aparece el botón **«Ver también facturas de otros clientes/proveedores»** para elegir cualquier factura cargada con saldo; se puede seguir creando una factura nueva. La base de datos controla que sea del mismo tipo (venta/compra), que tenga saldo y que no pase el total.
+
+## Codes 1.36 (30-oct-2026)
+- Facturas: ahora se puede **cambiar el cliente o proveedor** de una factura aunque ya tenga pagos asociados (antes quedaba bloqueado). Sirve para corregir facturas cargadas con el cliente equivocado.
