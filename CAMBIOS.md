@@ -183,3 +183,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.29 (30-oct-2026)
 - Transacciones: en la columna Factura, lo que va sin factura ahora dice «Sin fact.» con la misma letra que el número de una factura cargada (antes era una etiqueta de color).
+
+## Codes 1.30 (30-oct-2026)
+- Nuevo anuncio automático **«Ver posiciones de IVA»**: les aparece al dueño y a los contadores desde el día 20 de cada mes, con un botón «Ir a IVA» que los lleva a la Posición de IVA. Sigue apareciendo hasta que aprieten «Entendido», así no se pierde si ese día no entraron.
+- Todos los anuncios (los de la Oficina, los del calendario y este) desaparecen cuando cada usuario aprieta «Entendido». Es por usuario: lo que borra uno no se lo borra a los demás. Los anuncios de la Oficina ahora se borran de verdad; antes solo se marcaban como leídos.
+- Los anuncios del calendario ahora también aparecen arriba con su botón «Entendido».
