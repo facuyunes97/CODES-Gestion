@@ -162,3 +162,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.24 (30-oct-2026)
 - Recibos de sueldo: la impresión (y el PDF) sale en **una sola hoja A4 por recibo**. Se achicó la letra y los espacios, aportes y contribuciones van lado a lado, y se sacó el encabezado y pie del navegador (fecha y dirección web). Al imprimir varios recibos juntos, cada uno ocupa su propia hoja.
+
+## Codes 1.25 (30-oct-2026)
+- Oficina: el Director de Marketing pasa a llamarse **Michael** (Director de Marketing, productor y orquestador). Su ficha ahora cuenta qué hace, sus habilidades y lo que necesita de vos: escribe textos para Instagram con el recetario de marca de CODES, solo habla con Facundo y no tiene acceso a las cuentas.
