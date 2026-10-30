@@ -1,22 +1,39 @@
 /* Oficina · Obras y máquinas: terrenos (obras) en isométrico con la maquinaria trabajando.
-   Se arrastra una máquina de una obra a otra; al pasar el mouse sale la ficha de combustible.
+   Cada terreno tiene su obra en marcha: las retros cavan pozos y cargan los camiones, las palas mueven tierra,
+   las motoniveladoras nivelan y los compactadores pasan el rodillo (todo ilustrativo).
+   Se arrastra una máquina de una obra a otra; al tocarla se abre su ficha de combustible y su aspecto (color / forma).
    Sin librerías: SVG puro. Lo monta oficina.js dentro de su shadow DOM. */
 (function () {
   'use strict';
-  var TW = 136, TH = 68, SLAB = 14, TOP = 50, LAB = 34, GAP = 30;
+  var TW = 136, TH = 68, HX = TW / 2, HY = TH / 2, SLAB = 14, TOP = 52, LAB = 36, GAP = 30;
   var NS = 'http://www.w3.org/2000/svg';
   var COMB_T = { nafta: 'Nafta', diesel_500: 'Diésel 500', diesel_premium: 'Diésel Premium' };
+  var REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var CSS = '' +
     '.ob{position:relative;font-family:var(--o-body,system-ui,sans-serif);color:var(--o-fg,#1d2026)}' +
     '.ob-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 10px}' +
-    '.ob-bar p{margin:0;font-size:13px;color:var(--o-muted,#666c76);max-width:60ch}' +
-    '.ob-leg{display:flex;gap:12px;font-size:12px;color:var(--o-muted,#666c76);flex-wrap:wrap}' +
+    '.ob-bar p{margin:0;font-size:13px;color:var(--o-muted,#666c76);max-width:62ch}' +
+    '.ob-leg{display:flex;gap:12px;font-size:12px;color:var(--o-muted,#666c76);flex-wrap:wrap;align-items:center}' +
     '.ob-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}' +
+    '.ob-hid{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:12.5px;color:var(--o-muted,#666c76)}' +
+    '.ob-hid button{font:inherit;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--o-line,#c9ced6);background:var(--o-surface,#fff);color:var(--o-fg,#1d2026);cursor:pointer}' +
+    '.ob-hid button:hover{border-color:#e31b1f}.ob-hid button:disabled{cursor:default;opacity:.7}' +
     '.ob-stage{position:relative;border-radius:14px;background:#ecebe4;border:1px solid var(--o-line,#d9dce1);overflow:hidden;touch-action:pan-y}' +
     '.ob-stage svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}' +
     '.ob-m{cursor:grab}.ob-m.drag{cursor:grabbing}.ob-m:focus{outline:none}.ob-m:focus-visible .ob-ring{opacity:1}' +
     '.ob-ring{fill:none;stroke:#e31b1f;stroke-width:2;opacity:0;stroke-dasharray:4 3}.ob-m.sel .ob-ring{opacity:1}' +
+    '.ob-m:hover .ob-ring{opacity:1}' +
+    '.ob-hide{cursor:pointer}.ob-hide circle{fill:#3a3f4a}.ob-hide:hover circle{fill:#e31b1f}' +
+    '.ob-tip{position:fixed;z-index:50;width:292px;max-width:calc(100vw - 16px);background:#fff;color:#1d2026;border-radius:12px;box-shadow:0 10px 30px rgba(20,24,30,.28),0 0 0 1px rgba(20,24,30,.08);padding:12px 14px;font-size:12.5px;line-height:1.35;pointer-events:none}' +
+    '.ob-tip h4{margin:0 0 2px;font-size:14px}' +
+    '.ob-tip .sub{color:#666c76;font-size:12px}' +
+    '.ob-tip .st{display:inline-block;font-size:11px;font-weight:700;border-radius:99px;padding:2px 8px;margin:6px 0 2px}' +
+    '.ob-tip .st.on{background:#e6f6ec;color:#12794a}.ob-tip .st.off{background:#eceef2;color:#4a5160}' +
+    '.ob-tip dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:8px 0 0;padding:8px 0 0;border-top:1px solid #e6e8ec}' +
+    '.ob-tip dt{color:#666c76}.ob-tip dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}' +
+    '.ob-tip .none{margin:8px 0 0;padding-top:8px;border-top:1px solid #e6e8ec;color:#666c76}' +
+    '.ob-empty{padding:30px 16px;text-align:center;color:var(--o-muted,#666c76)}' +
     '.ob-panel{position:relative;margin-top:12px;background:var(--o-surface,#fff);border:1px solid var(--o-line,#d9dce1);border-radius:14px;padding:14px 18px 16px}' +
     '.ob-panel .x{position:absolute;top:8px;right:12px;border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--o-muted,#666c76)}' +
     '.pn-head{display:flex;gap:14px;align-items:center;margin-bottom:10px}.pn-head h3{margin:0;font-size:17px}.pn-ic{background:#ecebe4;border-radius:12px;padding:6px 8px;flex:none}' +
@@ -27,39 +44,12 @@
     '.ob-panel dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:0 0 8px;font-size:13px}.ob-panel dt{color:var(--o-muted,#666c76)}.ob-panel dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}' +
     '.ob-panel label{display:block;font-weight:700;font-size:12px}.ob-panel select{width:100%;margin-top:4px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--o-line,#c9ced6);background:var(--o-bg,#fff);color:var(--o-fg,#1d2026)}' +
     '.ob-panel .none{color:var(--o-muted,#666c76);font-size:13px}' +
-    '.ob-m:hover .ob-ring{opacity:1}' +
-    '.ob-tip{position:fixed;z-index:50;width:292px;max-width:calc(100vw - 16px);background:#fff;color:#1d2026;border-radius:12px;box-shadow:0 10px 30px rgba(20,24,30,.28),0 0 0 1px rgba(20,24,30,.08);padding:12px 14px;font-size:12.5px;line-height:1.35;pointer-events:none}' +
-    '.ob-tip.pin{pointer-events:auto}' +
-    '.ob-tip h4{margin:0 0 2px;font-size:14px;display:flex;gap:8px;align-items:center}' +
-    '.ob-tip .sub{color:#666c76;font-size:12px}' +
-    '.ob-tip .st{display:inline-block;font-size:11px;font-weight:700;border-radius:99px;padding:2px 8px;margin:6px 0 2px}' +
-    '.ob-tip .st.on{background:#e6f6ec;color:#12794a}.ob-tip .st.off{background:#eceef2;color:#4a5160}' +
-    '.ob-tip dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:8px 0 0;padding:8px 0 0;border-top:1px solid #e6e8ec}' +
-    '.ob-tip dt{color:#666c76}.ob-tip dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}' +
-    '.ob-tip .sec{margin:8px 0 0;padding-top:8px;border-top:1px solid #e6e8ec;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#666c76}' +
-    '.ob-tip .none{margin:8px 0 0;padding-top:8px;border-top:1px solid #e6e8ec;color:#666c76}' +
-    '.ob-tip label{display:block;margin-top:10px;font-weight:700;font-size:12px}' +
-    '.ob-tip select{width:100%;margin-top:4px;font:inherit;padding:7px 8px;border-radius:8px;border:1px solid #c9ced6;background:#fff;color:#1d2026}' +
-    '.ob-tip .x{position:absolute;top:6px;right:8px;border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:#666c76}' +
-    '.ob-empty{padding:30px 16px;text-align:center;color:var(--o-muted,#666c76)}' +
-    /* animaciones de trabajo */
-    '.a-arm{transform-box:fill-box;transform-origin:0% 100%;animation:oArm 2.6s ease-in-out infinite}' +
-    '.a-stick{transform-box:fill-box;transform-origin:0% 0%;animation:oStick 2.6s ease-in-out infinite}' +
-    '.a-lift{transform-box:fill-box;transform-origin:0% 100%;animation:oLift 3s ease-in-out infinite}' +
-    '.a-bed{transform-box:fill-box;transform-origin:0% 100%;animation:oBed 5s ease-in-out infinite}' +
-    '.a-bob{animation:oBob .9s ease-in-out infinite}' +
-    '.a-shake{animation:oShake .13s linear infinite}' +
-    '.a-spin{transform-box:fill-box;transform-origin:50% 50%;animation:oSpin 1.6s linear infinite}' +
-    '.a-blade{animation:oBlade 2.4s ease-in-out infinite}' +
-    '@keyframes oArm{0%,100%{transform:rotate(4deg)}50%{transform:rotate(-9deg)}}' +
-    '@keyframes oStick{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(14deg)}}' +
-    '@keyframes oLift{0%,100%{transform:rotate(7deg)}50%{transform:rotate(-14deg)}}' +
-    '@keyframes oBed{0%,55%{transform:rotate(0)}75%,85%{transform:rotate(-22deg)}100%{transform:rotate(0)}}' +
-    '@keyframes oBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}' +
-    '@keyframes oShake{0%{transform:translate(0,0)}25%{transform:translate(.7px,-.6px)}50%{transform:translate(-.6px,.4px)}75%{transform:translate(.5px,.6px)}100%{transform:translate(0,0)}}' +
-    '@keyframes oSpin{to{transform:rotate(360deg)}}' +
-    '@keyframes oBlade{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}' +
-    '@media (prefers-reduced-motion:reduce){.a-arm,.a-stick,.a-lift,.a-bed,.a-bob,.a-shake,.a-spin,.a-blade{animation:none!important}}';
+    '.sw{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}' +
+    '.sw button{width:24px;height:24px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #aab0ba;cursor:pointer;padding:0}' +
+    '.sw button.on{box-shadow:0 0 0 2px #e31b1f}' +
+    '.sw .auto{width:auto;height:auto;border-radius:99px;border:1px solid var(--o-line,#c9ced6);background:var(--o-bg,#fff);color:var(--o-fg,#1d2026);font:600 12px inherit;padding:3px 10px;box-shadow:none}' +
+    '.sw .auto.on{border-color:#e31b1f;color:#e31b1f;box-shadow:none}' +
+    '.sw input[type=color]{width:30px;height:26px;padding:0;border:1px solid var(--o-line,#c9ced6);border-radius:6px;background:none;cursor:pointer}';
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function num(n, d) { return Number(n).toLocaleString('es-AR', { maximumFractionDigits: d == null ? 0 : d }); }
@@ -72,9 +62,23 @@
         d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' });
     } catch (e) { return String(fh || ''); }
   }
+  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function ease(k) { return k < 0 ? 0 : k > 1 ? 1 : (1 - Math.cos(Math.PI * k)) / 2; }
+  function seg(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
+  function tri(x) { x = x - Math.floor(x); return x < .5 ? x * 2 : 2 - x * 2; }
+  function darken(hex, k) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#8a6a00';
+    var n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    function f(c) { return ('0' + Math.round(c * k).toString(16)).slice(-2); }
+    return '#' + f(r) + f(g) + f(b);
+  }
 
   /* ---------- Qué dibujo le toca a cada máquina ---------- */
+  var FORMAS = [['', 'Automática (según el nombre)'], ['excavadora', 'Excavadora / retro'], ['pala', 'Pala cargadora'], ['moto', 'Motoniveladora'],
+    ['camion', 'Camión'], ['camioneta', 'Camioneta'], ['tractor', 'Tractor'], ['rodillo', 'Compactador de suelo (rodillo)']];
   function tipoDibujo(m) {
+    if (m.formaMaq) return m.formaMaq;
     var t = (m.nombre + ' ' + (m.marca || '') + ' ' + (m.modelo || '')).toLowerCase();
     if (/excavad/.test(t)) return 'excavadora';
     if (/pala|cargadora|payloader/.test(t)) return 'pala';
@@ -85,92 +89,135 @@
     if (/hilux|ranger|camioneta|pick|toyo|ford/.test(t)) return 'camioneta';
     return 'generico';
   }
-  var Y = '#f2b705', Yd = '#c98f00', K = '#2b2f36', G = '#8a9099', GL = '#bfe3f2';
-  function wheel(cx, cy, r, spin) {
-    return '<g><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + K + '"/><circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.45) + '" fill="#aeb4bd"/>' +
-      (spin ? '<g class="a-spin"><rect x="' + (cx - 0.9) + '" y="' + (cy - r * 0.42) + '" width="1.8" height="' + (r * 0.84) + '" fill="' + K + '"/><rect x="' + (cx - r * 0.42) + '" y="' + (cy - 0.9) + '" width="' + (r * 0.84) + '" height="1.8" fill="' + K + '"/></g>' : '') + '</g>';
+
+  /* ---------- Aspecto según la marca (colores de su pintura de fábrica; sin logos) ---------- */
+  var BRANDS = [
+    { re: /caterpillar|\bcat\b/, n: 'Caterpillar', body: '#ffcd11', trim: '#1f2227', roof: 'flat', rim: '#1f2227' },
+    { re: /komatsu/, n: 'Komatsu', body: '#f4b400', trim: '#2c4a8a', roof: 'round', rim: '#ffffff' },
+    { re: /john ?deere|jonh ?deere|deere/, n: 'John Deere', body: '#367c2b', trim: '#ffde00', roof: 'round', rim: '#ffde00' },
+    { re: /xcmg/, n: 'XCMG', body: '#f2b200', trim: '#d71920', roof: 'flat', rim: '#d71920' },
+    { re: /lonking/, n: 'Lonking', body: '#f7a600', trim: '#1a5fb4', roof: 'flat', rim: '#1a5fb4' },
+    { re: /liugong/, n: 'Liugong', body: '#ffc400', trim: '#0b5ca8', roof: 'round', rim: '#0b5ca8' },
+    { re: /dynapac|dynamac/, n: 'Dynapac', body: '#fbb800', trim: '#3a3f4a', roof: 'flat', rim: '#3a3f4a' },
+    { re: /deutz/, n: 'Deutz-Fahr', body: '#5da832', trim: '#cfd5db', roof: 'round', rim: '#cfd5db' },
+    { re: /zanello/, n: 'Zanello', body: '#c62828', trim: '#f4f4f0', roof: 'flat', rim: '#f4f4f0' },
+    { re: /chery/, n: 'Chery', body: '#d03a2f', trim: '#ffd34d', roof: 'flat', rim: '#ffd34d' },
+    { re: /mercedes/, n: 'Mercedes-Benz', body: '#f4f4f0', trim: '#b7bcc4', roof: 'flat', rim: '#b7bcc4', bed: '#5c6470' },
+    { re: /toyota|toyta|hilux/, n: 'Toyota', body: '#f4f4f0', trim: '#c4172c', roof: 'flat', rim: '#b7bcc4' },
+    { re: /ford|ranger/, n: 'Ford', body: '#f4f4f0', trim: '#1c4f9c', roof: 'flat', rim: '#b7bcc4' }
+  ];
+  var DEFAULT_BODY = { excavadora: '#f2b705', pala: '#f2b705', moto: '#f2b705', rodillo: '#f2b705', camion: '#f4f4f0', camioneta: '#f4f4f0', tractor: '#2f7d4f', generico: '#f2b705' };
+  var ROAD = { camion: 1, camioneta: 1 };
+  var ROADB = { 'Mercedes-Benz': 1, 'Toyota': 1, 'Ford': 1 };
+  function marcaDe(m) {
+    var t = ((m.marca || '') + ' ' + (m.modelo || '') + ' ' + (m.nombre || '')).toLowerCase();
+    for (var i = 0; i < BRANDS.length; i++) if (BRANDS[i].re.test(t)) return BRANDS[i];
+    return null;
   }
-  /* cada dibujo mide ~100×68 y apoya en y=66; trabaja = true agrega movimiento */
-  function dibujo(tipo, w, col) {
-    var c = col || Y, s = '';
-    if (tipo === 'excavadora') {
-      s += '<rect x="14" y="52" width="58" height="13" rx="6.5" fill="' + K + '"/><circle cx="22" cy="58.5" r="4" fill="#6b717b"/><circle cx="64" cy="58.5" r="4" fill="#6b717b"/>' +
-        '<rect x="22" y="40" width="40" height="13" rx="3" fill="' + c + '"/><rect x="22" y="48" width="40" height="5" fill="' + Yd + '"/>' +
-        '<path d="M26 40v-12h16l5 12z" fill="' + c + '"/><path d="M30 38v-8h10l3 8z" fill="' + GL + '"/><rect x="50" y="36" width="12" height="4" fill="' + K + '"/>' +
-        '<g class="' + (w ? 'a-arm' : '') + '"><path d="M58 42 L78 22 L82 26 L63 47z" fill="' + c + '" stroke="' + Yd + '" stroke-width="1"/>' +
-        '<g class="' + (w ? 'a-stick' : '') + '"><path d="M78 22 L92 40 L88 43 L75 26z" fill="' + c + '" stroke="' + Yd + '" stroke-width="1"/>' +
-        '<path d="M88 40 L99 42 L96 52 L86 49z" fill="' + K + '"/></g></g>';
-    } else if (tipo === 'pala') {
-      s += wheel(30, 56, 10, w) + wheel(70, 56, 10, w) +
-        '<rect x="14" y="38" width="42" height="14" rx="3" fill="' + c + '"/><rect x="50" y="44" width="30" height="8" rx="2" fill="' + c + '"/><rect x="14" y="48" width="66" height="4" fill="' + Yd + '"/>' +
-        '<path d="M18 38v-14h20l4 14z" fill="' + c + '"/><path d="M22 36v-10h13l3 10z" fill="' + GL + '"/><rect x="16" y="22" width="24" height="3" fill="' + K + '"/>' +
-        '<g class="' + (w ? 'a-lift' : '') + '"><path d="M62 46 L84 40 L84 45 L63 51z" fill="' + c + '" stroke="' + Yd + '" stroke-width="1"/><path d="M82 34 L98 36 L96 52 L84 52z" fill="' + K + '"/><path d="M84 38 L96 40 L94 50 L85 50z" fill="#555b66"/></g>';
-    } else if (tipo === 'moto') {
-      s += wheel(22, 56, 8, w) + wheel(36, 56, 8, w) + wheel(84, 56, 8, w) +
-        '<rect x="12" y="38" width="38" height="12" rx="3" fill="' + c + '"/><rect x="48" y="42" width="40" height="5" fill="' + c + '"/><rect x="12" y="46" width="76" height="3" fill="' + Yd + '"/>' +
-        '<path d="M14 38v-14h24l4 14z" fill="' + c + '"/><path d="M18 36v-10h16l3 10z" fill="' + GL + '"/><rect x="12" y="22" width="30" height="3" fill="' + K + '"/>' +
-        '<g class="' + (w ? 'a-blade' : '') + '"><rect x="48" y="52" width="26" height="9" rx="2" fill="' + K + '"/><rect x="50" y="52" width="22" height="3" fill="#6b717b"/></g><rect x="84" y="46" width="3" height="8" fill="' + K + '"/>';
-    } else if (tipo === 'camion') {
-      s += wheel(24, 57, 8.5, w) + wheel(40, 57, 8.5, w) + wheel(82, 57, 8.5, w) +
-        '<rect x="10" y="50" width="86" height="5" fill="' + K + '"/>' +
-        '<g class="' + (w ? 'a-bed' : '') + '"><path d="M10 28h50v22H10z" fill="#d94a3d" stroke="#a8362c" stroke-width="1"/><rect x="10" y="44" width="50" height="6" fill="#a8362c"/></g>' +
-        '<path d="M62 50V32l8-8h14l6 10v16z" fill="#f4f4f0" stroke="#c7c9cd" stroke-width="1"/><path d="M71 34l4-6h9l4 6z" fill="' + GL + '"/><rect x="90" y="44" width="6" height="4" fill="' + K + '"/>';
-    } else if (tipo === 'camioneta') {
-      s += wheel(26, 57, 8, w) + wheel(76, 57, 8, w) +
-        '<path d="M8 52V40h34v12z" fill="#f4f4f0" stroke="#c7c9cd" stroke-width="1"/><path d="M42 52V32l8-9h16l12 11v18z" fill="#f4f4f0" stroke="#c7c9cd" stroke-width="1"/>' +
-        '<path d="M52 33l6-8h8l8 8z" fill="' + GL + '"/><rect x="8" y="50" width="86" height="4" fill="' + K + '"/><rect x="86" y="42" width="6" height="4" fill="#ffd34d"/>';
-    } else if (tipo === 'tractor') {
-      s += wheel(32, 52, 14, w) + wheel(78, 58, 7.5, w) +
-        '<rect x="42" y="40" width="42" height="14" rx="3" fill="#2f7d4f"/><rect x="82" y="44" width="10" height="8" fill="#256640"/><rect x="86" y="30" width="3" height="14" fill="' + K + '"/>' +
-        '<path d="M20 40v-18h24v18z" fill="#2f7d4f"/><path d="M24 38v-14h16v14z" fill="' + GL + '"/><rect x="18" y="20" width="28" height="3" fill="' + K + '"/>';
-    } else if (tipo === 'rodillo') {
-      s += '<g class="' + (w ? 'a-shake' : '') + '">' +
-        '<rect x="30" y="40" width="42" height="14" rx="3" fill="' + c + '"/><rect x="30" y="49" width="42" height="4" fill="' + Yd + '"/>' +
-        '<path d="M64 40 L74 46 L74 52 L64 52z" fill="' + c + '"/>' +
-        '<path d="M32 40v-15h22l3 15z" fill="' + c + '"/><path d="M36 38v-11h14l2 11z" fill="' + GL + '"/><rect x="30" y="22" width="28" height="3" fill="' + K + '"/>' +
-        '<circle cx="82" cy="49" r="15" fill="#7f8792"/><circle cx="82" cy="49" r="15" fill="none" stroke="#5b616b" stroke-width="2"/><circle cx="82" cy="49" r="5.5" fill="#444a54"/><rect x="62" y="44" width="20" height="3.5" fill="' + K + '"/>' +
-        '<circle cx="36" cy="54" r="12" fill="' + K + '"/><circle cx="36" cy="54" r="5" fill="#aeb4bd"/></g>';
-    } else {
-      s += wheel(28, 57, 8, w) + wheel(72, 57, 8, w) + '<rect x="14" y="36" width="68" height="20" rx="4" fill="' + c + '"/><rect x="22" y="28" width="26" height="10" fill="' + GL + '"/>';
-    }
-    return '<g class="' + (w ? 'a-bob' : '') + '">' + s + '</g>';
+  function estilo(m, tipo) {
+    var b = marcaDe(m);
+    /* la pintura de la marca solo se usa si es coherente con la forma (marca de camión en camión, etc.) */
+    if (b && (!!ROAD[tipo] !== !!ROADB[b.n]) && (tipo !== 'tractor' || ROADB[b.n])) b = (tipo === 'tractor' && !ROADB[b.n]) ? b : null;
+    var body = (b && b.body) || DEFAULT_BODY[tipo] || '#f2b705';
+    var o = { brand: b ? b.n : '', body: body, trim: (b && b.trim) || '#2b2f36', roof: (b && b.roof) || 'flat', rim: (b && b.rim) || '#aeb4bd', bed: (b && b.bed) || '#d94a3d' };
+    if (m.colorMaq) { o.body = m.colorMaq; if (tipo === 'camion') o.bed = darken(m.colorMaq, .82); }
+    o.dark = darken(o.body, .78);
+    return o;
   }
 
-  /* áreas de trabajo: mismos colores que los pisos de la oficina (azul, amarillo/beige, verde...) */
+  var K = '#2b2f36', GL = '#bfe3f2';
+  function wheel(cx, cy, r, rim) {
+    return '<g><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + K + '"/><circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.5) + '" fill="' + (rim || '#aeb4bd') + '"/>' +
+      '<g data-p="wh" data-pv="' + cx + ' ' + cy + '"><rect x="' + (cx - 0.9) + '" y="' + (cy - r * 0.45) + '" width="1.8" height="' + (r * 0.9) + '" fill="' + K + '"/><rect x="' + (cx - r * 0.45) + '" y="' + (cy - 0.9) + '" width="' + (r * 0.9) + '" height="1.8" fill="' + K + '"/></g></g>';
+  }
+  function cabPath(x, y, w, h, roof) {
+    if (roof === 'round') return 'M' + x + ' ' + y + 'v' + (-(h - 4)) + 'q0 -4 4 -4 h' + (w - 10) + ' q4 0 6 4 l4 ' + (h - 4) + 'z';
+    return 'M' + x + ' ' + y + 'v' + (-h) + 'h' + w + 'l4 ' + h + 'z';
+  }
+  /* cada dibujo mide ~100×68 y apoya en y=66. data-p marca las partes que mueve la animación. */
+  function dibujo(tipo, st) {
+    var c = st.body, d = st.dark, t = st.trim, s = '';
+    var ln = (c === '#f4f4f0' ? '#c7c9cd' : darken(c, .8));
+    if (tipo === 'excavadora') {
+      s += '<rect x="14" y="52" width="58" height="13" rx="6.5" fill="' + K + '"/><circle cx="22" cy="58.5" r="4" fill="#6b717b"/><circle cx="64" cy="58.5" r="4" fill="#6b717b"/>' +
+        '<rect x="22" y="40" width="40" height="13" rx="3" fill="' + c + '"/><rect x="22" y="48" width="40" height="5" fill="' + d + '"/><rect x="22" y="44" width="40" height="2" fill="' + t + '" opacity=".85"/>' +
+        '<path d="' + cabPath(26, 40, 16, 12, st.roof) + '" fill="' + c + '"/><path d="M30 38v-8h10l3 8z" fill="' + GL + '"/><rect x="50" y="36" width="12" height="4" fill="' + K + '"/>' +
+        '<g data-p="arm" data-pv="58 42"><path d="M58 42 L78 22 L82 26 L63 47z" fill="' + c + '" stroke="' + d + '" stroke-width="1"/>' +
+        '<g data-p="stick" data-pv="78 22"><path d="M78 22 L92 40 L88 43 L75 26z" fill="' + c + '" stroke="' + d + '" stroke-width="1"/>' +
+        '<g data-p="bucket" data-pv="91 41"><path d="M88 40 L99 42 L96 52 L86 49z" fill="' + K + '"/><circle data-p="dirt" cx="94" cy="46" r="4.5" fill="#8b6b4a" visibility="hidden"/></g></g></g>';
+    } else if (tipo === 'pala') {
+      s += wheel(30, 56, 10, st.rim) + wheel(70, 56, 10, st.rim) +
+        '<rect x="14" y="38" width="42" height="14" rx="3" fill="' + c + '"/><rect x="50" y="44" width="30" height="8" rx="2" fill="' + c + '"/><rect x="14" y="48" width="66" height="4" fill="' + d + '"/><rect x="14" y="43" width="66" height="2" fill="' + t + '" opacity=".85"/>' +
+        '<path d="' + cabPath(18, 38, 18, 14, st.roof) + '" fill="' + c + '"/><path d="M22 36v-10h13l3 10z" fill="' + GL + '"/><rect x="16" y="22" width="24" height="3" fill="' + K + '"/>' +
+        '<g data-p="lift" data-pv="62 47"><path d="M62 46 L84 40 L84 45 L63 51z" fill="' + c + '" stroke="' + d + '" stroke-width="1"/>' +
+        '<g data-p="tilt" data-pv="84 43"><path d="M82 34 L98 36 L96 52 L84 52z" fill="' + K + '"/><path d="M84 38 L96 40 L94 50 L85 50z" fill="#555b66"/><path data-p="dirt" d="M84 36 Q91 28 97 36z" fill="#8b6b4a" visibility="hidden"/></g></g>';
+    } else if (tipo === 'moto') {
+      s += wheel(22, 56, 8, st.rim) + wheel(36, 56, 8, st.rim) + wheel(84, 56, 8, st.rim) +
+        '<rect x="12" y="38" width="38" height="12" rx="3" fill="' + c + '"/><rect x="48" y="42" width="40" height="5" fill="' + c + '"/><rect x="12" y="46" width="76" height="3" fill="' + d + '"/><rect x="48" y="43" width="40" height="1.6" fill="' + t + '" opacity=".85"/>' +
+        '<path d="' + cabPath(14, 38, 20, 14, st.roof) + '" fill="' + c + '"/><path d="M18 36v-10h16l3 10z" fill="' + GL + '"/><rect x="12" y="22" width="30" height="3" fill="' + K + '"/>' +
+        '<g data-p="blade"><rect x="48" y="52" width="26" height="9" rx="2" fill="' + K + '"/><rect x="50" y="52" width="22" height="3" fill="#6b717b"/></g><rect x="84" y="46" width="3" height="8" fill="' + K + '"/>';
+    } else if (tipo === 'camion') {
+      s += wheel(24, 57, 8.5, st.rim) + wheel(40, 57, 8.5, st.rim) + wheel(82, 57, 8.5, st.rim) +
+        '<rect x="10" y="50" width="86" height="5" fill="' + K + '"/>' +
+        '<g data-p="bed" data-pv="10 50"><path d="M10 28h50v22H10z" fill="' + st.bed + '" stroke="' + darken(st.bed, .75) + '" stroke-width="1"/><rect x="10" y="44" width="50" height="6" fill="' + darken(st.bed, .75) + '"/>' +
+        '<g data-p="load" transform="translate(35 28)"><path d="M-23 1 Q-14 -11 -3 -7 Q9 -15 23 1z" fill="#8b6b4a"/><path d="M-12 0 Q-4 -7 3 -4 Q10 -8 16 0z" fill="#a88560"/></g></g>' +
+        '<path d="M62 50V32l8-8h14l6 10v16z" fill="' + c + '" stroke="' + ln + '" stroke-width="1"/><path d="M71 34l4-6h9l4 6z" fill="' + GL + '"/><rect x="90" y="44" width="6" height="4" fill="' + K + '"/><rect x="62" y="46" width="34" height="2.2" fill="' + t + '" opacity=".9"/>';
+    } else if (tipo === 'camioneta') {
+      s += wheel(26, 57, 8, st.rim) + wheel(76, 57, 8, st.rim) +
+        '<path d="M8 52V40h34v12z" fill="' + c + '" stroke="' + ln + '" stroke-width="1"/><path d="M42 52V32l8-9h16l12 11v18z" fill="' + c + '" stroke="' + ln + '" stroke-width="1"/>' +
+        '<path d="M52 33l6-8h8l8 8z" fill="' + GL + '"/><rect x="8" y="50" width="86" height="4" fill="' + K + '"/><rect x="86" y="42" width="6" height="4" fill="#ffd34d"/><rect x="8" y="45" width="84" height="2" fill="' + t + '" opacity=".9"/>';
+    } else if (tipo === 'tractor') {
+      s += wheel(32, 52, 14, st.rim) + wheel(78, 58, 7.5, st.rim) +
+        '<rect x="42" y="40" width="42" height="14" rx="3" fill="' + c + '"/><rect x="82" y="44" width="10" height="8" fill="' + d + '"/><rect x="86" y="30" width="3" height="14" fill="' + K + '"/><rect x="42" y="45" width="42" height="2" fill="' + t + '" opacity=".9"/>' +
+        '<path d="' + (st.roof === 'round' ? 'M20 40v-14q0 -4 4 -4h14q4 0 6 4l0 14z' : 'M20 40v-18h24v18z') + '" fill="' + c + '"/><path d="M24 38v-14h16v14z" fill="' + GL + '"/><rect x="18" y="20" width="28" height="3" fill="' + K + '"/>';
+    } else if (tipo === 'rodillo') {
+      s += '<rect x="30" y="40" width="42" height="14" rx="3" fill="' + c + '"/><rect x="30" y="49" width="42" height="4" fill="' + d + '"/><rect x="30" y="44" width="42" height="2" fill="' + t + '" opacity=".85"/>' +
+        '<path d="M64 40 L74 46 L74 52 L64 52z" fill="' + c + '"/>' +
+        '<path d="' + cabPath(32, 40, 22, 15, st.roof) + '" fill="' + c + '"/><path d="M36 38v-11h14l2 11z" fill="' + GL + '"/><rect x="30" y="22" width="28" height="3" fill="' + K + '"/>' +
+        '<circle cx="82" cy="49" r="15" fill="#7f8792"/><circle cx="82" cy="49" r="15" fill="none" stroke="#5b616b" stroke-width="2"/><circle cx="82" cy="49" r="5.5" fill="#444a54"/><rect x="62" y="44" width="20" height="3.5" fill="' + K + '"/>' +
+        '<circle cx="36" cy="54" r="12" fill="' + K + '"/><circle cx="36" cy="54" r="5" fill="' + st.rim + '"/>';
+    } else {
+      s += wheel(28, 57, 8, st.rim) + wheel(72, 57, 8, st.rim) + '<rect x="14" y="36" width="68" height="20" rx="4" fill="' + c + '"/><rect x="22" y="28" width="26" height="10" fill="' + GL + '"/>';
+    }
+    return '<g data-p="bob">' + s + '</g>';
+  }
+
   var AREAS = [
-    { piso: '#dbe3f3', borde: '#a9b8da', lado: '#8e9dc0', lado2: '#a3b2d4', acento: '#6c7cff', nombre: 'azul' },
-    { piso: '#f3e4cf', borde: '#dbc19a', lado: '#bda47c', lado2: '#d2b98f', acento: '#e0a21a', nombre: 'amarillo' },
-    { piso: '#d9efe4', borde: '#a3d1bb', lado: '#82b49b', lado2: '#98c8b0', acento: '#19b394', nombre: 'verde' },
-    { piso: '#f6dcd5', borde: '#e0b0a4', lado: '#c48f82', lado2: '#d7a699', acento: '#ff6a4d', nombre: 'naranja' },
-    { piso: '#e5def2', borde: '#bfb2dc', lado: '#a093c2', lado2: '#b5a8d3', acento: '#8a63d2', nombre: 'lila' }
+    { piso: '#dbe3f3', borde: '#a9b8da', lado: '#8e9dc0', lado2: '#a3b2d4', acento: '#6c7cff' },
+    { piso: '#f3e4cf', borde: '#dbc19a', lado: '#bda47c', lado2: '#d2b98f', acento: '#e0a21a' },
+    { piso: '#d9efe4', borde: '#a3d1bb', lado: '#82b49b', lado2: '#98c8b0', acento: '#19b394' },
+    { piso: '#f6dcd5', borde: '#e0b0a4', lado: '#c48f82', lado2: '#d7a699', acento: '#ff6a4d' },
+    { piso: '#e5def2', borde: '#bfb2dc', lado: '#a093c2', lado2: '#b5a8d3', acento: '#8a63d2' }
   ];
+  var COLORES = ['#ffcd11', '#f2b705', '#e8731a', '#d6281f', '#367c2b', '#2f7d4f', '#1f5fae', '#f4f4f0', '#8a9099', '#2b2f36'];
+  var SC = 0.72, STEP = 92;
+
   function mount(host, getD) {
-    var root = host.shadowRoot || host;
     var wrap = document.createElement('div'); wrap.className = 'ob';
     var st = document.createElement('style'); st.textContent = CSS;
     wrap.appendChild(st);
     var bar = document.createElement('div'); bar.className = 'ob-bar'; wrap.appendChild(bar);
+    var hidBox = document.createElement('div'); hidBox.className = 'ob-hid'; hidBox.hidden = true; wrap.appendChild(hidBox);
     var stage = document.createElement('div'); stage.className = 'ob-stage'; wrap.appendChild(stage);
     var panelEl = document.createElement('section'); panelEl.className = 'ob-panel'; panelEl.hidden = true; panelEl.setAttribute('aria-live', 'polite'); wrap.appendChild(panelEl);
     host.appendChild(wrap);
-    var tip = null, pinned = null, drag = null;
+    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now();
 
     function datos() {
       var D = getD(), S = D.S;
-      var obras = S.centros.filter(function (c) { return c.tipo === 'obra' && c.activo !== false && !c.fin; })
-        .sort(function (a, b) { return String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true }); });
-      var maqs = S.centros.filter(function (c) { return c.tipo === 'maquina' && c.activo !== false; })
-        .sort(function (a, b) { return String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true }); });
+      var cmp = function (a, b) { return String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true }); };
+      var todas = S.centros.filter(function (c) { return c.tipo === 'obra' && c.activo !== false && !c.fin; }).sort(cmp);
+      var obras = todas.filter(function (o) { return !o.ocultaMapa; }), ocultas = todas.filter(function (o) { return o.ocultaMapa; });
+      var maqs = S.centros.filter(function (c) { return c.tipo === 'maquina' && c.activo !== false; }).sort(cmp);
       var ids = {}; obras.forEach(function (o) { ids[o.id] = true; });
       var plots = obras.map(function (o, i) { return { id: o.id, c: o, nombre: o.nombre, codigo: o.codigo, maqs: [], area: AREAS[i % AREAS.length] }; });
       var tray = { id: '', c: null, tray: true, nombre: 'Sin obra', codigo: 'DEP', maqs: [] };
       var byId = {}; plots.forEach(function (p) { byId[p.id] = p; }); byId[''] = tray;
       maqs.forEach(function (m) { (byId[m.obraActual && ids[m.obraActual] ? m.obraActual : ''] || tray).maqs.push(m); });
-      return { D: D, S: S, plots: plots, tray: tray, byId: byId, maqs: maqs, puede: !!(D.maq && D.maq.puede) };
+      return { D: D, S: S, plots: plots, ocultas: ocultas, tray: tray, byId: byId, maqs: maqs, puede: !!(D.maq && D.maq.puede) };
     }
-    function maqObra(M, d) { return M.obraActual && d.byId[M.obraActual] && M.obraActual ? d.byId[M.obraActual] : null; }
+    function maqObra(M, d) { return M.obraActual && d.byId[M.obraActual] && d.byId[M.obraActual].c ? d.byId[M.obraActual].c : null; }
 
-    /* ---------- datos de combustible de una máquina ---------- */
     function stats(M, d) {
       var S = d.S, lim = Date.now() - 30 * 864e5;
       var cargas = (S.comb || []).filter(function (x) { return x.maqId === M.id; }).sort(function (a, b) { return String(b.fh).localeCompare(String(a.fh)); });
@@ -194,11 +241,15 @@
         '<dt>Última carga</dt><dd>' + esc(fechaHora(r.u.fh)) + '</dd></dl><div class="none" style="border:0;padding:6px 0 0">Tocá la máquina para ver toda la ficha abajo.</div>';
       return h;
     }
+    function previewSVG(M) {
+      var tipo = tipoDibujo(M), stl = estilo(M, tipo);
+      return '<svg viewBox="0 0 100 70" width="92" height="64">' + dibujo(tipo, stl) + '</svg>';
+    }
     function panelHTML(M, d) {
-      var r = stats(M, d), S = d.S, u = r.u;
+      var r = stats(M, d), S = d.S, u = r.u, tipo = tipoDibujo(M), stl = estilo(M, tipo);
       var sub = [M.marca, M.modelo, M.anio ? M.anio : '', M.patente].filter(Boolean).join(' · ');
       var h = '<button type="button" class="x" aria-label="Cerrar">×</button>' +
-        '<div class="pn-head"><div class="pn-ic"><svg viewBox="0 0 100 70" width="92" height="64">' + dibujo(tipoDibujo(M), !!r.obra) + '</svg></div><div><h3>' + esc(M.codigo) + ' · ' + esc(M.nombre) + '</h3>' +
+        '<div class="pn-head"><div class="pn-ic">' + previewSVG(M) + '</div><div><h3>' + esc(M.codigo) + ' · ' + esc(M.nombre) + '</h3>' +
         (sub ? '<div class="sub">' + esc(sub) + '</div>' : '<div class="sub">Sin marca ni modelo cargados</div>') +
         (r.obra ? '<span class="st on">En obra ' + esc(r.obra.codigo) + ' · ' + esc(r.obra.nombre) + '</span>' : '<span class="st off">Sin obra (en la playa)</span>') + '</div></div>';
       if (!r.cargas.length) {
@@ -219,12 +270,19 @@
           '<dt>' + esc(COMB_T[u.tipo] || u.tipo || 'Sin tipo') + '</dt><dd>' + (u.precio > 0 ? money(u.precio) + '/L' : '') + '</dd>' +
           (u.obraId ? '<dt>Obra</dt><dd>' + esc(obraCod(S, u.obraId)) + '</dd>' : '') + '</dl>';
       }
-      h += '<div>';
+      h += '</div><div>';
       if (d.puede) {
         h += '<label for="ob-mv">Mover a</label><select id="ob-mv"><option value=""' + (!r.obra ? ' selected' : '') + '>Sin obra (playa)</option>' + d.plots.map(function (p) {
           return '<option value="' + esc(p.id) + '"' + (r.obra && r.obra.id === p.id ? ' selected' : '') + '>' + esc(p.codigo + ' · ' + p.nombre) + '</option>';
         }).join('') + '</select>';
       } else h += '<div class="none" style="border:0;padding:0">Solo el dueño y el ingeniero pueden mover máquinas.</div>';
+      h += '</div><div><div class="sec">Aspecto en la Oficina</div>';
+      if (d.puede) {
+        h += '<label for="ob-fm">Forma</label><select id="ob-fm">' + FORMAS.map(function (f) { return '<option value="' + f[0] + '"' + ((M.formaMaq || '') === f[0] ? ' selected' : '') + '>' + esc(f[1]) + '</option>'; }).join('') + '</select>' +
+          '<label style="margin-top:8px">Color</label><div class="sw"><button type="button" class="auto' + (!M.colorMaq ? ' on' : '') + '" data-color="">' + (stl.brand ? 'Según marca (' + esc(stl.brand) + ')' : 'Original') + '</button>' +
+          COLORES.map(function (c) { return '<button type="button" data-color="' + c + '" class="' + (M.colorMaq === c ? 'on' : '') + '" style="background:' + c + '" aria-label="Color ' + c + '"></button>'; }).join('') +
+          '<input type="color" id="ob-cc" value="' + (M.colorMaq || stl.body) + '" aria-label="Otro color"></div>';
+      } else h += '<div class="none" style="border:0;padding:0">' + (stl.brand ? 'Estilo de ' + esc(stl.brand) + '.' : 'Estilo estándar.') + '</div>';
       return h + '</div></div>';
     }
     function fichaObra(P, d) {
@@ -250,46 +308,56 @@
     function hideTip() { if (tip) { tip.remove(); tip = null; } }
 
     /* ---------- escena ---------- */
-    function pt(P, u, v) { return [P.x + (u - v) * TW / 2, P.y + (u + v) * TH / 2]; }
+    function pt(P, u, v) { return [P.x + (u - v) * HX, P.y + (u + v) * HY]; }
     function pts(a) { return a.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
+    function cesc(s) { return (window.CSS && window.CSS.escape) ? window.CSS.escape(s) : String(s).replace(/"/g, '\\"'); }
     function tree(x, y, k) {
       return '<g transform="translate(' + x + ',' + y + ') scale(' + (k || 1) + ')"><ellipse cx="0" cy="1" rx="7" ry="3" fill="rgba(0,0,0,.14)"/><rect x="-1.5" y="-8" width="3" height="9" fill="#7a5a3a"/><circle cx="0" cy="-15" r="9" fill="#4e9a5d"/><circle cx="-3" cy="-17" r="5" fill="#63b072"/></g>';
     }
-    function maqSVG(m, c, working, sel) {
-      var sc = 0.72, tipo = tipoDibujo(m);
-      return '<g class="ob-m' + (sel ? ' sel' : '') + '" data-m="' + esc(m.id) + '" transform="translate(' + (c[0] - 50 * sc).toFixed(1) + ',' + (c[1] - 60 * sc).toFixed(1) + ') scale(' + sc + ')" tabindex="0" role="button" aria-label="' + esc(m.codigo + ' ' + m.nombre) + '">' +
-        '<ellipse cx="50" cy="63" rx="40" ry="6" fill="rgba(0,0,0,.18)"/>' + dibujo(tipo, working) +
+    function actorEl(m, cx, cy, sel) {
+      var tipo = tipoDibujo(m), stl = estilo(m, tipo);
+      return '<g class="ob-m' + (sel ? ' sel' : '') + '" data-m="' + esc(m.id) + '" transform="translate(' + (cx - 50 * SC).toFixed(1) + ',' + (cy - 60 * SC).toFixed(1) + ') scale(' + SC + ')" tabindex="0" role="button" aria-label="' + esc(m.codigo + ' ' + m.nombre) + '">' +
+        '<ellipse cx="50" cy="63" rx="40" ry="6" fill="rgba(0,0,0,.18)"/><g data-p="face">' + dibujo(tipo, stl) + '</g>' +
         '<rect class="ob-ring" x="2" y="14" width="96" height="56" rx="8"/>' +
         '<g transform="translate(50,76)"><rect x="-17" y="-9" width="34" height="14" rx="7" fill="#fff" opacity=".95"/><text x="0" y="1.5" text-anchor="middle" font-size="10" font-weight="700" fill="#1d2026" font-family="inherit">' + esc(m.codigo) + '</text></g></g>';
     }
+    function heap(id) {
+      return '<g id="' + id + '"><path d="M-27 0 Q-15 -22 0 -26 Q15 -22 27 0z" fill="#9b7b55"/><path d="M-14 -2 Q-4 -18 3 -20 Q10 -14 15 -2z" fill="#b08d63"/></g>';
+    }
     function plotSVG(P) {
-      var n = P.maqs.length, side = P.side, h = '', A = P.area;
+      var side = P.side, h = '', A = P.area, n = P.maqs.length;
       var T = pt(P, 0, 0), R = pt(P, side, 0), B = pt(P, side, side), Lf = pt(P, 0, side);
       h += '<g class="ob-plot" data-plot="' + esc(P.id) + '">';
       h += '<polygon points="' + pts([Lf, B, [B[0], B[1] + SLAB], [Lf[0], Lf[1] + SLAB]]) + '" fill="' + A.lado + '"/>';
       h += '<polygon points="' + pts([B, R, [R[0], R[1] + SLAB], [B[0], B[1] + SLAB]]) + '" fill="' + A.lado2 + '"/>';
       h += '<polygon class="ob-top" points="' + pts([T, R, B, Lf]) + '" fill="' + A.piso + '" stroke="' + A.borde + '" stroke-width="1.5"/>';
-      /* baldosas del piso, como en la oficina */
       for (var k = 1; k < side; k++) {
-        h += '<polyline points="' + pts([pt(P, k, 0), pt(P, k, side)]) + '" fill="none" stroke="' + A.borde + '" stroke-width="1" opacity=".55"/>';
-        h += '<polyline points="' + pts([pt(P, 0, k), pt(P, side, k)]) + '" fill="none" stroke="' + A.borde + '" stroke-width="1" opacity=".55"/>';
+        h += '<polyline points="' + pts([pt(P, k, 0), pt(P, k, side)]) + '" fill="none" stroke="' + A.borde + '" stroke-width="1" opacity=".5"/>';
+        h += '<polyline points="' + pts([pt(P, 0, k), pt(P, side, k)]) + '" fill="none" stroke="' + A.borde + '" stroke-width="1" opacity=".5"/>';
       }
-      var tl = pt(P, 0.12, 0.12), tr = pt(P, side - 0.12, 0.12);
-      h += '<g class="ob-deco">' + tree(tl[0] + 6, tl[1] + 8, 0.9) + tree(tr[0] - 6, tr[1] + 8, 0.8) + '</g>';
+      var a = 0.32;
+      h += '<polygon points="' + pts([pt(P, a, a), pt(P, side - a, a), pt(P, side - a, side - a), pt(P, a, side - a)]) + '" fill="#cdb48d" stroke="#b79d74" stroke-width="1.2"/>';
+      h += '<g class="fx" id="fx-' + P.idx + '"></g>';
+      var tl = pt(P, 0.1, 0.1), tr = pt(P, side - 0.1, 0.1);
+      h += '<g class="ob-deco">' + tree(tl[0] + 4, tl[1] + 8, 0.9) + tree(tr[0] - 4, tr[1] + 8, 0.8) + '</g>';
+      h += '<g class="act" id="act-' + P.idx + '">';
+      P.maqs.forEach(function (m, i) {
+        var col = i % side, row = Math.floor(i / side), c = pt(P, col + 0.5, row + 0.5);
+        h += actorEl(m, c[0], c[1], pinned === m.id);
+      });
+      h += '</g>';
       var lb = pt(P, side / 2, side), lbl = (P.codigo + ' · ' + P.nombre).slice(0, 34);
-      var wlab = Math.max(96, lbl.length * 6.6 + 34);
-      h += '<g class="ob-lab" transform="translate(' + lb[0].toFixed(1) + ',' + (lb[1] + SLAB + 6) + ')"><rect x="' + (-wlab / 2) + '" y="0" width="' + wlab + '" height="22" rx="11" fill="#1d2026" stroke="' + A.acento + '" stroke-width="2"/><circle cx="' + (-wlab / 2 + 12) + '" cy="11" r="4.5" fill="' + A.acento + '"/><text x="3" y="15" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff" font-family="inherit">' + esc(lbl) + '</text><text x="' + (wlab / 2 - 12) + '" y="15" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffd34d" font-family="inherit">' + n + '</text></g>';
-      var order = P.maqs.map(function (m, i) { return { m: m, col: i % side, row: Math.floor(i / side) }; })
-        .sort(function (p, q) { return (p.col + p.row) - (q.col + q.row) || p.row - q.row; });
-      order.forEach(function (o) { h += maqSVG(o.m, pt(P, o.col + 0.5, o.row + 0.5), true, pinned === o.m.id); });
+      var wlab = Math.max(110, lbl.length * 7 + 52 + (P.puedeOcultar ? 26 : 0));
+      h += '<g class="ob-lab" transform="translate(' + lb[0].toFixed(1) + ',' + (lb[1] + SLAB + 6) + ')"><rect x="' + (-wlab / 2) + '" y="0" width="' + wlab + '" height="22" rx="11" fill="#1d2026" stroke="' + A.acento + '" stroke-width="2"/><circle cx="' + (-wlab / 2 + 12) + '" cy="11" r="4.5" fill="' + A.acento + '"/><text x="' + (P.puedeOcultar ? -10 : 3) + '" y="15" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff" font-family="inherit">' + esc(lbl) + '</text><text x="' + (wlab / 2 - (P.puedeOcultar ? 40 : 18)) + '" y="15" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffd34d" font-family="inherit">' + n + '</text></g>';
+      if (P.puedeOcultar) h += '<g class="ob-hide" data-hide="' + esc(P.id) + '" transform="translate(' + (lb[0] + wlab / 2 - 15).toFixed(1) + ',' + (lb[1] + SLAB + 17) + ')"><title>Quitar esta obra del gráfico</title><circle r="8"/><path d="M-3.2 -3.2 L3.2 3.2 M3.2 -3.2 L-3.2 3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></g>';
       return h + '</g>';
     }
-    var STEP = 92;
     function layout(d, maxW) {
       var rowX = 0, rowY = 0, rowH = 0, tw = 0;
-      d.plots.forEach(function (P) {
-        var n = Math.max(P.maqs.length, 1);
-        P.side = Math.max(3, Math.ceil(Math.sqrt(n)));
+      d.plots.forEach(function (P, i) {
+        var n = P.maqs.length;
+        P.idx = i; P.puedeOcultar = d.puede;
+        P.side = n ? Math.max(4, Math.ceil(Math.sqrt(n)) + 1) : 4;
         P.w = P.side * TW; P.h = TOP + P.side * TH + SLAB + LAB;
         if (rowX > 0 && rowX + P.w > maxW) { rowY += rowH + GAP; rowX = 0; rowH = 0; }
         P.x = rowX + P.w / 2; P.y = rowY + TOP; rowX += P.w + GAP; rowH = Math.max(rowH, P.h); tw = Math.max(tw, rowX - GAP);
@@ -305,31 +373,213 @@
         '<text x="' + (T.bx + 170) + '" y="' + (T.by + 27) + '" font-size="12" fill="#7a8190" font-family="inherit">' + (T.maqs.length ? T.maqs.length + ' sin obra · arrastrá cada una al terreno de su obra' : 'Todas las máquinas están asignadas a una obra · arrastrá una acá para dejarla sin obra') + '</text>';
       T.maqs.forEach(function (m, i) {
         var col = i % T.per, row = Math.floor(i / T.per);
-        h += maqSVG(m, [T.bx + 20 + STEP / 2 + col * STEP, T.by + 40 + row * 80 + 50], false, pinned === m.id);
+        h += actorEl(m, T.bx + 20 + STEP / 2 + col * STEP, T.by + 40 + row * 80 + 50, pinned === m.id);
       });
       return h + '</g>';
     }
+
+    /* ---------- trabajo en obra: guion de cada máquina ---------- */
+    function planPlot(P, root) {
+      var s = P.side, fx = root.querySelector('#fx-' + P.idx), layer = root.querySelector('#act-' + P.idx);
+      P.acts = []; P.layer = layer; P.sig = '';
+      var by = {};
+      P.maqs.forEach(function (m) {
+        var el = layer.querySelector('[data-m="' + cesc(m.id) + '"]');
+        if (!el) return;
+        var a = { m: m, tipo: tipoDibujo(m), el: el, u: 0, v: 0, face: 1, spin: 0, parts: {} };
+        ['arm', 'stick', 'bucket', 'dirt', 'lift', 'tilt', 'bed', 'load', 'blade', 'bob', 'face'].forEach(function (k) { a.parts[k] = el.querySelector('[data-p="' + k + '"]'); });
+        a.wheels = [].slice.call(el.querySelectorAll('[data-p="wh"]'));
+        P.acts.push(a); (by[a.tipo] = by[a.tipo] || []).push(a);
+      });
+      var ex = by.excavadora || [], tr = by.camion || [], ld = by.pala || [], mg = by.moto || [], rl = by.rodillo || [], tc = by.tractor || [], pk = by.camioneta || [], gn = by.generico || [];
+      var fxs = '', I = P.idx, hasTrucks = tr.length > 0;
+      var DU = s - 0.65, DV = s - 0.65;
+      var cap = Math.max(1, Math.floor((s - 2) / 1.5) + 1), spots = [];
+      ex.forEach(function (a, i) {
+        var col = i % cap, row = Math.floor(i / cap);
+        a.eu = 0.65 + col * 1.55; a.ev = 1.4 + row * 1.1; a.pit = { u: a.eu + 0.62, v: a.ev }; a.group = [];
+        spots.push({ u: a.eu + 0.62, v: a.ev - 0.72, ex: a, group: [] });
+      });
+      if (!spots.length && hasTrucks) spots.push({ u: 1.5, v: 0.85, ex: null, src: true, group: [] });
+      tr.forEach(function (a, i) { var sp = spots[i % spots.length]; a.spot = sp; sp.group.push(a); if (sp.ex) sp.ex.group.push(a); });
+      ex.forEach(function (a, i) {
+        var q = pt(P, a.pit.u, a.pit.v), x = q[0].toFixed(1), y = q[1].toFixed(1);
+        fxs += '<g id="pit-' + I + '-' + i + '" data-cx="' + x + '" data-cy="' + y + '"><ellipse cx="' + x + '" cy="' + y + '" rx="27" ry="13.5" fill="#9c8058"/><ellipse cx="' + x + '" cy="' + (q[1] + 1.5).toFixed(1) + '" rx="21" ry="10" fill="#5d4630"/><ellipse cx="' + x + '" cy="' + (q[1] + 3).toFixed(1) + '" rx="13" ry="6" fill="#473524"/></g>';
+        var q2 = pt(P, a.pit.u + 0.1, a.pit.v + 0.62);
+        fxs += '<g transform="translate(' + q2[0].toFixed(1) + ',' + q2[1].toFixed(1) + ')">' + heap('mh-' + I + '-' + i) + '</g>';
+      });
+      spots.forEach(function (sp) { if (sp.src) { var q = pt(P, sp.u - 0.35, sp.v + 0.45); fxs += '<g transform="translate(' + q[0].toFixed(1) + ',' + q[1].toFixed(1) + ')">' + heap('sh-' + I) + '</g>'; } });
+      if (hasTrucks) { var qd = pt(P, DU + 0.05, DV + 0.18); fxs += '<g transform="translate(' + qd[0].toFixed(1) + ',' + qd[1].toFixed(1) + ')">' + heap('dh-' + I) + '</g>'; }
+      var lanes = []; [ld, mg, rl].forEach(function (g) { if (g.length) lanes.push(g); });
+      lanes.forEach(function (g, li) {
+        var v = s - 0.58 - li * 0.78; if (v < 2.5) v = 2.5 + (li % 2) * 0.4;
+        g.forEach(function (a, k) { a.lane = v; a.ph = k * 0.5; });
+        if (g === ld) {
+          var q1 = pt(P, 0.75, v + 0.05), q2 = pt(P, s - 0.7, v + 0.05);
+          fxs += '<g transform="translate(' + q1[0].toFixed(1) + ',' + q1[1].toFixed(1) + ')">' + heap('lh1-' + I) + '</g><g transform="translate(' + q2[0].toFixed(1) + ',' + q2[1].toFixed(1) + ')">' + heap('lh2-' + I) + '</g>';
+        } else {
+          var tid = 'tr-' + I + '-' + li;
+          fxs += '<polygon id="' + tid + '" points="0,0" fill="' + (g === mg ? '#e6d9bd' : '#a98f68') + '" opacity="0"/>';
+          g.forEach(function (a) { a.trailId = tid; a.trailOp = g === mg ? 0.95 : 0.55; });
+        }
+      });
+      fx.innerHTML = fxs;
+      var g_ = function (id) { return root.querySelector('#' + id); };
+      tr.forEach(function (a) {
+        var sp = a.spot, m = sp.group.length, Tc = m * 9 + 12, j = sp.group.indexOf(a), w0 = j * 9;
+        var L1 = Math.abs(DU - sp.u), L2 = Math.abs(DV - 0.62 - sp.v), LT = L1 + L2;
+        function along(f) { var dd = f * LT; if (dd <= L1) return { u: sp.u + (DU - sp.u) * (dd / (L1 || 1)), v: sp.v, f: 1 }; return { u: DU, v: sp.v + (dd - L1), f: -1 }; }
+        a.upd = function (t) {
+          var tt = t % Tc, pos, lvl = 0, bed = 0, face = 1;
+          if (tt >= w0 && tt < w0 + 9) { pos = { u: sp.u, v: sp.v }; var k = Math.floor((tt - w0) / 3), fr = ((tt - w0) % 3) / 3; lvl = (k + ease(seg(fr, .62, .85))) / 3; }
+          else if (tt >= w0 + 9 && tt < w0 + 13) { pos = along(ease((tt - w0 - 9) / 4)); face = pos.f; lvl = 1; }
+          else if (tt >= w0 + 13 && tt < w0 + 16) { pos = along(1); var dd = tt - w0 - 13; bed = ease(seg(dd, 0, 1)) * (1 - ease(seg(dd, 2, 3))); lvl = 1 - ease(seg(dd, .7, 2.2)); }
+          else if (tt >= w0 + 16 && tt < w0 + 21) { pos = along(1 - ease((tt - w0 - 16) / 5)); face = -pos.f; }
+          else { pos = { u: sp.u + 0.95, v: sp.v }; }
+          var moving = (tt >= w0 + 9 && tt < w0 + 13) || (tt >= w0 + 16 && tt < w0 + 21);
+          a.set(pos.u, pos.v, face, moving ? 1 : 0);
+          if (a.parts.bed) a.parts.bed.setAttribute('transform', 'rotate(' + (-28 * bed).toFixed(1) + ' 10 50)');
+          if (a.parts.load) { a.parts.load.setAttribute('transform', 'translate(35 28) scale(1 ' + Math.max(0.02, lvl).toFixed(2) + ')'); a.parts.load.setAttribute('opacity', lvl > 0.02 ? 1 : 0); }
+        };
+      });
+      var KF = [[0, -20, 0, -20, 0], [.30, 12, 28, 8, 0], [.45, 14, 34, 45, 1], [.62, -32, -4, 40, 1], [.80, -30, -6, -38, 0], [1, -20, 0, -20, 0]];
+      function pose(p) {
+        for (var k = 1; k < KF.length; k++) if (p <= KF[k][0]) { var a0 = KF[k - 1], a1 = KF[k], f = ease((p - a0[0]) / (a1[0] - a0[0])); return [lerp(a0[1], a1[1], f), lerp(a0[2], a1[2], f), lerp(a0[3], a1[3], f), p > .44 && p < .74 ? 1 : 0]; }
+        return [-20, 0, -20, 0];
+      }
+      ex.forEach(function (a, i) {
+        var m = a.group.length;
+        a.upd = function (t) {
+          var active = true, p;
+          if (m) { var Tc = m * 9 + 12, tt = t % Tc; active = tt < m * 9; p = (tt % 3) / 3; } else p = (t % 3.4) / 3.4;
+          var po = active ? pose(p) : [-18 + Math.sin(t * 2) * 1.2, 0, -16, 0];
+          if (a.parts.arm) a.parts.arm.setAttribute('transform', 'rotate(' + po[0].toFixed(1) + ' 58 42)');
+          if (a.parts.stick) a.parts.stick.setAttribute('transform', 'rotate(' + po[1].toFixed(1) + ' 78 22)');
+          if (a.parts.bucket) a.parts.bucket.setAttribute('transform', 'rotate(' + po[2].toFixed(1) + ' 91 41)');
+          if (a.parts.dirt) a.parts.dirt.setAttribute('visibility', po[3] ? 'visible' : 'hidden');
+          a.set(a.eu, a.ev, 1, 0);
+          var pe = g_('pit-' + I + '-' + i);
+          if (pe) { var cx = pe.getAttribute('data-cx'), cy = pe.getAttribute('data-cy'), sc = 0.62 + 0.38 * tri(t / 36); pe.setAttribute('transform', 'translate(' + cx + ' ' + cy + ') scale(' + sc.toFixed(2) + ') translate(-' + cx + ' -' + cy + ')'); }
+          var mh = g_('mh-' + I + '-' + i);
+          if (mh) mh.setAttribute('transform', 'scale(' + (0.55 + 0.45 * tri(t / 36 + .5)).toFixed(2) + ')');
+        };
+      });
+      ld.forEach(function (a) {
+        var v = a.lane, u1 = 1.15, u2 = s - 1.15, T = 14;
+        a.upd = function (t) {
+          var tt = (t + a.ph * T) % T, u, face = 1, mov = 0, lift = 18, tilt = 10, dirt = 0;
+          if (tt < 2.2) { u = u1; var f = tt / 2.2; tilt = lerp(-6, 30, ease(seg(f, .2, .7))); lift = f < .5 ? lerp(22, 2, ease(f / .5)) : lerp(2, -14, ease(seg(f, .6, 1))); dirt = f > .6 ? 1 : 0; }
+          else if (tt < 6.2) { u = lerp(u1, u2, ease((tt - 2.2) / 4)); lift = -14; tilt = 30; dirt = 1; mov = 1; }
+          else if (tt < 8.2) { u = u2; var f3 = (tt - 6.2) / 2; lift = lerp(-14, -22, ease(seg(f3, 0, .4))); tilt = lerp(30, -40, ease(seg(f3, .3, .8))); dirt = f3 < .6 ? 1 : 0; }
+          else { var f4 = ease((tt - 8.2) / 5.8); u = lerp(u2, u1, f4); face = -1; lift = lerp(-22, 18, ease(seg(f4, 0, .3))); tilt = lerp(-40, -6, ease(seg(f4, 0, .4))); mov = 1; }
+          a.set(u, v, face, mov);
+          if (a.parts.lift) a.parts.lift.setAttribute('transform', 'rotate(' + lift.toFixed(1) + ' 62 47)');
+          if (a.parts.tilt) a.parts.tilt.setAttribute('transform', 'rotate(' + tilt.toFixed(1) + ' 84 43)');
+          if (a.parts.dirt) a.parts.dirt.setAttribute('visibility', dirt ? 'visible' : 'hidden');
+          var h1 = g_('lh1-' + I), h2 = g_('lh2-' + I);
+          if (h1) h1.setAttribute('transform', 'scale(' + (1.05 - 0.28 * tri(t / 28)).toFixed(2) + ')');
+          if (h2) h2.setAttribute('transform', 'scale(' + (0.77 + 0.28 * tri(t / 28)).toFixed(2) + ')');
+        };
+      });
+      function sweeper(arr, T, shake) {
+        arr.forEach(function (a) {
+          var v = a.lane, u1 = 0.95, u2 = s - 0.95;
+          a.upd = function (t) {
+            var tt = (t + a.ph * T) % T, u, face = 1, mov = 1;
+            if (tt < T * .42) u = lerp(u1, u2, ease(tt / (T * .42)));
+            else if (tt < T * .5) { u = u2; mov = 0; }
+            else if (tt < T * .92) { u = lerp(u2, u1, ease((tt - T * .5) / (T * .42))); face = -1; }
+            else { u = u1; mov = 0; }
+            a.set(u, v, face, mov);
+            if (a.parts.bob) a.parts.bob.setAttribute('transform', shake && mov ? 'translate(' + (Math.sin(t * 60) * .6).toFixed(2) + ' ' + (Math.cos(t * 53) * .5).toFixed(2) + ')' : '');
+            var el = a.trailId && g_(a.trailId);
+            if (el) {
+              var cov = tt < T * .42 ? ease(tt / (T * .42)) : 1, ub = lerp(u1, u2, cov);
+              el.setAttribute('points', pts([pt(P, u1, v - 0.28), pt(P, ub, v - 0.28), pt(P, ub, v + 0.28), pt(P, u1, v + 0.28)]));
+              var fade = tt > T * .92 ? 1 - (tt - T * .92) / (T * .08) : 1;
+              el.setAttribute('opacity', (a.trailOp * fade).toFixed(2));
+            }
+          };
+        });
+      }
+      sweeper(mg, 15, false); sweeper(rl, 18, true);
+      tc.forEach(function (a, k) {
+        var m = 0.55, c4 = [[m, m], [s - m, m], [s - m, s - m], [m, s - m]], side = s - 2 * m, per = side * 4, spd = 0.45;
+        a.upd = function (t) {
+          var d0 = (t * spd + k * per / Math.max(1, tc.length)) % per, i4 = Math.floor(d0 / side), r = d0 - i4 * side, A0 = c4[i4], A1 = c4[(i4 + 1) % 4];
+          var du = A1[0] - A0[0], dv = A1[1] - A0[1], len = Math.hypot(du, dv) || 1;
+          a.set(A0[0] + du / len * r, A0[1] + dv / len * r, (du > 0 || dv < 0) ? 1 : -1, 1);
+        };
+      });
+      pk.forEach(function (a, k) {
+        var u1 = 0.7, u2 = s - 0.7, v = 0.52, T = 22;
+        a.upd = function (t) {
+          var tt = (t + k * 7) % T, u, face = 1, mov = 1;
+          if (tt < 5) u = lerp(u1, s / 2, ease(tt / 5));
+          else if (tt < 8) { u = s / 2; mov = 0; }
+          else if (tt < 12) u = lerp(s / 2, u2, ease((tt - 8) / 4));
+          else if (tt < 14) { u = u2; mov = 0; }
+          else { u = lerp(u2, u1, ease((tt - 14) / 8)); face = -1; }
+          a.set(u, v, face, mov);
+        };
+      });
+      gn.forEach(function (a, k) { var c = 0.8 + k * 1.2; a.upd = function (t) { a.set(c, s - 1.4, 1, 0); if (a.parts.bob) a.parts.bob.setAttribute('transform', 'translate(0 ' + (Math.sin(t * 3 + k) * 1).toFixed(2) + ')'); }; });
+      P.acts.forEach(function (a) {
+        a.set = function (u, v, face, mov) {
+          if (a.el.__drag) return;
+          var q = pt(P, u, v); a.u = u; a.v = v;
+          a.el.setAttribute('transform', 'translate(' + (q[0] - 50 * SC).toFixed(1) + ',' + (q[1] - 60 * SC).toFixed(1) + ') scale(' + SC + ')');
+          if (a.parts.face) a.parts.face.setAttribute('transform', face < 0 ? 'translate(100 0) scale(-1 1)' : '');
+          if (mov) { a.spin += 9; a.wheels.forEach(function (w) { w.setAttribute('transform', 'rotate(' + a.spin.toFixed(0) + ' ' + w.getAttribute('data-pv') + ')'); }); }
+        };
+      });
+    }
+    function tickPlot(P, t) {
+      P.acts.forEach(function (a) { if (a.upd) a.upd(t); });
+      var order = P.acts.slice().sort(function (p, q) { return (p.u + p.v) - (q.u + q.v); });
+      var sig = order.map(function (a) { return a.m.id; }).join('|');
+      if (sig !== P.sig) { P.sig = sig; order.forEach(function (a) { P.layer.appendChild(a.el); }); }
+      var dump = stage.querySelector('#dh-' + P.idx);
+      if (dump) dump.setAttribute('transform', 'scale(' + (0.6 + 0.4 * tri(t / 40)).toFixed(2) + ')');
+    }
+    function loop(now) {
+      raf = requestAnimationFrame(loop);
+      if (document.hidden || wrap.offsetParent === null) return;
+      var d = stage.__d; if (!d) return;
+      var t = (now - T0) / 1000;
+      d.plots.forEach(function (P) { if (P.acts) tickPlot(P, t); });
+    }
+
     function render() {
       var d = datos();
-      bar.innerHTML = '<p>' + (d.puede ? 'Arrastrá cada máquina desde la playa (abajo) al terreno de su obra, o de una obra a otra. Tocá una máquina para ver su ficha de combustible abajo.' : 'Tocá una máquina para ver su ficha de combustible abajo. Mover máquinas lo hace el dueño o el ingeniero.') + '</p>' +
-        '<div class="ob-leg">' + d.plots.map(function (P) { return '<span><i style="background:' + P.area.acento + '"></i>' + esc(P.codigo) + '</span>'; }).join('') + '<span>' + d.maqs.length + ' máquinas · ' + d.plots.length + ' obras activas</span></div>';
-      if (!d.maqs.length) { stage.innerHTML = '<div class="ob-empty">Todavía no hay máquinas cargadas. Se cargan en Centros de costo → Máquina.</div>'; panelEl.hidden = true; return; }
-      if (!d.plots.length) { stage.innerHTML = '<div class="ob-empty">No hay obras activas. Cargá una obra en Centros de costo para armar su terreno.</div>'; panelEl.hidden = true; return; }
+      var nHid = d.ocultas.length;
+      bar.innerHTML = '<p>' + (d.puede ? 'Arrastrá cada máquina desde la playa (abajo) al terreno de su obra, o de una obra a otra. Tocá una máquina para ver su ficha de combustible abajo y cambiarle el color o la forma. Con la × del cartel quitás una obra del gráfico.' : 'Tocá una máquina para ver su ficha de combustible abajo. Mover máquinas, cambiar su aspecto y quitar obras del gráfico lo hace el dueño o el ingeniero.') + '</p>' +
+        '<div class="ob-leg">' + d.plots.map(function (P) { return '<span><i style="background:' + P.area.acento + '"></i>' + esc(P.codigo) + '</span>'; }).join('') + '<span>' + d.maqs.length + ' máquinas · ' + d.plots.length + ' obras en el gráfico</span></div>';
+      if (nHid) {
+        hidBox.hidden = false;
+        hidBox.innerHTML = '<span>Obras fuera del gráfico:</span>' + d.ocultas.map(function (o) { return '<button type="button" data-show="' + esc(o.id) + '"' + (d.puede ? '' : ' disabled') + ' title="' + (d.puede ? 'Volver a poner en el gráfico' : '') + '">' + esc(o.codigo + ' · ' + o.nombre) + (d.puede ? ' ↺' : '') + '</button>'; }).join('');
+      } else { hidBox.hidden = true; hidBox.innerHTML = ''; }
+      if (!d.maqs.length) { stage.innerHTML = '<div class="ob-empty">Todavía no hay máquinas cargadas. Se cargan en Centros de costo → Máquina.</div>'; panelEl.hidden = true; stage.__d = null; return; }
+      if (!d.plots.length) { stage.innerHTML = '<div class="ob-empty">No hay obras en el gráfico. ' + (nHid ? 'Podés volver a ponerlas con los botones de arriba.' : 'Cargá una obra en Centros de costo.') + '</div>'; panelEl.hidden = true; stage.__d = null; return; }
       var L = layout(d, 1500), pad = 30, vw = L.w + pad * 2;
       var h = '<svg xmlns="' + NS + '" viewBox="' + (-pad) + ' 0 ' + vw + ' ' + L.h + '" role="img" aria-label="Obras con su maquinaria">';
       d.plots.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }).forEach(function (P) { h += plotSVG(P); });
       h += trayInner(d.tray) + '<g id="ob-top"></g></svg>';
       stage.innerHTML = h;
       stage.__d = d;
+      d.plots.forEach(function (P) { try { planPlot(P, stage); } catch (e) { if (window.console) console.error(e); } });
+      var t0 = REDUCED ? 3 : (performance.now() - T0) / 1000;
+      d.plots.forEach(function (P) { if (P.acts) tickPlot(P, t0); });
       var M = pinned && d.maqs.filter(function (m) { return m.id === pinned; })[0];
       if (M) { panelEl.hidden = false; panelEl.innerHTML = panelHTML(M, d); bindPanel(M); } else { pinned = null; panelEl.hidden = true; panelEl.innerHTML = ''; }
+      if (!raf && !REDUCED) raf = requestAnimationFrame(loop);
     }
 
     /* ---------- interacción ---------- */
     var svgPt = function (svg, ev) { var p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
     function plotAt(d, x, y) {
       for (var i = 0; i < d.plots.length; i++) {
-        var P = d.plots[i], cx = P.x, cy = P.y + P.side * TH / 2, a = P.side * TW / 2, b = P.side * TH / 2;
+        var P = d.plots[i], cx = P.x, cy = P.y + P.side * HY, a = P.side * HX, b = P.side * HY;
         if (Math.abs(x - cx) / a + Math.abs(y - cy) / b <= 1.02) return P;
       }
       var T = d.tray;
@@ -340,18 +590,31 @@
       var x = panelEl.querySelector('.x'); if (x) x.onclick = function () { pinned = null; render(); };
       var sel = panelEl.querySelector('#ob-mv');
       if (sel) sel.onchange = function () { var d = stage.__d; if (d.D.maq.mover(M.id, sel.value)) render(); };
+      var fm = panelEl.querySelector('#ob-fm');
+      if (fm) fm.onchange = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, M.colorMaq || '', fm.value)) render(); };
+      [].forEach.call(panelEl.querySelectorAll('[data-color]'), function (b) { b.onclick = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, b.getAttribute('data-color'), M.formaMaq || '')) render(); }; });
+      var cc = panelEl.querySelector('#ob-cc');
+      if (cc) cc.onchange = function () { var d = stage.__d; if (d.D.maq.estilo(M.id, cc.value, M.formaMaq || '')) render(); };
     }
     function abrir(mid, scroll) {
       pinned = mid; hideTip(); render();
       if (scroll && panelEl.scrollIntoView) { try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { } }
     }
+    hidBox.addEventListener('click', function (ev) {
+      var b = ev.target.closest && ev.target.closest('[data-show]'); if (!b) return;
+      var d = datos(); if (d.puede && d.D.maq.ocultar(b.getAttribute('data-show'), false)) render();
+    });
+    stage.addEventListener('click', function (ev) {
+      var b = ev.target.closest && ev.target.closest('.ob-hide'); if (!b) return;
+      var d = stage.__d; if (d && d.puede && d.D.maq.ocultar(b.getAttribute('data-hide'), true)) { hideTip(); render(); }
+    });
     stage.addEventListener('pointerover', function (ev) {
       if (drag) return;
       var d = stage.__d; if (!d) return;
       var g = ev.target.closest && ev.target.closest('.ob-m');
-      if (g) { var M = d.maqs.filter(function (m) { return m.id === g.dataset.m; })[0]; if (M && pinned !== M.id) showTip(fichaCorta(M, d), ev); return; }
+      if (g) { var M = d.maqs.filter(function (m) { return m.id === g.getAttribute('data-m'); })[0]; if (M && pinned !== M.id) showTip(fichaCorta(M, d), ev); return; }
       var lab = ev.target.closest && ev.target.closest('.ob-lab');
-      if (lab) { var pid = lab.parentNode.dataset.plot; if (d.byId[pid]) showTip(fichaObra(d.byId[pid], d), ev); }
+      if (lab) { var pid = lab.parentNode.getAttribute('data-plot'); if (d.byId[pid]) showTip(fichaObra(d.byId[pid], d), ev); }
     });
     stage.addEventListener('pointermove', function (ev) {
       if (drag) {
@@ -360,7 +623,9 @@
         var d = stage.__d;
         if (!drag.moved) {
           if (!d.puede) return;
-          drag.moved = true; drag.g.classList.add('drag'); hideTip();
+          drag.moved = true; drag.g.classList.add('drag'); drag.g.__drag = true; hideTip();
+          drag.tr = drag.g.getAttribute('transform');
+          drag.p0 = svgPt(drag.svg, { clientX: drag.x0, clientY: drag.y0 });
           drag.svg.querySelector('#ob-top').appendChild(drag.g);
         }
         var p = svgPt(drag.svg, ev);
@@ -368,7 +633,7 @@
         var P = plotAt(d, p.x, p.y);
         stage.querySelectorAll('.ob-top').forEach(function (t) { t.setAttribute('stroke-width', '1.5'); t.style.filter = ''; });
         var tb = stage.querySelector('.ob-trayb'); if (tb) tb.setAttribute('stroke', '#cfcbbd');
-        if (P && !P.tray) { var t = stage.querySelector('.ob-plot[data-plot="' + (window.CSS && CSS.escape ? CSS.escape(P.id) : P.id) + '"] .ob-top'); if (t) { t.setAttribute('stroke-width', '4'); t.style.filter = 'brightness(1.06)'; } }
+        if (P && !P.tray) { var t = stage.querySelector('.ob-plot[data-plot="' + cesc(P.id) + '"] .ob-top'); if (t) { t.setAttribute('stroke-width', '4'); t.style.filter = 'brightness(1.06)'; } }
         if (P && P.tray && tb) tb.setAttribute('stroke', '#e31b1f');
         drag.to = P;
         return;
@@ -381,13 +646,13 @@
     stage.addEventListener('pointerleave', function () { if (!drag) hideTip(); });
     stage.addEventListener('keydown', function (ev) {
       var g = ev.target.closest && ev.target.closest('.ob-m');
-      if (g && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); abrir(g.dataset.m, true); }
+      if (g && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); abrir(g.getAttribute('data-m'), true); }
     });
     stage.addEventListener('pointerdown', function (ev) {
       if (ev.button > 0) return;
       var g = ev.target.closest && ev.target.closest('.ob-m'); if (!g) return;
       var svg = stage.querySelector('svg');
-      drag = { g: g, mid: g.dataset.m, x0: ev.clientX, y0: ev.clientY, moved: false, p0: svgPt(svg, ev), tr: g.getAttribute('transform'), svg: svg, to: null };
+      drag = { g: g, mid: g.getAttribute('data-m'), x0: ev.clientX, y0: ev.clientY, moved: false, p0: null, tr: '', svg: svg, to: null };
       try { g.setPointerCapture(ev.pointerId); } catch (e) { }
       hideTip();
     });
@@ -395,6 +660,7 @@
       if (!drag) return;
       var D0 = drag, d = stage.__d; drag = null;
       try { D0.g.releasePointerCapture(ev.pointerId); } catch (e) { }
+      D0.g.__drag = false;
       if (!D0.moved) { abrir(D0.mid, true); return; }
       var M = d.maqs.filter(function (m) { return m.id === D0.mid; })[0], to = D0.to;
       if (M && to && (M.obraActual || '') !== to.id) { d.D.maq.mover(M.id, to.id); pinned = M.id; }
