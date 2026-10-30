@@ -262,3 +262,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Si el 3D no puede abrirse por otro motivo, arriba aparece el motivo en una línea naranja.
 - **Nombre de la obra menos invasivo:** el cartel es más chico y translúcido, y va sobre el borde del fondo de cada terreno (no adelante). También en el dibujo plano, que ahora tiene su río.
 - Una falla al armar un terreno ya no tira abajo toda la vista 3D.
+
+## Codes 1.48 (30-oct-2026)
+- **Obras y máquinas 3D:** el cartel con el nombre de cada obra sube a la zona gris, arriba del terreno, unido a su obra con una línea y un punto del color del área, para que se entienda a qué obra pertenece.
+- **El terreno crece según las máquinas:** cuantas más máquinas tiene una obra, más grande es su terreno (de 6 a 11 o más casillas por lado), y la cámara se reacomoda.

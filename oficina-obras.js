@@ -25,6 +25,8 @@
     '.ob-ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}' +
     '.ob-cd{position:absolute;left:0;top:0;background:rgba(18,21,28,.88);color:#fff;font:700 11px/1 var(--o-body,system-ui);padding:4px 8px;border-radius:99px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);will-change:transform}' +
     '.ob-pl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;background:rgba(18,21,28,.8);color:#fff;border:1.5px solid var(--ac,#9aa0ab);border-radius:9px;padding:3px 5px 3px 8px;font:700 11px/1 var(--o-body,system-ui);white-space:nowrap;pointer-events:auto;box-shadow:0 3px 10px rgba(0,0,0,.22);will-change:transform}' +
+    '.ob-pl:not(.ob-pl-tray)::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:44px;margin-left:-1px;background:var(--ac,#9aa0ab);opacity:.9}' +
+    '.ob-pl:not(.ob-pl-tray)::before{content:"";position:absolute;left:50%;top:calc(100% + 40px);width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--ac,#9aa0ab);box-shadow:0 0 0 2px rgba(18,21,28,.8)}' +
     '.ob-pl i{width:7px;height:7px;border-radius:50%}.ob-pl em{font-style:normal;color:#ffd34d}' +
     '.ob-pl .x{all:unset;cursor:pointer;width:16px;height:16px;border-radius:50%;background:#3a3f4a;text-align:center;line-height:16px;font-size:12px}.ob-pl .x:hover{background:#e31b1f}' +
     '.ob-pl-tray{border-style:dashed;pointer-events:none}' +
@@ -412,7 +414,7 @@
       clearAll(); S.d = d; S.pinned = pinned;
       var MAXW = 44, GAPW = 2.6, rx = 0, rz = 0, rh = 0, tw = 0;
       d.plots.forEach(function (P) {
-        var n = P.maqs.length; P.side = n ? Math.max(6, Math.ceil(Math.sqrt(n)) + 2) : 6; P.sz = (P.side + 2 * MG) * CW;
+        var n = P.maqs.length; P.side = n ? Math.max(6, Math.ceil(Math.sqrt(n) * 2) + 2) : 6; P.sz = (P.side + 2 * MG) * CW;
         if (rx > 0 && rx + P.sz > MAXW) { rz += rh + GAPW + 1.6; rx = 0; rh = 0; }
         P.wx = rx; P.wz = rz; rx += P.sz + GAPW; rh = Math.max(rh, P.sz); tw = Math.max(tw, rx - GAPW);
       });
@@ -674,7 +676,7 @@
       });
       S.labels.forEach(function (L) {
         V.set(L.x, 0, L.z).project(camera);
-        L.el.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h + (L.up ? -4 : 12)).toFixed(1) + 'px) translate(-50%,' + (L.up ? '-100%' : '0') + ')';
+        L.el.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h + (L.up ? -48 : 12)).toFixed(1) + 'px) translate(-50%,' + (L.up ? '-100%' : '0') + ')';
         L.el.style.display = V.z > 1 ? 'none' : '';
       });
     }
