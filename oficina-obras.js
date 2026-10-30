@@ -24,9 +24,9 @@
     '.ob-stage.gl{height:clamp(600px,84vh,960px);touch-action:none;background:var(--o-stage,#e3e6ea)}.ob-stage canvas{display:block;width:100%;height:100%}' +
     '.ob-ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}' +
     '.ob-cd{position:absolute;left:0;top:0;background:rgba(18,21,28,.88);color:#fff;font:700 11px/1 var(--o-body,system-ui);padding:4px 8px;border-radius:99px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);will-change:transform}' +
-    '.ob-pl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:8px;background:rgba(18,21,28,.94);color:#fff;border:2px solid var(--ac,#9aa0ab);border-radius:12px;padding:6px 8px 6px 10px;font:700 13px/1 var(--o-body,system-ui);white-space:nowrap;pointer-events:auto;box-shadow:0 6px 18px rgba(0,0,0,.28);will-change:transform}' +
-    '.ob-pl i{width:9px;height:9px;border-radius:50%}.ob-pl em{font-style:normal;color:#ffd34d}' +
-    '.ob-pl .x{all:unset;cursor:pointer;width:20px;height:20px;border-radius:50%;background:#3a3f4a;text-align:center;line-height:20px;font-size:15px}.ob-pl .x:hover{background:#e31b1f}' +
+    '.ob-pl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;background:rgba(18,21,28,.8);color:#fff;border:1.5px solid var(--ac,#9aa0ab);border-radius:9px;padding:3px 5px 3px 8px;font:700 11px/1 var(--o-body,system-ui);white-space:nowrap;pointer-events:auto;box-shadow:0 3px 10px rgba(0,0,0,.22);will-change:transform}' +
+    '.ob-pl i{width:7px;height:7px;border-radius:50%}.ob-pl em{font-style:normal;color:#ffd34d}' +
+    '.ob-pl .x{all:unset;cursor:pointer;width:16px;height:16px;border-radius:50%;background:#3a3f4a;text-align:center;line-height:16px;font-size:12px}.ob-pl .x:hover{background:#e31b1f}' +
     '.ob-pl-tray{border-style:dashed;pointer-events:none}' +
     '.ob-zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}' +
     '.ob-zoom button{width:34px;height:34px;border-radius:9px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);font:700 18px/1 system-ui;cursor:pointer;color:#1d2026}.ob-zoom button:hover{background:#fff;border-color:#e31b1f}' +
@@ -39,6 +39,7 @@
     '.ob-add{font:700 13px var(--o-body,system-ui);padding:8px 14px;border-radius:9px;border:0;background:#e31b1f;color:#fff;cursor:pointer}.ob-add:hover{filter:brightness(1.08)}' +
     '.ob-addf{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ob-addf input{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--o-line,#c9ced6);background:var(--o-bg,#fff);color:var(--o-fg,#1d2026);min-width:240px}' +
     '.ob-addf span{flex-basis:100%;font-size:12px;color:var(--o-muted,#666c76)}.ob-cancel{font:600 13px var(--o-body,system-ui);padding:8px 12px;border-radius:9px;border:1px solid var(--o-line,#c9ced6);background:transparent;color:var(--o-fg,#1d2026);cursor:pointer}' +
+    '.ob-gln{flex-basis:100%;font-size:12px;color:#b3541e}' +
     '.ob-edit{font:700 13px var(--o-body,system-ui);padding:7px 14px;border-radius:9px;border:1px solid var(--o-fg,#1d2026);background:var(--o-fg,#1d2026);color:var(--o-bg,#fff);cursor:pointer;margin-top:10px}' +
     '.ob-m{cursor:grab}.ob-m.drag{cursor:grabbing}.ob-m:focus{outline:none}.ob-m:focus-visible .ob-ring{opacity:1}' +
     '.ob-ring{fill:none;stroke:#e31b1f;stroke-width:2;opacity:0;stroke-dasharray:4 3}.ob-m.sel .ob-ring{opacity:1}' +
@@ -442,10 +443,10 @@
         for (k = 0; k * 2.6 + m0 + 1.2 < P.sz - 0.6; k++) { var zz = m0 + 1.4 + k * 2.6; tr1(m0 * 0.45, zz, 1); tr1(P.sz - m0 * 0.45, zz + 0.9, 0.95); }
         for (k = 0; k * 3 + 2.4 < P.sz - 2; k++) tr1(2.4 + k * 3, P.sz - m0 * 0.5, 0.9);
         tr1(0.7, 0.7, 1.1); tr1(P.sz - 0.7, 0.7, 1.05);
-        plan(P);
-        var lb = addLabel('<i style="background:' + A.acento + '"></i><b>' + esc((P.codigo + ' · ' + P.nombre).slice(0, 36)) + '</b><em>' + P.maqs.length + '</em>' + (d.puede ? '<button type="button" class="x" title="Quitar esta obra del gráfico" aria-label="Quitar esta obra del gráfico">×</button>' : ''), 'ob-pl');
+        try { plan(P); } catch (e) { if (window.console) console.error('Obras 3D plan', e); }
+        var lb = addLabel('<i style="background:' + A.acento + '"></i><b>' + esc((P.codigo + ' · ' + P.nombre).slice(0, 30)) + '</b><em>' + P.maqs.length + '</em>' + (d.puede ? '<button type="button" class="x" title="Quitar esta obra del gráfico" aria-label="Quitar esta obra del gráfico">×</button>' : ''), 'ob-pl');
         lb.style.setProperty('--ac', A.acento); lb.setAttribute('data-plot', P.id);
-        S.labels.push({ el: lb, x: P.wx + P.sz * 0.5, z: P.wz + P.sz, dy: 0, plot: P });
+        S.labels.push({ el: lb, x: P.wx + P.sz * 0.5, z: P.wz, dy: 0, up: true, plot: P });
         var xb = lb.querySelector('.x'); if (xb) xb.addEventListener('click', function (e) { e.stopPropagation(); api.hide(P.id); });
         lb.addEventListener('pointerenter', function (e) { api.labelHover(P.id, e); });
         lb.addEventListener('pointermove', function (e) { api.labelHover(P.id, e); });
@@ -673,7 +674,7 @@
       });
       S.labels.forEach(function (L) {
         V.set(L.x, 0, L.z).project(camera);
-        L.el.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h + 12).toFixed(1) + 'px) translate(-50%,0)';
+        L.el.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h + (L.up ? -4 : 12)).toFixed(1) + 'px) translate(-50%,' + (L.up ? '-100%' : '0') + ')';
         L.el.style.display = V.z > 1 ? 'none' : '';
       });
     }
@@ -694,7 +695,7 @@
     var stage = document.createElement('div'); stage.className = 'ob-stage'; wrap.appendChild(stage);
     var panelEl = document.createElement('section'); panelEl.className = 'ob-panel'; panelEl.hidden = true; panelEl.setAttribute('aria-live', 'polite'); wrap.appendChild(panelEl);
     host.appendChild(wrap);
-    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now(), gl = null, hoverKey = '', adding = false, addTxt = '';
+    var tip = null, pinned = null, drag = null, raf = 0, T0 = performance.now(), gl = null, hoverKey = '', adding = false, addTxt = '', glMsg = '';
 
     function datos() {
       var D = getD(), S = D.S;
@@ -831,6 +832,7 @@
       }
       var a = 0.32;
       h += '<polygon points="' + pts([pt(P, a, a), pt(P, side - a, a), pt(P, side - a, side - a), pt(P, a, side - a)]) + '" fill="#cdb48d" stroke="#b79d74" stroke-width="1.2"/>';
+      h += '<polygon points="' + pts([pt(P, 0.05, 0.05), pt(P, side - 0.05, 0.05), pt(P, side - 0.05, 0.27), pt(P, 0.05, 0.27)]) + '" fill="#6fb8ea"/><polygon points="' + pts([pt(P, 0.3, 0.12), pt(P, side * 0.45, 0.12), pt(P, side * 0.45, 0.17), pt(P, 0.3, 0.17)]) + '" fill="#cfeaff" opacity=".7"/>';
       h += '<g class="fx" id="fx-' + P.idx + '"></g>';
       var tl = pt(P, 0.1, 0.1), tr = pt(P, side - 0.1, 0.1);
       h += '<g class="ob-deco">' + tree(tl[0] + 4, tl[1] + 8, 0.9) + tree(tr[0] - 4, tr[1] + 8, 0.8) + '</g>';
@@ -840,10 +842,10 @@
         h += actorEl(m, c[0], c[1], pinned === m.id);
       });
       h += '</g>';
-      var lb = pt(P, side / 2, side), lbl = (P.codigo + ' · ' + P.nombre).slice(0, 34);
-      var wlab = Math.max(110, lbl.length * 7 + 52 + (P.puedeOcultar ? 26 : 0));
-      h += '<g class="ob-lab" transform="translate(' + lb[0].toFixed(1) + ',' + (lb[1] + SLAB + 6) + ')"><rect x="' + (-wlab / 2) + '" y="0" width="' + wlab + '" height="22" rx="11" fill="#1d2026" stroke="' + A.acento + '" stroke-width="2"/><circle cx="' + (-wlab / 2 + 12) + '" cy="11" r="4.5" fill="' + A.acento + '"/><text x="' + (P.puedeOcultar ? -10 : 3) + '" y="15" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff" font-family="inherit">' + esc(lbl) + '</text><text x="' + (wlab / 2 - (P.puedeOcultar ? 40 : 18)) + '" y="15" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffd34d" font-family="inherit">' + n + '</text></g>';
-      if (P.puedeOcultar) h += '<g class="ob-hide" data-hide="' + esc(P.id) + '" transform="translate(' + (lb[0] + wlab / 2 - 15).toFixed(1) + ',' + (lb[1] + SLAB + 17) + ')"><title>Quitar esta obra del gráfico</title><circle r="8"/><path d="M-3.2 -3.2 L3.2 3.2 M3.2 -3.2 L-3.2 3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></g>';
+      var lb = pt(P, side / 2, 0), lbl = (P.codigo + ' · ' + P.nombre).slice(0, 30);
+      var wlab = Math.max(100, lbl.length * 6.6 + 44 + (P.puedeOcultar ? 22 : 0));
+      h += '<g class="ob-lab" transform="translate(' + lb[0].toFixed(1) + ',' + (lb[1] - 30) + ')"><rect x="' + (-wlab / 2) + '" y="0" width="' + wlab + '" height="22" rx="11" fill="#1d2026" stroke="' + A.acento + '" stroke-width="2"/><circle cx="' + (-wlab / 2 + 12) + '" cy="11" r="4.5" fill="' + A.acento + '"/><text x="' + (P.puedeOcultar ? -10 : 3) + '" y="15" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff" font-family="inherit">' + esc(lbl) + '</text><text x="' + (wlab / 2 - (P.puedeOcultar ? 40 : 18)) + '" y="15" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffd34d" font-family="inherit">' + n + '</text></g>';
+      if (P.puedeOcultar) h += '<g class="ob-hide" data-hide="' + esc(P.id) + '" transform="translate(' + (lb[0] + wlab / 2 - 15).toFixed(1) + ',' + (lb[1] - 19) + ')"><title>Quitar esta obra del gráfico</title><circle r="8"/><path d="M-3.2 -3.2 L3.2 3.2 M3.2 -3.2 L-3.2 3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></g>';
       return h + '</g>';
     }
     function layout(d, maxW) {
@@ -1046,6 +1048,7 @@
     }
     function glFail(e) {
       if (window.console) console.error('Obras 3D: se vuelve al dibujo plano', e);
+      glMsg = String(e && e.message || e).slice(0, 140);
       gl = null; hideTip(); stage.classList.remove('gl'); stage.innerHTML = ''; stage.__d = null;
     }
     function vacio(msg) {
@@ -1057,7 +1060,7 @@
       var d = datos();
       var nHid = d.ocultas.length;
       bar.innerHTML = '<p>' + (d.puede ? 'Arrastrá cada máquina desde la playa (abajo) al terreno de su obra, o de una obra a otra. Tocá una máquina para ver su ficha de combustible abajo y cambiarle el color o la forma. Con la × del cartel quitás una obra del gráfico.' : 'Tocá una máquina para ver su ficha de combustible abajo. Mover máquinas, cambiar su aspecto y quitar obras del gráfico lo hace el dueño o el ingeniero.') + '</p>' +
-        (d.D.maq.crearObra && d.D.maq.puedeEditar ? (adding ? '<form class="ob-addf" data-addf="1"><input type="text" maxlength="120" placeholder="Nombre de la obra" aria-label="Nombre de la obra" value="' + esc(addTxt) + '"><button type="submit" class="ob-add">Crear</button><button type="button" class="ob-cancel" data-addx="1">Cancelar</button><span>El cliente y el contrato se completan después en Centro de costos (obras).</span></form>' : '<button type="button" class="ob-add" data-add="1">+ Agregar obra</button>') : '') + '<div class="ob-leg">' + d.plots.map(function (P) { return '<span><i style="background:' + P.area.acento + '"></i>' + esc(P.codigo) + '</span>'; }).join('') + '<span>' + d.maqs.length + ' máquinas · ' + d.plots.length + ' obras en el gráfico</span></div>';
+        (d.D.maq.crearObra && d.D.maq.puedeEditar ? (adding ? '<form class="ob-addf" data-addf="1"><input type="text" maxlength="120" placeholder="Nombre de la obra" aria-label="Nombre de la obra" value="' + esc(addTxt) + '"><button type="submit" class="ob-add">Crear</button><button type="button" class="ob-cancel" data-addx="1">Cancelar</button><span>El cliente y el contrato se completan después en Centro de costos (obras).</span></form>' : '<button type="button" class="ob-add" data-add="1">+ Agregar obra</button>') : '') + '<div class="ob-leg">' + d.plots.map(function (P) { return '<span><i style="background:' + P.area.acento + '"></i>' + esc(P.codigo) + '</span>'; }).join('') + '<span>' + d.maqs.length + ' máquinas · ' + d.plots.length + ' obras en el gráfico</span></div>' + (!gl && glMsg ? '<div class="ob-gln">Vista 3D no disponible (' + esc(glMsg) + '). Se muestra el dibujo plano.</div>' : '');
       if (nHid) {
         hidBox.hidden = false;
         hidBox.innerHTML = '<span>Obras fuera del gráfico:</span>' + d.ocultas.map(function (o) { return '<button type="button" data-show="' + esc(o.id) + '"' + (d.puede ? '' : ' disabled') + ' title="' + (d.puede ? 'Volver a poner en el gráfico' : '') + '">' + esc(o.codigo + ' · ' + o.nombre) + (d.puede ? ' ↺' : '') + '</button>'; }).join('');
@@ -1223,6 +1226,7 @@
       },
       hide: function (pid) { var d = stage.__d; hideTip(); if (d && d.puede && d.D.maq.ocultar(pid, true)) render(); }
     };
+    if (!webglOK()) glMsg = window.THREE ? 'Este navegador no tiene WebGL activo' : 'La librer\u00eda 3D no termin\u00f3 de cargar';
     if (webglOK()) { try { gl = engine3D(stage, api); } catch (e) { gl = null; stage.classList.remove('gl'); stage.innerHTML = ''; if (window.console) console.error(e); } }
     render();
     return { refresh: function () { if (!drag) render(); } };

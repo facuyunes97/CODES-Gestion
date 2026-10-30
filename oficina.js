@@ -303,11 +303,16 @@
   }
 
   function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = function () { cb(true); }; s.onerror = function () { cb(false); }; document.head.appendChild(s); }
+  var threeQ = null, threeRes = null;
   function ensureThree(cb) {
     if (window.THREE && window.THREE.OrbitControls) return cb(true);
+    if (threeRes !== null) return cb(threeRes);
+    if (threeQ) { threeQ.push(cb); return; }
+    threeQ = [cb];
+    var done = function (ok) { threeRes = ok; var q = threeQ; threeQ = null; q.forEach(function (f) { f(ok); }); };
     loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', function (ok) {
-      if (!ok) return cb(false);
-      loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', cb);
+      if (!ok) return done(false);
+      loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', done);
     });
   }
   function mount(host, getD) {
@@ -541,13 +546,20 @@
   function abrirObras() {
     var box = $('#obras');
     if (obrasInst) { obrasInst.refresh(); return; }
-    if (window.OFICINA_OBRAS) { obrasInst = window.OFICINA_OBRAS.montar(box, getD); return; }
     if (obrasCarga) return;
     obrasCarga = true; box.textContent = 'Cargando\u2026';
+    var seguir = function () {
+      /* espera a que three.js termine de cargar para abrir la vista 3D (si no, quedaba el dibujo plano) */
+      ensureThree(function () {
+        obrasCarga = false; box.textContent = '';
+        if (!window.OFICINA_OBRAS) { box.textContent = 'No se pudo cargar la vista de obras y m\u00e1quinas.'; return; }
+        if (view === 'obras' && !obrasInst) obrasInst = window.OFICINA_OBRAS.montar(box, getD);
+      });
+    };
+    if (window.OFICINA_OBRAS) return seguir();
     loadScript('oficina-obras.js?v=' + encodeURIComponent((getD().build || '') + Date.now()), function (ok) {
-      obrasCarga = false; box.textContent = '';
-      if (!ok || !window.OFICINA_OBRAS) { box.textContent = 'No se pudo cargar la vista de obras y m\u00e1quinas.'; return; }
-      if (view === 'obras') obrasInst = window.OFICINA_OBRAS.montar(box, getD);
+      if (!ok || !window.OFICINA_OBRAS) { obrasCarga = false; box.textContent = 'No se pudo cargar la vista de obras y m\u00e1quinas.'; return; }
+      seguir();
     });
   }
   $('#tab-3d').addEventListener('click', function () { setView('3d'); });

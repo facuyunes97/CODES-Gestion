@@ -256,3 +256,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Agregar obra solo con el nombre:** el botón «+ Agregar obra» de Obras y máquinas ya no abre el formulario completo ni la tabla de obras; muestra un campo para el nombre y listo. El código se genera solo (siguiente OBxx). Cliente y valor de contrato se completan después en Centro de costos (obras). Lo hace el dueño o el ingeniero.
 - Base de datos: `sql/20_obra_alta_rapida.sql` (ya aplicada). El dueño puede crear una obra sin cliente ni contrato; al contador y a otros roles se les sigue exigiendo, y al dueño también si una obra ya completa pasara a quedar incompleta.
 - **Terrenos más grandes y con paisaje:** cada terreno es bastante más grande (las máquinas conservan su tamaño), con un río por el fondo (con ondas que se mueven), árboles en los bordes y esquinas, y un borde de arena en el río.
+
+## Codes 1.47 (30-oct-2026)
+- **Obras y máquinas: la vista 3D no se abría** si se tocaba la solapa antes de que terminara de cargar la librería 3D, y quedaba el dibujo plano sin poder girar el mapa. Ahora espera a que cargue y recién ahí abre el 3D (con el río, los árboles y el giro con el mouse).
+- Si el 3D no puede abrirse por otro motivo, arriba aparece el motivo en una línea naranja.
+- **Nombre de la obra menos invasivo:** el cartel es más chico y translúcido, y va sobre el borde del fondo de cada terreno (no adelante). También en el dibujo plano, que ahora tiene su río.
+- Una falla al armar un terreno ya no tira abajo toda la vista 3D.
