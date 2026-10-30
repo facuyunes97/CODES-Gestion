@@ -19,9 +19,9 @@
     '.ob-hid{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:12.5px;color:var(--o-muted,#666c76)}' +
     '.ob-hid button{font:inherit;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--o-line,#c9ced6);background:var(--o-surface,#fff);color:var(--o-fg,#1d2026);cursor:pointer}' +
     '.ob-hid button:hover{border-color:#e31b1f}.ob-hid button:disabled{cursor:default;opacity:.7}' +
-    '.ob-stage{position:relative;border-radius:14px;background:#ecebe4;border:1px solid var(--o-line,#d9dce1);overflow:hidden;touch-action:pan-y}' +
+    '.ob-stage{position:relative;border-radius:14px;background:var(--o-stage,#e3e6ea);border:1px solid var(--o-line,#d9dce1);overflow:hidden;touch-action:pan-y}' +
     '.ob-stage svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}' +
-    '.ob-stage.gl{height:clamp(480px,74vh,800px);touch-action:none;background:#ecebe4}.ob-stage canvas{display:block;width:100%;height:100%}' +
+    '.ob-stage.gl{height:clamp(480px,74vh,800px);touch-action:none;background:var(--o-stage,#e3e6ea)}.ob-stage canvas{display:block;width:100%;height:100%}' +
     '.ob-ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}' +
     '.ob-cd{position:absolute;left:0;top:0;background:rgba(18,21,28,.88);color:#fff;font:700 11px/1 var(--o-body,system-ui);padding:4px 8px;border-radius:99px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);will-change:transform}' +
     '.ob-pl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:8px;background:rgba(18,21,28,.94);color:#fff;border:2px solid var(--ac,#9aa0ab);border-radius:12px;padding:6px 8px 6px 10px;font:700 13px/1 var(--o-body,system-ui);white-space:nowrap;pointer-events:auto;box-shadow:0 6px 18px rgba(0,0,0,.28);will-change:transform}' +
@@ -53,7 +53,7 @@
     '.ob-empty{padding:30px 16px;text-align:center;color:var(--o-muted,#666c76)}' +
     '.ob-panel{position:relative;margin-top:12px;background:var(--o-surface,#fff);border:1px solid var(--o-line,#d9dce1);border-radius:14px;padding:14px 18px 16px}' +
     '.ob-panel .x{position:absolute;top:8px;right:12px;border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--o-muted,#666c76)}' +
-    '.pn-head{display:flex;gap:14px;align-items:center;margin-bottom:10px}.pn-head h3{margin:0;font-size:17px}.pn-ic{background:#ecebe4;border-radius:12px;padding:6px 8px;flex:none}' +
+    '.pn-head{display:flex;gap:14px;align-items:center;margin-bottom:10px}.pn-head h3{margin:0;font-size:17px}.pn-ic{background:var(--o-stage,#e3e6ea);border-radius:12px;padding:6px 8px;flex:none}' +
     '.pn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 22px;border-top:1px solid var(--o-line,#d9dce1);padding-top:10px}' +
     '.ob-panel .sub{color:var(--o-muted,#666c76);font-size:12.5px}.ob-panel .st{display:inline-block;font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 9px;margin-top:6px}' +
     '.ob-panel .st.on{background:#e6f6ec;color:#12794a}.ob-panel .st.off{background:#eceef2;color:#4a5160}' +
@@ -233,9 +233,9 @@
 
     var renderer = new T.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setClearColor(0xecebe4, 1);
     var cv = renderer.domElement;
-    var scene = new T.Scene();
+    function stageColor() { var c = ''; try { c = getComputedStyle(stage).getPropertyValue('--o-stage').trim(); } catch (e) { } return c || '#e3e6ea'; }
+    var scene = new T.Scene(); scene.background = new T.Color(stageColor());
     var camera = new T.PerspectiveCamera(26, 1, 1, 600);
     scene.add(new T.HemisphereLight(0xffffff, 0xd8d1c0, 0.92));
     var sun = new T.DirectionalLight(0xffffff, 0.7); sun.position.set(-14, 26, 10); scene.add(sun);
@@ -416,7 +416,7 @@
       var W = Math.max(tw, 12);
       S.ext = { x0: 0, z0: 0, x1: W, z1: rz + rh };
       var key = d.plots.map(function (p) { return p.id + ':' + p.side; }).join('|');
-      var ground = new T.Mesh(geo('b', 400, 0.2, 400), mat('#ecebe4')); ground.position.set(W / 2, -0.7, S.ext.z1 / 2); world.add(ground);
+      var sc0 = stageColor(); scene.background.set(sc0); var gm = new T.MeshBasicMaterial({ color: sc0 }); S.own.push(gm); var ground = new T.Mesh(geo('b', 400, 0.2, 400), gm); ground.position.set(W / 2, -0.7, S.ext.z1 / 2); world.add(ground);
 
       d.plots.forEach(function (P) {
         var A = P.area, g = new T.Group(); g.position.set(P.wx, 0, P.wz); world.add(g); P.g = g; S.plots.push(P);

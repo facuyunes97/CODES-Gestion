@@ -245,3 +245,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.43 (30-oct-2026)
 - **Obras y máquinas 3D:** se saca la playa de máquinas del escenario; ahora las máquinas sin obra están en una tabla chica abajo a la izquierda («Sin obra», con su código y color). Se arrastran desde ahí a la obra, y se puede arrastrar una máquina de una obra a la tabla para dejarla sin obra. Al tocar un código de la tabla se abre su ficha. Las obras en ejecución ocupan todo el espacio.
+
+## Codes 1.44 (30-oct-2026)
+- **Obras y máquinas:** el fondo del escenario pasa a ser el mismo gris de la Oficina 3D (y sigue el modo claro/oscuro), en vez del fondo claro anterior.
