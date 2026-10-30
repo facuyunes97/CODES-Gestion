@@ -300,3 +300,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Tanque regador:** tira gotas de agua por atrás mientras anda y deja el piso mojado (huella oscura azulada que se va secando de a poco).
 - **Rastra y desmalezadora:** dejan un rastro detrás (tierra removida y pasto cortado) que se va borrando.
 - **Arreglado:** la rastra ahora cambia de color cuando elegís un color (el bastidor toma el color; los discos quedan grises).
+
+## Codes 1.56 (31-oct-2026)
+- **Tanque regador:** ahora el tanque va a lo largo (alargado, en el sentido de la marcha) y tira más gotas de agua por atrás, en abanico, mientras pasa.

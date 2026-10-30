@@ -531,9 +531,11 @@
           var dk2 = new T.Mesh(geo('cz', 0.3, 0.05, 14), mat('#aab1bb')); dk2.rotation.y = -0.55; dk2.position.set(-0.3, 0.32, di * 0.18); g.add(dk2);
         }
       } else if (tipo === 'acc_regador') {
-        wheelM(g, [], 0.24, -0.1, 0.24, 0.5, 0.16, st.rim); wheelM(g, [], 0.24, -0.1, 0.24, -0.5, 0.16, st.rim);
-        var tk = new T.Mesh(geo('cy', 0.4, 1.2, 16), mat(c)); tk.rotation.x = Math.PI / 2; tk.position.set(-0.05, 0.62, 0); g.add(tk);
-        bx(g, 0.1, 0.1, 0.9, KK, -0.62, 0.3, 0); bx(g, 0.9, 0.07, 0.07, KK, 0.7, 0.35, 0); bx(g, 0.16, 0.08, 0.16, '#444a54', -0.05, 1.03, 0);
+        wheelM(g, [], 0.24, -0.15, 0.24, 0.52, 0.16, st.rim); wheelM(g, [], 0.24, -0.15, 0.24, -0.52, 0.16, st.rim);
+        var tk = new T.Mesh(geo('cy', 0.36, 1.6, 16), mat(c)); tk.rotation.z = Math.PI / 2; tk.position.set(-0.1, 0.68, 0); g.add(tk);
+        bx(g, 0.06, 0.74, 0.74, d, -0.9, 0.68, 0); bx(g, 0.06, 0.74, 0.74, d, 0.7, 0.68, 0);
+        bx(g, 1.4, 0.08, 0.1, KK, -0.1, 0.36, 0.3); bx(g, 1.4, 0.08, 0.1, KK, -0.1, 0.36, -0.3); bx(g, 1.0, 0.07, 0.07, KK, 0.95, 0.4, 0);
+        bx(g, 0.2, 0.08, 0.2, '#444a54', -0.1, 1.06, 0); bx(g, 0.08, 0.08, 0.9, '#9aa1ab', -0.98, 0.34, 0);
       } else if (tipo === 'acc_casilla') {
         bx(g, 1.3, 0.1, 0.8, KK, 0, 0.06, 0); bx(g, 1.2, 0.62, 0.78, c, 0, 0.42, 0); bx(g, 1.3, 0.07, 0.88, '#7a8190', 0, 0.78, 0);
         bx(g, 0.3, 0.22, 0.04, GLS, -0.25, 0.5, 0.4); bx(g, 0.3, 0.22, 0.04, GLS, -0.25, 0.5, -0.4); bx(g, 0.28, 0.5, 0.04, '#8a6a44', 0.35, 0.34, 0.4);
@@ -699,7 +701,7 @@
             var mk = new T.Mesh(geo('b', 0.7, 0.02, TR.w), mm); mk.position.y = 0.07 + k * 0.0004; mk.visible = false; par.add(mk); marks.push({ m: mk, mat: mm, t0: -1e9 });
           }
           var drops = [];
-          if (tp === 'acc_regador') for (k = 0; k < 16; k++) { var dm = new T.Mesh(geo('b', 0.08, 0.08, 0.08), mat('#8fd3f5')); dm.visible = false; par.add(dm); drops.push(dm); }
+          if (tp === 'acc_regador') for (k = 0; k < 30; k++) { var dm = new T.Mesh(geo('b', 0.11, 0.11, 0.11), mat('#8fd3f5')); dm.visible = false; par.add(dm); drops.push(dm); }
           var base = a.upd;
           a.upd = function (t) {
             base(t);
@@ -710,7 +712,7 @@
             }
             for (var q = 0; q < N; q++) { var M2 = marks[q], ag = t - M2.t0; if (ag > TR.life || ag < 0) { if (M2.m.visible) { M2.m.visible = false; M2.mat.opacity = 0; } } else { M2.mat.opacity = TR.o * Math.min(1, ag * 3) * (1 - ag / TR.life); } }
             drops.forEach(function (dm, j) {
-              var ph = (t * 1.3 + j / drops.length) % 1, side = ((j % 4) - 1.5) * 0.36, bx0 = -0.7 - ph * 1.1, by0 = 0.42 + 0.55 * ph - 0.9 * ph * ph, bz0 = side * (1 + ph * 0.5);
+              var ph = (t * 1.3 + j / drops.length) % 1, side = ((j % 6) - 2.5) * 0.17, bx0 = -1.0 - ph * 0.9, by0 = 0.4 + 0.5 * ph - 0.95 * ph * ph, bz0 = side * (1 + ph * 0.6);
               dm.position.set(rx + bx0 * ca + bz0 * sa + 0.8 * ca, by0 > 0.06 ? by0 : 0.06, rz - bx0 * sa + bz0 * ca - 0.8 * sa); dm.visible = true; var sc = 1 - ph * 0.5; dm.scale.set(sc, sc, sc);
             });
           };
