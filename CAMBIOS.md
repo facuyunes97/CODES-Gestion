@@ -210,3 +210,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.36 (30-oct-2026)
 - Facturas: ahora se puede **cambiar el cliente o proveedor** de una factura aunque ya tenga pagos asociados (antes quedaba bloqueado). Sirve para corregir facturas cargadas con el cliente equivocado.
+
+## Codes 1.37 (30-oct-2026)
+- **Recibos emitidos:** casilleros para seleccionar recibos (y uno para marcar todos) y botón **«PDF de los N seleccionados»**, que arma un único PDF con todos juntos, ordenados por apellido, uno por hoja. También **«PDF de todos los emitidos»**.
+- **Controlar antes de emitir:** en la importación de la planilla, nuevo botón **«Revisar los N en un PDF (borrador, sin emitir)»** con todos los recibos aceptados juntos, antes de apretar «Aceptar y emitir».
+- **Corregir errores:** cada recibo emitido tiene **«Corregir»** (lo anula y abre el formulario con sus mismos datos para ajustarlo y emitirlo de nuevo) y **«Legajo»** (abre el legajo del empleado, por si el error está en sus datos: categoría, CUIL, etc.). Los recibos nuevos guardan los datos con los que se cargaron para poder corregirlos; los viejos se abren con empleado, período y fecha.
