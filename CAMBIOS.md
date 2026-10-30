@@ -251,3 +251,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.45 (30-oct-2026)
 - **Obras y máquinas 3D:** el recuadro es más alto y la cámara arranca más cerca, así las obras y las máquinas se ven bastante más grandes y ocupan casi todo el espacio.
+
+## Codes 1.46 (30-oct-2026)
+- **Agregar obra solo con el nombre:** el botón «+ Agregar obra» de Obras y máquinas ya no abre el formulario completo ni la tabla de obras; muestra un campo para el nombre y listo. El código se genera solo (siguiente OBxx). Cliente y valor de contrato se completan después en Centro de costos (obras). Lo hace el dueño o el ingeniero.
+- Base de datos: `sql/20_obra_alta_rapida.sql` (ya aplicada). El dueño puede crear una obra sin cliente ni contrato; al contador y a otros roles se les sigue exigiendo, y al dueño también si una obra ya completa pasara a quedar incompleta.
+- **Terrenos más grandes y con paisaje:** cada terreno es bastante más grande (las máquinas conservan su tamaño), con un río por el fondo (con ondas que se mueven), árboles en los bordes y esquinas, y un borde de arena en el río.
