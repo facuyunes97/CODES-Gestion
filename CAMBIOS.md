@@ -266,3 +266,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.48 (30-oct-2026)
 - **Obras y máquinas 3D:** el cartel con el nombre de cada obra sube a la zona gris, arriba del terreno, unido a su obra con una línea y un punto del color del área, para que se entienda a qué obra pertenece.
 - **El terreno crece según las máquinas:** cuantas más máquinas tiene una obra, más grande es su terreno (de 6 a 11 o más casillas por lado), y la cámara se reacomoda.
+
+## Codes 1.49 (30-oct-2026)
+- **Obras y máquinas 3D, más limpio:** el código de cada máquina aparece solo cuando pasás el mouse por arriba de ella (o mientras la arrastrás). El cartel con el nombre de la obra aparece solo cuando hacés clic en ese terreno (con su línea al terreno); otro clic en el mismo terreno o en el fondo lo oculta. Al arrancar no hay ningún cartel.

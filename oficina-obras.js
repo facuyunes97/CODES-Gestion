@@ -250,7 +250,7 @@
     zoom.innerHTML = '<button type="button" data-z="in" aria-label="Acercar">+</button><button type="button" data-z="out" aria-label="Alejar">−</button><button type="button" data-z="home" aria-label="Vista general">⌂</button>';
     var bay = document.createElement('div'); bay.className = 'ob-bay';
     var emptyEl = document.createElement('div'); emptyEl.className = 'ob-empty'; emptyEl.hidden = true;
-    var hint = document.createElement('div'); hint.className = 'ob-hint'; hint.textContent = 'Arrastrá el fondo para girar · tocalá o arrastrá una máquina';
+    var hint = document.createElement('div'); hint.className = 'ob-hint'; hint.textContent = 'Arrastrá el fondo para girar · tocá un terreno para ver su nombre · pasá el mouse por una máquina';
     stage.classList.add('gl'); stage.innerHTML = '';
     stage.appendChild(cv); stage.appendChild(ov); stage.appendChild(zoom); stage.appendChild(hint); stage.appendChild(bay); stage.appendChild(emptyEl);
     var controls = new T.OrbitControls(camera, cv);
@@ -258,7 +258,7 @@
     controls.minPolarAngle = 0.35; controls.maxPolarAngle = 1.3; controls.screenSpacePanning = false;
     var ray = new T.Raycaster(), V = new T.Vector3(), plane = new T.Plane(new T.Vector3(0, 1, 0), -0.25);
 
-    var S = { d: null, actors: [], plots: [], tray: null, labels: [], pinned: null, key: '', ext: null, hover: null, drag: null, hl: null, own: [], size: [0, 0] };
+    var S = { selPlot: null, slabs: [], bg: null, d: null, actors: [], plots: [], tray: null, labels: [], pinned: null, key: '', ext: null, hover: null, drag: null, hl: null, own: [], size: [0, 0] };
 
     /* ---------- modelos ---------- */
     function wheelM(g, W, r, x, y, z, w, rim) {
@@ -360,7 +360,7 @@
     function clearAll() {
       while (world.children.length) world.remove(world.children[0]);
       S.own.forEach(function (o) { if (o.dispose) o.dispose(); }); S.own = [];
-      ov.innerHTML = ''; S.actors = []; S.plots = []; S.labels = []; S.hl = null;
+      ov.innerHTML = ''; S.slabs = []; S.actors = []; S.plots = []; S.labels = []; S.hl = null;
     }
     function ptX(P, u) { return P.wx + (u + MG) * CW; }
     function ptZ(P, v) { return P.wz + (v + MG) * CW; }
@@ -427,7 +427,7 @@
         var A = P.area, g = new T.Group(); g.position.set(P.wx, 0, P.wz); world.add(g); P.g = g; S.plots.push(P);
         var side = new T.MeshLambertMaterial({ color: A.lado }), side2 = new T.MeshLambertMaterial({ color: A.lado2 }), top = new T.MeshLambertMaterial({ color: A.piso });
         S.own.push(side, side2, top);
-        var slab = new T.Mesh(geo('b', P.sz, 0.55, P.sz), [side2, side, top, side, side2, side]); slab.position.set(P.sz / 2, -0.275, P.sz / 2); g.add(slab);
+        var slab = new T.Mesh(geo('b', P.sz, 0.55, P.sz), [side2, side, top, side, side2, side]); slab.position.set(P.sz / 2, -0.275, P.sz / 2); slab.userData.plot = P; g.add(slab); S.slabs.push(slab);
         var lines = [], k, nc = P.side + 2 * MG;
         for (k = 0; k <= nc; k++) { lines.push(k * CW, 0.012, 0, k * CW, 0.012, P.sz, 0, 0.012, k * CW, P.sz, 0.012, k * CW); }
         var lg = new T.BufferGeometry(); lg.setAttribute('position', new T.Float32BufferAttribute(lines, 3));
@@ -630,7 +630,8 @@
     }
     cv.addEventListener('pointerdown', function (ev) {
       if (ev.button > 0) return;
-      var a = pick(ev); if (!a) return;
+      var a = pick(ev); if (!a) { S.bg = { x: ev.clientX, y: ev.clientY }; return; }
+      S.hover = a; S.bg = null;
       ev.stopImmediatePropagation();
       S.drag = { a: a, x0: ev.clientX, y0: ev.clientY, moved: false, to: null }; controls.enabled = false;
       try { cv.setPointerCapture(ev.pointerId); } catch (e) { }
@@ -648,7 +649,7 @@
         if (to && !onBay) { S.hl.visible = true; S.hl.scale.set(to.w, 1, to.h); S.hl.position.set(to.x + to.w / 2, 0.12, to.z + to.h / 2); } else S.hl.visible = false;
         return;
       }
-      var h = pick(ev); cv.style.cursor = h ? 'grab' : '';
+      var h = pick(ev); S.hover = h; cv.style.cursor = h ? 'grab' : '';
       api.hover(h ? h.m : null, ev);
     });
     function fin(ev) {
@@ -659,7 +660,14 @@
       api.drop(D.a.m.id, D.to ? D.to.id : null);
     }
     cv.addEventListener('pointerup', fin); cv.addEventListener('pointercancel', fin);
-    cv.addEventListener('pointerleave', function () { if (!S.drag) api.hover(null); });
+    cv.addEventListener('pointerup', function (ev) {
+      var B = S.bg; S.bg = null; if (!B || S.drag) return;
+      if (Math.hypot(ev.clientX - B.x, ev.clientY - B.y) > 5) return;
+      var p = ndc(ev); ray.setFromCamera(p, camera);
+      var hits = ray.intersectObjects(S.slabs, false), pl = hits.length && hits[0].object.userData.plot;
+      S.hover = null; S.selPlot = pl ? (S.selPlot === pl.id ? null : pl.id) : null;
+    });
+    cv.addEventListener('pointerleave', function () { if (!S.drag) { S.hover = null; api.hover(null); } });
 
     /* ---------- cuadro a cuadro ---------- */
     function frame(t) {
@@ -672,12 +680,12 @@
       S.actors.forEach(function (a) {
         V.set(a.root.position.x, 1.9, a.root.position.z).project(camera);
         a.lab.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h).toFixed(1) + 'px) translate(-50%,-100%)';
-        a.lab.style.display = V.z > 1 ? 'none' : '';
+        a.lab.style.display = (V.z > 1 || !(S.hover === a || (S.drag && S.drag.a === a && S.drag.moved))) ? 'none' : '';
       });
       S.labels.forEach(function (L) {
         V.set(L.x, 0, L.z).project(camera);
         L.el.style.transform = 'translate(' + ((V.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-V.y * 0.5 + 0.5) * h + (L.up ? -48 : 12)).toFixed(1) + 'px) translate(-50%,' + (L.up ? '-100%' : '0') + ')';
-        L.el.style.display = V.z > 1 ? 'none' : '';
+        L.el.style.display = (V.z > 1 || (L.plot && L.plot.id !== S.selPlot)) ? 'none' : '';
       });
     }
     return {
