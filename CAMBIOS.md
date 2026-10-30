@@ -174,3 +174,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Las transacciones que ya existían quedan en «Sin definir» hasta que se marquen: se puede hacer desde Modificar (también de a varias a la vez, con la columna nueva). Solo el dueño puede modificar transacciones.
 - En la lista de Transacciones hay un filtro nuevo «Factura» (Todas, Con factura, Sin factura, Sin definir) y cada fila y cada detalle muestran la marca.
 - Oficina: Compras ya no reclama factura de lo que se marcó sin factura a propósito; muestra aparte cuánto se pagó en negro y avisa cuántos pagos y cobros todavía no se definieron. Cobros e Impuestos muestran lo mismo de su lado.
+
+## Codes 1.28 (30-oct-2026)
+- Transacciones: en el detalle de una transacción ya cargada hay un botón nuevo **«Asociar a una factura o crear una»** (o **«Cambiar facturas asociadas»** si ya tenía). Permite tildar facturas existentes del mismo cliente o proveedor, con el importe que corresponde a este pago, o **crear una factura nueva** ahí mismo para ese pago. Solo el dueño puede hacerlo, como el resto de las modificaciones de transacciones.
+- Al asociar una factura, la transacción pasa sola a «Con factura». Queda anotado en Auditoría qué facturas tenía antes y cuáles tiene ahora.
+- Se controla que las facturas no sumen más que el total de la transacción y que cada una tenga saldo suficiente.
+- Arreglo: el filtro «Factura» de Transacciones usaba el mismo nombre interno que el de la pantalla Facturas y podía dejar la lista vacía. Ya están separados.
