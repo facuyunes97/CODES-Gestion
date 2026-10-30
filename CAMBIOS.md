@@ -199,3 +199,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.33 (30-oct-2026)
 - Corregido el error «column reference "x" is ambiguous» al marcar una transacción como «Sin factura» (o cambiarle el estado de factura). Venía de la función nueva de 1.32; ahora solo se usa cuando se asocian facturas, y marcar con/sin factura vuelve a guardarse como antes.
+
+## Codes 1.34 (30-oct-2026)
+- Recibo de sueldo: se sacó la leyenda del final («Modelo de recibo según el Decreto…», escala aplicada y aviso al contador). Los empleados ya no la ven.
+- Emisión de recibos desde la planilla de horas (quincena o mes): al subir la planilla, los empleados que no tienen legajo se **crean solos** (con el convenio elegido arriba; después se completan DNI, CUIL y demás datos). Al apretar «Aceptar y emitir» se emiten todos los recibos y se **abre sola la impresión de todos juntos** en un único PDF, uno por hoja. El botón «Imprimir / guardar PDF de todos» sigue para volver a imprimirlos.
