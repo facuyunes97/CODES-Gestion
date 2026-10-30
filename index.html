@@ -614,7 +614,7 @@ function saldo(cid){let s=0;activas().forEach(t=>t.pagos.forEach(p=>{if(p.destin
 const cuadreTx=t=>t.total-sum(t.pagos,p=>p.importe)-sum(t.rets,r=>r.importe);
 function imputado(fid){return sum(activas().flatMap(t=>t.facts.filter(f=>f.facturaId===fid)),f=>f.importe)}
 const isNC=f=>f.tipo.startsWith('NC');
-const saldoFact=f=>isNC(f)?0:f.total-imputado(f.id);
+const saldoFact=f=>{if(isNC(f))return 0;const x=f.total-imputado(f.id);return Math.abs(x)<1?0:x};/* menos de $1 de diferencia = factura cancelada (centavos de redondeo) */
 function tipoFTxt(t){return t.replace('_',' ')}
 function nroFact(f){return tipoFTxt(f.tipo)+' '+String(f.pv).padStart(4,'0')+'-'+String(f.nro).padStart(8,'0')}
 const TIPO_LBL={entrada:'Ingreso',salida:'Egreso',interna:'Interno',inicial:'Existencia inicial'};
@@ -834,13 +834,13 @@ function vincBox(t){
   const V=S.vinc;if(!V||V.id!==t.id)return '';
   const lado=t.tipo==='entrada'?'debito':'credito',quien=t.tipo==='entrada'?'cliente':'proveedor';
   const ya=new Set(t.facts.map(f=>f.facturaId));
-  const disp=S.facturas.filter(f=>f.terceroId===t.terceroId&&f.lado===lado&&!isNC(f)&&(saldoFact(f)>0.005||ya.has(f.id)||V.facts[f.id]!=null));
+  const disp=S.facturas.filter(f=>(V.otros||f.terceroId===t.terceroId)&&f.lado===lado&&!isNC(f)&&(saldoFact(f)>0.005||ya.has(f.id)||V.facts[f.id]!=null)).sort((a,b)=>(a.terceroId===t.terceroId?0:1)-(b.terceroId===t.terceroId?0:1)||b.fecha.localeCompare(a.fecha));
   const libre=f=>saldoFact(f)+(t.facts.find(x=>x.facturaId===f.id)?.importe||0);
-  const lista=disp.length?`<div class="facts">${disp.map(f=>{const on=V.facts[f.id]!=null;return `<div class="fact"><input type="checkbox" id="vf-${f.id}" data-vfact="${f.id}" ${on?'checked':''}><label for="vf-${f.id}"><b class="mono">${nroFact(f)}</b> · ${fd(f.fecha)}<br><span class="sub">Total ${money(f.total)} · disponible ${money(libre(f))}</span></label><div class="f"><label for="vi-${f.id}">Imputar</label><div class="money"><span aria-hidden="true">$</span><input class="num" inputmode="decimal" id="vi-${f.id}" data-vimp="${f.id}" value="${esc(V.facts[f.id]??'')}" ${on?'':'disabled'} placeholder="0,00"></div></div></div>`}).join('')}</div>`
-    :`<div class="empty">Este ${quien} no tiene facturas con saldo para asociar.</div>`;
+  const lista=disp.length?`<div class="facts">${disp.map(f=>{const on=V.facts[f.id]!=null;return `<div class="fact"><input type="checkbox" id="vf-${f.id}" data-vfact="${f.id}" ${on?'checked':''}><label for="vf-${f.id}"><b class="mono">${nroFact(f)}</b> · ${fd(f.fecha)}<br><span class="sub">${f.terceroId!==t.terceroId?esc((tercero(f.terceroId)||{}).razon||'')+' · ':''}Total ${money(f.total)} · disponible ${money(libre(f))}</span></label><div class="f"><label for="vi-${f.id}">Imputar</label><div class="money"><span aria-hidden="true">$</span><input class="num" inputmode="decimal" id="vi-${f.id}" data-vimp="${f.id}" value="${esc(V.facts[f.id]??'')}" ${on?'':'disabled'} placeholder="0,00"></div></div></div>`}).join('')}</div>`
+    :`<div class="empty">${V.otros?'No hay facturas con saldo para asociar.':'Este '+quien+' no tiene facturas con saldo para asociar.'}</div>`;
   return `<h4>Asociar a una factura</h4><div class="newfact">${V.err?`<div class="alerta" role="alert"><b>${esc(V.err)}</b></div>`:''}
    <p class="sub" style="margin:0 0 8px">Tildá las facturas que corresponden a este pago o creá una nueva. Total de la transacción: <b>${money(t.total,t.moneda)}</b>.</p>${lista}
-   ${V.nf?factFormHTML(V.nf,'vtx'):'<div class="toolbar"><button type="button" class="btn small" data-act="vinc-nf">+ Crear factura nueva para este pago</button></div>'}
+   <div class="toolbar" style="padding:0 0 8px"><button type="button" class="btn small" data-act="vinc-otros">${V.otros?'Ver solo las de este '+quien:'Ver también facturas de otros '+quien+'s'}</button></div>${V.nf?factFormHTML(V.nf,'vtx'):'<div class="toolbar"><button type="button" class="btn small" data-act="vinc-nf">+ Crear factura nueva para este pago</button></div>'}
    <div class="actions"><button type="button" class="btn" data-act="vinc-cancel">Cancelar</button><button type="button" class="btn dark" data-act="vinc-save">Guardar facturas asociadas</button></div></div>`;
 }
 function vincGuardar(){
@@ -850,6 +850,7 @@ function vincGuardar(){
   for(const x of nuevas){const f=factura(x.facturaId);
     if(!(x.importe>0)){V.err='Cargá el importe a imputar en '+nroFact(f)+'.';return render()}
     const prev=t.facts.find(y=>y.facturaId===x.facturaId)?.importe||0;
+    if(!prev&&saldoFact(f)<=0.005){V.err='La factura '+nroFact(f)+' ya está cancelada por completo: no se puede asociar a otro pago.';return render()}
     if(x.importe>saldoFact(f)+prev+0.005){V.err='La factura '+nroFact(f)+' no alcanza: le quedan '+money(saldoFact(f)+prev)+'.';return render()}}
   if(sum(nuevas,x=>x.importe)>t.total+0.005){V.err='Las facturas suman más que el total de la transacción ('+money(t.total,t.moneda)+').';return render()}
   const antes=t.facts.map(f=>nroFact(factura(f.facturaId))).join(', ')||'ninguna',desp=nuevas.map(x=>nroFact(factura(x.facturaId))).join(', ')||'ninguna';
@@ -2544,6 +2545,7 @@ function accionPk(act,a,e){
    case 'ini-save':guardarInicial();return true;
    case 'tx-modificar':abrirEditar('trans',[S.sel]);return true;
    case 'vinc-open':{if(!puedeCargar())return true;const t=by(S.trans,a.dataset.id);if(!t)return true;S.vinc={id:t.id,facts:Object.fromEntries(t.facts.map(f=>[f.facturaId,toIn(f.importe)])),nf:null,err:''};render();return true}
+   case 'vinc-otros':{if(S.vinc){S.vinc.otros=!S.vinc.otros;render()}return true}
    case 'vinc-cancel':S.vinc=null;render();return true;
    case 'vinc-nf':{const t=S.vinc&&by(S.trans,S.vinc.id);if(!t)return true;S.vinc.nf=newFactForm({lado:t.tipo==='entrada'?'debito':'credito',terceroId:t.terceroId,fecha:t.fecha,neto:'',otros:''});const rest=Math.max(0,t.total-sum(Object.values(S.vinc.facts),num));if(rest>0){S.vinc.nf.neto=toIn(rest/1.21);factCalc(S.vinc.nf)}S.vinc.err='';render();return true}
    case 'vinc-save':vincGuardar();return true;
@@ -3900,8 +3902,8 @@ main.addEventListener('change',e=>{
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
 /* Versión visible del programa: subir en cada entrega (Codes 0.1 → 0.2 … 0.9 → 1.0 → 1.1 … hasta 100). BUILD fuerza el aviso de "versión nueva". */
-const VERSION='Codes 1.34';
-const BUILD='30-oct 17:10';
+const VERSION='Codes 1.35';
+const BUILD='30-oct 17:45';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);

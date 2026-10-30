@@ -203,3 +203,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.34 (30-oct-2026)
 - Recibo de sueldo: se sacó la leyenda del final («Modelo de recibo según el Decreto…», escala aplicada y aviso al contador). Los empleados ya no la ven.
 - Emisión de recibos desde la planilla de horas (quincena o mes): al subir la planilla, los empleados que no tienen legajo se **crean solos** (con el convenio elegido arriba; después se completan DNI, CUIL y demás datos). Al apretar «Aceptar y emitir» se emiten todos los recibos y se **abre sola la impresión de todos juntos** en un único PDF, uno por hoja. El botón «Imprimir / guardar PDF de todos» sigue para volver a imprimirlos.
+
+## Codes 1.35 (30-oct-2026)
+- Una factura **cancelada** (le falta menos de $1) ya no se ofrece ni se puede asociar a otro pago. Antes, por centavos de redondeo, la factura B 0001-00000103 quedaba con $0,01 de saldo y el sistema se la pegaba a otro cobro (Certificado N.3 del 22/10). Ese vínculo de 1 centavo se sacó; esa transacción queda «Con fact., sin cargar» hasta que le asocien su factura real.
+- Al asociar facturas a una transacción ya hecha (dueño y contadores), aparece el botón **«Ver también facturas de otros clientes/proveedores»** para elegir cualquier factura cargada con saldo; se puede seguir creando una factura nueva. La base de datos controla que sea del mismo tipo (venta/compra), que tenga saldo y que no pase el total.
