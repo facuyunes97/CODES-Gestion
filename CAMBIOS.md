@@ -155,3 +155,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.22.3 (29-oct-2026)
 - Oficina: se saca el cuadro rojo «cosas urgentes» de arriba a la izquierda del 3D (el contador de urgentes sigue arriba) y el cartel del fondo ahora lleva el logo real de CODES Construcciones en vez de la «C».
+
+## Codes 1.23 (30-oct-2026)
+- Recibos de sueldo: nueva opción **Jornada** (completa o media jornada). En media jornada se liquida el 50 % del sueldo básico y de la antigüedad; el recibo lo indica. Para jornales por hora (UOCRA) no aplica: se cargan las horas trabajadas.
+- UECARA: se cargó la escala de la **Zona I – Norte** (incluye Santiago del Estero) de octubre 2026 y queda como zona por defecto al elegir el convenio, al crear un legajo o al importar planillas. El legajo 010 pasó de Zona II – Centro a Zona I – Norte.
