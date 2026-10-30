@@ -26,7 +26,7 @@ begin
   if v_tot > t.total + 0.005 then raise exception 'Las facturas suman más que el total de la transacción'; end if;
   delete from transaccion_facturas where transaccion_id = v_id;
   insert into transaccion_facturas (transaccion_id, factura_id, importe_imputado)
-    select v_id, (x->>'factura_id')::uuid, (x->>'importe')::numeric from jsonb_array_elements(coalesce(p->'facts','[]')) x;
+    select v_id, (e->>'factura_id')::uuid, (e->>'importe')::numeric from jsonb_array_elements(coalesce(p->'facts','[]')) e;
   if v_tot > 0 then update transacciones set con_factura = true where id = v_id and con_factura is distinct from true; end if;
 end $function$;
 revoke all on function public.asociar_facturas(jsonb) from public, anon;

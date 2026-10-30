@@ -196,3 +196,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - El **contador** ahora puede asociar o crear una factura en una transacción que ya está hecha (botón «Asociar a una factura o crear una» en el detalle). Sirve para cuando primero se paga y la factura llega días después.
 - Solo puede hacer eso: no puede cambiar importes, fechas, medios de pago ni nada más de la transacción; eso sigue siendo del dueño. Al asociar la factura, la transacción queda marcada «con factura».
 - Base de datos: nueva función `asociar_facturas` (valida proveedor, saldo de la factura y que no supere el total).
+
+## Codes 1.33 (30-oct-2026)
+- Corregido el error «column reference "x" is ambiguous» al marcar una transacción como «Sin factura» (o cambiarle el estado de factura). Venía de la función nueva de 1.32; ahora solo se usa cuando se asocian facturas, y marcar con/sin factura vuelve a guardarse como antes.
