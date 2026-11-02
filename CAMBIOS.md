@@ -314,3 +314,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.59 (2-nov-2026)
 - **Director Ejecutivo:** ahora sabe que el sistema se empieza a evaluar el 1/10/2026. Compras, Pagos, Cobros, Impuestos y Dir. Adm. solo consideran datos desde esa fecha; Combustible y Maquinaria se evalúan también con datos anteriores. Recibe la fecha de hoy en el contexto y no la corrige. Si le piden un Excel aclara que no genera archivos.
+
+## Codes 1.60 (2-nov-2026)
+- **Oficina: correcciones solo desde el 1/10/2026.** Los avisos de los contadores (faltan comprobantes, ventas sin cobro, cobros sin marcar, etc.) ahora miran solo lo cargado desde esa fecha, porque no se va a cargar el año anterior. Combustible y Maquinaria no se filtran. Los saldos de cuentas y la caja por obra siguen usando todo el historial.
+- **Director Ejecutivo:** conoce toda la historia de CODES, pero solo pide correcciones y comprobantes desde el 1/10/2026.

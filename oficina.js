@@ -19,6 +19,7 @@
   function suma(a, f) { var s = 0; for (var i = 0; i < a.length; i++) s += f(a[i]); return s; }
   function agrupar(a, kf) { var m = {}; a.forEach(function (x) { var k = kf(x); (m[k] = m[k] || []).push(x); }); return m; }
 
+  var INICIO = '2026-10-01';
   function analizar(D) {
     var S = D.S, hoy = D.hoy, out = { find: {}, tot: {}, bad: {}, feed: [], keys: {} };
     IDS.forEach(function (id) { out.find[id] = []; out.tot[id] = 0; out.bad[id] = 0; });
@@ -27,11 +28,17 @@
     var ter = {}; (S.terceros || []).forEach(function (t) { ter[t.id] = t; });
     var cen = {}; (S.centros || []).forEach(function (c) { cen[c.id] = c; });
     function tn(id) { return ter[id] ? ter[id].razon : 'Sin proveedor'; }
-    var act = (S.trans || []).filter(function (t) { return t.estado === 'activa'; });
+    /* Los controles (alertas y correcciones) miran solo lo cargado desde INICIO; el historial completo se conserva para conocimiento y para saldos.
+       Combustible y maquinaria no se filtran. */
+    var desde = function (x) { return String(x.fecha || '').slice(0, 10) >= INICIO; };
+    var actAll = (S.trans || []).filter(function (t) { return t.estado === 'activa'; });
+    var act = actAll.filter(desde);
     var ars = act.filter(function (t) { return t.moneda === 'ARS'; });
+    var arsAll = actAll.filter(function (t) { return t.moneda === 'ARS'; });
+    var salAll = arsAll.filter(function (t) { return t.tipo === 'salida'; }), entAll = arsAll.filter(function (t) { return t.tipo === 'entrada'; });
     var sal = ars.filter(function (t) { return t.tipo === 'salida'; });
     var ent = ars.filter(function (t) { return t.tipo === 'entrada'; });
-    var facs = S.facturas || [];
+    var facs = (S.facturas || []).filter(desde);
     var NC = function (f) { return String(f.tipo).indexOf('NC') === 0; };
     var ventas = facs.filter(function (f) { return f.lado === 'debito' && !NC(f); });
     var compras = facs.filter(function (f) { return f.lado === 'credito' && !NC(f); });
@@ -49,7 +56,7 @@
       return sinCobro.length + ' factura' + (sinCobro.length === 1 ? '' : 's') + ' de venta sin cobro vinculado, por ' + mm(suma(sinCobro, function (x) { return x.s; })) + ': ' + top + (sinCobro.length > 3 ? ' y ' + (sinCobro.length - 3) + ' más' : '') + '. Si ya se cobraron, falta vincular el cobro a la factura.';
     });
     var recopBorradas = {};
-    (S.recop || []).forEach(function (r) {
+    (S.recop || []).filter(desde).forEach(function (r) {
       if (r.estado === 'cargada' && r.lado === 'debito' && r.facturaId && !facs.some(function (f) { return f.id === r.facturaId || (f.pv === r.pv && f.nro === r.nro && f.tipo === r.tipo); })) recopBorradas[r.pv + '-' + r.nro] = r;
     });
     Object.keys(recopBorradas).forEach(function (k) {
@@ -83,8 +90,8 @@
     });
     var cajaObra = [];
     obras.forEach(function (o) {
-      var cob = suma(ent.filter(function (t) { return t.ccId === o.id; }), function (t) { return t.total; });
-      var gas = suma(sal.filter(function (t) { return t.ccId === o.id; }), function (t) { return t.total; });
+      var cob = suma(entAll.filter(function (t) { return t.ccId === o.id; }), function (t) { return t.total; });
+      var gas = suma(salAll.filter(function (t) { return t.ccId === o.id; }), function (t) { return t.total; });
       if (o.fin || !(o.contrato > 0)) return;
       cajaObra.push({ o: o, cob: cob, gas: gas });
       chk('cobros', gas > cob && gas > 5e6, 'media', esc(o.codigo + ' ' + o.nombre) + ': gastó ' + mm(gas) + ' y cobró ' + mm(cob) + ' (' + (cob / o.contrato * 100).toFixed(1).replace('.', ',') + '% de ' + mm(o.contrato) + '). La obra se está financiando con caja propia.');
@@ -610,7 +617,7 @@
     }
     function strip(h) { return String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' '); }
     function contexto() {
-      var D = getD(), L = ['Fecha de hoy: ' + D.hoy + ' (usa esta fecha; no la calcules)', 'Inicio de evaluación del sistema: 2026-10-01. Todo lo anterior a esa fecha no se evalúa, salvo Combustible y Maquinaria.', 'Hallazgos de los contadores (urgencia · texto):'];
+      var D = getD(), L = ['Fecha de hoy: ' + D.hoy + ' (usa esta fecha; no la calcules)', 'Los hallazgos de abajo ya consideran solo lo cargado desde el 2026-10-01 (salvo Combustible y Maquinaria). Conoces toda la historia de CODES, pero las correcciones se piden solo desde esa fecha.', 'Hallazgos de los contadores (urgencia · texto):'];
       ['compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'admin', 'dirmkt', 'imagen', 'guion', 'redes', 'ejecutivo'].forEach(function (id) {
         var fl = (A.find[id] || []).slice(0, 14);
         if (!fl.length) return;
