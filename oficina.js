@@ -610,7 +610,7 @@
     }
     function strip(h) { return String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' '); }
     function contexto() {
-      var D = getD(), L = ['Fecha: ' + D.hoy, 'Hallazgos de los contadores (urgencia · texto):'];
+      var D = getD(), L = ['Fecha de hoy: ' + D.hoy + ' (usa esta fecha; no la calcules)', 'Inicio de evaluación del sistema: 2026-10-01. Todo lo anterior a esa fecha no se evalúa, salvo Combustible y Maquinaria.', 'Hallazgos de los contadores (urgencia · texto):'];
       ['compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'admin', 'dirmkt', 'imagen', 'guion', 'redes', 'ejecutivo'].forEach(function (id) {
         var fl = (A.find[id] || []).slice(0, 14);
         if (!fl.length) return;

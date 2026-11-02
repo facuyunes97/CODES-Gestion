@@ -311,3 +311,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.58 (2-nov-2026)
 - **Descartar borra:** cuando un contador o el dueño descarta una factura recopilada (una sola, varias seleccionadas o una repetida), se borra del sistema en vez de quedar como "Descartada". Si el mismo comprobante vuelve a llegar o se vuelve a subir el Excel de ARCA, entra como nueva, como siempre. Quedan en "Descartadas" solo las que el sistema descarta solo por estar ya cargadas en Facturas.
 - Se limpiaron las 111 facturas del Excel de ARCA que ya estaban descartadas a mano. Al importar un Excel, las descartadas viejas ya no cuentan como "repetidas".
+
+## Codes 1.59 (2-nov-2026)
+- **Director Ejecutivo:** ahora sabe que el sistema se empieza a evaluar el 1/10/2026. Compras, Pagos, Cobros, Impuestos y Dir. Adm. solo consideran datos desde esa fecha; Combustible y Maquinaria se evalúan también con datos anteriores. Recibe la fecha de hoy en el contexto y no la corrige. Si le piden un Excel aclara que no genera archivos.
