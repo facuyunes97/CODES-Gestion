@@ -4,7 +4,9 @@ export const CUIT_CODES = '30717002454'; // CODES SRL · 30-71700245-4
 
 const CODIGOS = {
   1: 'A', 2: 'ND_A', 3: 'NC_A', 6: 'B', 7: 'ND_B', 8: 'NC_B', 11: 'C', 12: 'ND_C', 13: 'NC_C',
-  51: 'M', 52: 'ND_A', 53: 'NC_A', 19: 'E', 201: 'A', 202: 'ND_A', 203: 'NC_A', 206: 'B', 207: 'ND_B', 208: 'NC_B', 211: 'C', 212: 'ND_C', 213: 'NC_C'
+  51: 'M', 52: 'ND_A', 53: 'NC_A', 19: 'E',
+  // Tique Factura A/B/C/M y sus notas: se toman como la factura de esa letra
+  81: 'A', 82: 'B', 111: 'C', 118: 'M', 112: 'NC_A', 113: 'NC_B', 114: 'NC_C', 115: 'ND_A', 116: 'ND_B', 117: 'ND_C', 119: 'NC_A', 120: 'ND_A', 201: 'A', 202: 'ND_A', 203: 'NC_A', 206: 'B', 207: 'ND_B', 208: 'NC_B', 211: 'C', 212: 'ND_C', 213: 'NC_C'
 };
 
 export function numero(s) {

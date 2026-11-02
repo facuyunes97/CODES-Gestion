@@ -303,3 +303,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.56 (31-oct-2026)
 - **Tanque regador:** ahora el tanque va a lo largo (alargado, en el sentido de la marcha) y tira más gotas de agua por atrás, en abanico, mientras pasa.
+
+## Codes 1.57 (2-nov-2026)
+- **Tique Factura A (y B, C, M):** el Excel de ARCA ya no los descarta como "no es una factura": un Tique Factura A (código 81) se carga como Factura A, el B (82) como Factura B, etc., con sus notas de crédito/débito, y también las facturas de crédito electrónica (FCE). En la observación queda anotado que venían como tique. El lector de PDF (carpeta `puente/`) también tiene esos códigos.
+- **Excel de "Mis Comprobantes Emitidos":** el botón "Importar Excel de ARCA" ahora acepta los dos Excel y los distingue solo por las columnas (Emisor = recibidos, Receptor = emitidos). Todo lo que emitió CODES entra como **factura emitida** (débito fiscal, con el IVA discriminado aunque sea B o C) y queda pendiente en Facturas recopiladas para autorizar; el cliente es el receptor. Si en el de recibidos aparece una factura con CUIT emisor de CODES, también la toma como emitida. Se detectan repetidas contra las ya cargadas y las ya recopiladas, separando emitidas y recibidas.
