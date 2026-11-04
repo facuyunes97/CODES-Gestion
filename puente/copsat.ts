@@ -9,7 +9,9 @@ const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-sync-key", "access-control-allow-methods": "POST, OPTIONS" };
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "content-type": "application/json" } });
 const BASE = "https://api.service24gps.com/api/v1";
-const KEY = (Deno.env.get("REDGPS_APIKEY") || "").trim();
+// Los secretos pueden quedar con comillas, espacios o saltos de línea pegados: se quitan. La API key es hexadecimal.
+const lim = (v: string | undefined) => (v || "").trim().replace(/^["'`\u201c\u201d]+|["'`\u201c\u201d]+$/g, "").trim();
+const KEY = lim(Deno.env.get("REDGPS_APIKEY")).replace(/[^0-9a-fA-F]/g, ""), USER = lim(Deno.env.get("REDGPS_USER")), PASS = lim(Deno.env.get("REDGPS_PASS"));
 
 async function llamar(ruta: string, campos: Record<string, string>) {
   const fd = new FormData();
@@ -20,11 +22,12 @@ async function llamar(ruta: string, campos: Record<string, string>) {
   try { return JSON.parse(t); } catch { return { status: r.status, data: null, raw: t.slice(0, 300) }; }
 }
 async function token(): Promise<string> {
-  const j = await llamar("/gettoken", { token: "", username: Deno.env.get("REDGPS_USER") || "", password: Deno.env.get("REDGPS_PASS") || "" });
+  const j = await llamar("/gettoken", { token: "", username: USER, password: PASS });
   if (!j || j.status !== 200 || !j.data) throw new Error("gettoken: " + JSON.stringify(j).slice(0, 200) + " [largos apikey/user/pass: " + KEY.length + "/" + (Deno.env.get("REDGPS_USER") || "").length + "/" + (Deno.env.get("REDGPS_PASS") || "").length + "]");
   return String(j.data);
 }
-const num = (x: any) => { const n = parseFloat(String(x ?? "").replace(",", ".")); return isFinite(n) ? n : 0; };
+// La API devuelve números como texto con coma de miles ("19,522.00").
+const num = (x: any) => { const n = parseFloat(String(x ?? "").replace(/,/g, "")); return isFinite(n) ? n : 0; };
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 
 async function unidades(tk: string) {
@@ -41,7 +44,7 @@ async function unidades(tk: string) {
 }
 
 async function odo(tk: string, imeis: string[], fecha: string) {
-  const j = await llamar("/getOdometer", { token: tk, equipo: imeis.join(","), fecha, hora: "23:59:59", odometro_gps: "1" });
+  const j = await llamar("/getOdometer", { token: tk, equipo: imeis.join(","), fecha, hora: "23:59:59", odometro_gps: "0" });
   const out: any[] = [];
   if (j.status === 200 && Array.isArray(j.data)) for (const o of j.data) for (const im of Object.keys(o)) {
     const v = o[im] || {};
