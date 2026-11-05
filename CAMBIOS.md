@@ -349,3 +349,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.67 (5-nov-2026)
 - **Notas de débito emitidas:** ahora se cargan siempre, desde Facturas y desde Facturas recopiladas. No piden elegir mes de IVA (cuenta en el mes de su fecha), no se frenan por «factura repetida» y en recopiladas no se marcan como «ya estaba cargada» sin cargarlas. La nota queda con su propio saldo a cobrar.
 - **Facturas recopiladas, emitidas:** ya no exige «que sea a nombre de CODES SRL» (eso solo vale para las recibidas).
+
+## Codes 1.68 (5-nov-2026)
+- **Notas de crédito y débito con su factura:** al cargar una nota aparece el campo «Factura que corrige» (obligatorio en las notas de crédito) o «Factura a la que afecta» (opcional en las de débito), con las facturas del mismo cliente o proveedor. Si la factura es anterior al sistema se elige «No está cargada en el sistema». Tabla nueva en la base: `facturas.factura_afectada_id` (sql/24).
+- **El saldo de la factura baja con sus notas de crédito:** «A cobrar» y «A pagar» ya descuentan lo corregido por notas.
+- **Facturas recopiladas:** al cargar una nota de crédito se vincula sola si coincide en total con una única factura del mismo cliente o proveedor; si no, se carga igual y avisa cuántas quedaron sin vincular.
+- **Facturas:** cada nota muestra «Corrige 0001-00000090» o «Sin factura vinculada». El botón **Vincular notas** liga las notas ya cargadas cuando el total coincide con una sola factura. También se cambia con Modificar.
+- **Oficina:** Dir. Adm. avisa de las notas de crédito sin factura vinculada, solo desde el 1/10/2026.
