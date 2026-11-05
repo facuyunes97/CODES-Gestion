@@ -108,10 +108,14 @@
     var salND = sal.filter(function (t) { return conF(t) && !t.conFact; });
     var entNeg = ent.filter(function (t) { return conF(t) && t.conFact === 'no'; });
     var entND = ent.filter(function (t) { return conF(t) && !t.conFact; });
+    /* Lo que ya se aplicó a una factura (cualquier fecha) no cuenta como «falta comprobante»:
+       pago sin aplicar = total − aplicado; factura sin cubrir = total − lo aplicado por pagos. */
+    var aplicT = {}, aplicF = {};
+    (S.trans || []).forEach(function (t) { if (t.estado !== 'activa') return; (t.facts || []).forEach(function (x) { aplicT[t.id] = (aplicT[t.id] || 0) + (+x.importe || 0); aplicF[x.facturaId] = (aplicF[x.facturaId] || 0) + (+x.importe || 0); }); });
     var salPorTer = agrupar(sal.filter(function (t) { return !excl(t.terceroId) && t.conFact !== 'no'; }), function (t) { return t.terceroId; });
     var comPorTer = agrupar(compras, function (f) { return f.terceroId; });
     var faltan = Object.keys(salPorTer).map(function (id) {
-      var pag = suma(salPorTer[id], function (t) { return t.total; }), fac = suma(comPorTer[id] || [], function (f) { return f.total; });
+      var pag = suma(salPorTer[id], function (t) { return Math.max(0, t.total - (aplicT[t.id] || 0)); }), fac = suma(comPorTer[id] || [], function (f) { return Math.max(0, f.total - (aplicF[f.id] || 0)); });
       return { id: id, pag: pag, fac: fac, dif: pag - fac, n: salPorTer[id].length };
     }).filter(function (x) { return x.dif > 5e6; }).sort(function (a, b) { return b.dif - a.dif; }).slice(0, 5);
     faltan.forEach(function (x) {

@@ -371,3 +371,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.71 — Facturas borradas vuelven a recopiladas
 - **Error:** al borrar una factura, su fila en Facturas recopiladas seguía en «cargada» sin factura. El aviso decía «figura cargada desde el mail pero no está en Facturas» (B 120, NC_B 17 y otras).
 - **Arreglo:** al borrar una factura, su recopilada vuelve a «pendiente» y se puede cargar de nuevo (sql/25). Se corrigieron las 10 que ya estaban así (DGA B 120 ×3, NC_B 17, B 117 Vialidad, NC_C 1899 y otras de compras).
+
+## Codes 1.72 — Oficina: urgencias que se actualizan solas
+- **«Faltan comprobantes» (Compras):** ya no cuenta lo que se aplicó a una factura. Antes comparaba los pagos de octubre en adelante con las facturas de octubre en adelante, y un pago aplicado a una factura anterior seguía figurando como faltante (Lo Bruno SA: $297,5 M aplicados a facturas de febrero y marzo). Ahora compara el pago sin aplicar contra la factura sin cubrir.
+- **Tiempo real:** el cambio de aplicaciones (`transaccion_facturas`) y de facturas recopiladas ahora avisa a todas las pantallas abiertas (sql/26: publicación realtime). La Oficina se vuelve a analizar sola al aplicar un comprobante, cargar o borrar una factura, sin recargar.
