@@ -329,3 +329,11 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.63 (5-nov-2026)
 - **Facturas / IVA, notas de crédito:** en la lista de Facturas las notas de crédito ahora se ven en negativo (neto, IVA y total), igual que como restan en la Posición de IVA. El cálculo toma siempre el valor absoluto del IVA y aplica el signo según el tipo (NC resta, ND suma), así que un comprobante cargado con importes negativos ya no se da vuelta.
+
+## Codes 1.64 (5-nov-2026)
+- **Oficina 3D más amplia y con más onda:** el salón vuelve a tener 30 m de ancho, con el equipo de Administración y el Director Ejecutivo en el centro.
+  - **Lounge** a la izquierda: dos sofás, mesa ratona, sillones y lámpara de pie.
+  - **Bar de café** al fondo, con barra, cafetera y banquetas, y una pantalla grande de «Obras en curso» en la pared.
+  - **Sala de reuniones de vidrio** a la derecha, con mesa ovalada, seis sillas y TV.
+  - **Maqueta de obra** con edificios, calle y una grúa.
+  - Luces cálidas por zona y tiras de luz en rojo CODES.

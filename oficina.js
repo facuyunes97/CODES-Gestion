@@ -711,12 +711,12 @@
     /* luces */
     scene.add(new T.HemisphereLight(0xffffff, 0xc3c8d0, 0.62));
     var sun = new T.DirectionalLight(0xfff6ea, 0.52);
-    sun.position.set(-10, 24, 14); sun.castShadow = true;
+    sun.position.set(-17.5, 24, 14); sun.target.position.set(-7.5, 0, 0); scene.add(sun.target); sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    var sc = sun.shadow.camera; sc.left = -22; sc.right = 22; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70;
+    var sc = sun.shadow.camera; sc.left = -26; sc.right = 26; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70;
     sun.shadow.bias = -0.0005;
     scene.add(sun);
-    var fill = new T.DirectionalLight(0xdfe8ff, 0.22); fill.position.set(14, 10, 12); scene.add(fill);
+    var fill = new T.DirectionalLight(0xdfe8ff, 0.22); fill.position.set(6, 10, 12); scene.add(fill);
 
     /* piso de microcemento */
     var ft = canvasTex(512, 512, function (g, w, h) {
@@ -731,10 +731,10 @@
       }
       g.strokeStyle = 'rgba(60,66,74,.22)'; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
     });
-    ft.wrapS = ft.wrapT = T.RepeatWrapping; ft.repeat.set(5, 6.67);
-    var floor = new T.Mesh(new T.PlaneGeometry(15, 20), new T.MeshStandardMaterial({ map: ft, roughness: 0.55 }));
+    ft.wrapS = ft.wrapT = T.RepeatWrapping; ft.repeat.set(10, 6.67);
+    var floor = new T.Mesh(new T.PlaneGeometry(30, 20), new T.MeshStandardMaterial({ map: ft, roughness: 0.55 }));
     floor.position.x = -7.5; floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-    scene.add(box(15.6, 0.4, 20.6, M(G4), -7.5, -0.21, 0, { cast: false }));
+    scene.add(box(30.6, 0.4, 20.6, M(G4), -7.5, -0.21, 0, { cast: false }));
 
     /* paredes: blanco liso al fondo, pared acanalada a la izquierda */
     var skyTex = canvasTex(2048, 420, function (g, w, h) {
@@ -751,17 +751,17 @@
         x += bw + rnd() * 14;
       }
     });
-    scene.add(box(15.6, 6.8, 0.3, M(WHITE), -7.5, 3.4, -10.15));
-    var wallLow = new T.Mesh(new T.PlaneGeometry(15, 3.2), new T.MeshStandardMaterial({ color: WHITE, roughness: 0.9 }));
+    scene.add(box(30.6, 6.8, 0.3, M(WHITE), -7.5, 3.4, -10.15));
+    var wallLow = new T.Mesh(new T.PlaneGeometry(30, 3.2), new T.MeshStandardMaterial({ color: WHITE, roughness: 0.9 }));
     wallLow.position.set(-7.5, 1.6, -9.99); wallLow.receiveShadow = true; scene.add(wallLow);
-    scene.add(box(15, 0.16, 0.1, M(G4), -7.5, 0.08, -9.94, { cast: false }));
-    var sky = new T.Mesh(new T.PlaneGeometry(14.4, 3.2), new T.MeshBasicMaterial({ map: skyTex }));
+    scene.add(box(30, 0.16, 0.1, M(G4), -7.5, 0.08, -9.94, { cast: false }));
+    var sky = new T.Mesh(new T.PlaneGeometry(29.4, 3.2), new T.MeshBasicMaterial({ map: skyTex }));
     sky.position.set(-7.5, 4.9, -9.99); scene.add(sky);
     var steel = M('#22262c', { roughness: 0.5, metalness: 0.4 });
-    scene.add(box(14.8, 0.1, 0.12, steel, -7.5, 6.5, -9.9, { cast: false })); scene.add(box(14.8, 0.1, 0.12, steel, -7.5, 3.3, -9.9, { cast: false }));
-    for (var mx = -14.6; mx <= 0.05; mx += 3.65) scene.add(box(0.07, 3.2, 0.12, steel, mx, 4.9, -9.9, { cast: false }));
+    scene.add(box(29.8, 0.1, 0.12, steel, -7.5, 6.5, -9.9, { cast: false })); scene.add(box(29.8, 0.1, 0.12, steel, -7.5, 3.3, -9.9, { cast: false }));
+    for (var mx = -22.1; mx <= 7.2; mx += 3.65) scene.add(box(0.07, 3.2, 0.12, steel, mx, 4.9, -9.9, { cast: false }));
 
-    scene.add(box(0.3, 6.8, 20.6, M(WHITE), -15.15, 3.4, 0));
+    scene.add(box(0.3, 6.8, 20.6, M(WHITE), -22.65, 3.4, 0));
     var flute = canvasTex(512, 256, function (g, w, h) {
       for (var i = 0; i < 32; i++) {
         var gr = g.createLinearGradient(i * 16, 0, i * 16 + 16, 0); gr.addColorStop(0, '#f6f7f8'); gr.addColorStop(0.55, '#e4e6e9'); gr.addColorStop(1, '#bfc3c9');
@@ -770,10 +770,10 @@
     });
     flute.wrapS = flute.wrapT = T.RepeatWrapping; flute.repeat.set(5, 1);
     var leftWall = new T.Mesh(new T.PlaneGeometry(20, 6.6), new T.MeshStandardMaterial({ map: flute, roughness: 0.8 }));
-    leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-14.99, 3.3, 0); leftWall.receiveShadow = true; scene.add(leftWall);
-    scene.add(box(0.3, 6.8, 20.6, M(WHITE), 0.15, 3.4, 0));
+    leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-22.49, 3.3, 0); leftWall.receiveShadow = true; scene.add(leftWall);
+    scene.add(box(0.3, 6.8, 20.6, M(WHITE), 7.65, 3.4, 0));
     var rightWall = new T.Mesh(new T.PlaneGeometry(20, 6.6), new T.MeshStandardMaterial({ map: flute, roughness: 0.8 }));
-    rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(-0.01, 3.3, 0); rightWall.receiveShadow = true; scene.add(rightWall);
+    rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(7.49, 3.3, 0); rightWall.receiveShadow = true; scene.add(rightWall);
 
     /* alfombras, tarimas, aros y líneas del organigrama en el piso */
     function rug(x, z, w, d, col, border) {
@@ -828,6 +828,81 @@
     }
 
     /* mobiliario */
+
+    /* ===== Zonas nuevas: lounge, bar de café, sala de reuniones con maqueta y pantalla de obras ===== */
+    function glow(w, h, d, col, x, y, z) { var m = box(w, h, d, new T.MeshBasicMaterial({ color: col }), x, y, z, { cast: false, receive: false }); scene.add(m); return m; }
+    function sofa(x, z, ry, col) {
+      var g = new T.Group(); g.position.set(x, 0, z); g.rotation.y = ry;
+      var fab = M(col, { roughness: 0.85 });
+      g.add(box(3.2, 0.42, 1.15, fab, 0, 0.36, 0)); g.add(box(3.2, 0.75, 0.3, fab, 0, 0.82, -0.5));
+      g.add(box(0.3, 0.6, 1.15, fab, -1.5, 0.62, 0)); g.add(box(0.3, 0.6, 1.15, fab, 1.5, 0.62, 0));
+      [-1.4, 1.4].forEach(function (lx) { [-0.45, 0.45].forEach(function (lz) { g.add(box(0.08, 0.16, 0.08, M('#15171d'), lx, 0.08, lz)); }); });
+      g.add(box(0.5, 0.4, 0.14, M('#ff6a4d', { roughness: 0.8 }), -0.9, 0.78, -0.2)); g.add(box(0.5, 0.4, 0.14, M('#f2c230', { roughness: 0.8 }), 0.9, 0.78, -0.2));
+      scene.add(g);
+    }
+    function chair(x, z, ry, col) {
+      var g = new T.Group(); g.position.set(x, 0, z); g.rotation.y = ry;
+      var m = M(col, { roughness: 0.6 });
+      g.add(cyl(0.05, 0.05, 0.4, M('#20242c'), 0, 0.25, 0, 8)); g.add(box(0.56, 0.1, 0.52, m, 0, 0.5, 0)); g.add(box(0.56, 0.6, 0.08, m, 0, 0.85, -0.25));
+      scene.add(g);
+    }
+    function zonasNuevas() {
+      /* --- Lounge (izquierda) --- */
+      rug(-18.6, 4.5, 6.4, 9.0, '#3d4a5c', '#2b3442');
+      sofa(-18.6, 7.9, Math.PI, '#4a5568'); sofa(-18.6, 1.1, 0, '#c4593f');
+      scene.add(box(2.2, 0.08, 1.2, M('#e9ebed', { roughness: 0.3, metalness: 0.2 }), -18.6, 0.5, 4.5)); [-0.9, 0.9].forEach(function (lx) { scene.add(cyl(0.05, 0.05, 0.5, M('#2a2e36'), -18.6 + lx, 0.25, 4.5, 8)); });
+      scene.add(cyl(0.18, 0.18, 0.26, M('#f2c230'), -18.2, 0.66, 4.4, 16)); scene.add(box(0.5, 0.04, 0.34, M('#fafafa'), -19.1, 0.56, 4.6));
+      chair(-21.3, 4.5, Math.PI / 2, '#2a2e36'); chair(-15.9, 4.5, -Math.PI / 2, '#2a2e36');
+      plant(-21.6, 8.9, 1.3); plant(-21.6, 0.2, 1.1); plant(-15.5, 9.0, 1.0);
+      /* lámpara de pie */
+      scene.add(cyl(0.03, 0.03, 2.3, M('#2a2e36'), -16.2, 1.15, 8.2, 8)); scene.add(cyl(0.3, 0.2, 0.4, new T.MeshBasicMaterial({ color: 0xfff1cf }), -16.2, 2.45, 8.2, 16));
+      /* --- Bar de café (atrás a la izquierda) --- */
+      scene.add(box(3.8, 1.05, 0.8, M('#2c3036', { roughness: 0.4 }), -18.0, 0.52, -8.7)); scene.add(box(3.9, 0.07, 0.9, M('#f6f7f8', { roughness: 0.3 }), -18.0, 1.08, -8.7));
+      scene.add(box(0.7, 0.55, 0.5, M('#b9bdc4', { metalness: 0.6, roughness: 0.3 }), -19.2, 1.4, -8.8)); glow(0.12, 0.05, 0.05, 0xff3b2f, -19.2, 1.55, -8.55);
+      scene.add(cyl(0.12, 0.1, 0.22, M('#fafafa'), -17.5, 1.23, -8.6, 14)); scene.add(cyl(0.12, 0.1, 0.22, M('#fafafa'), -17.0, 1.23, -8.75, 14));
+      [-19.0, -18.0, -17.0].forEach(function (sx) { scene.add(cyl(0.05, 0.05, 0.72, M('#20242c'), sx, 0.36, -7.6, 8)); scene.add(cyl(0.22, 0.22, 0.07, M('#ff6a4d'), sx, 0.75, -7.6, 16)); });
+      /* pantalla grande de obras en la pared del fondo */
+      var scrTex = canvasTex(1024, 480, function (g, w, h) {
+        g.fillStyle = '#0f1218'; g.fillRect(0, 0, w, h);
+        g.fillStyle = '#e31b1f'; g.fillRect(0, 0, w, 10);
+        g.fillStyle = '#ffffff'; g.font = '700 54px "Barlow Condensed","Arial Narrow",sans-serif'; g.fillText('CODES · OBRAS EN CURSO', 36, 78);
+        var bars = [0.45, 0.7, 0.55, 0.9, 0.62, 0.8, 0.5, 0.95]; for (var i = 0; i < bars.length; i++) { g.fillStyle = i % 3 === 0 ? '#ff6a4d' : '#6c7cff'; var bh = bars[i] * 250; g.fillRect(60 + i * 62, 430 - bh, 40, bh); }
+        g.strokeStyle = '#19b394'; g.lineWidth = 6; g.beginPath(); g.moveTo(580, 380); g.bezierCurveTo(660, 250, 720, 360, 790, 230); g.bezierCurveTo(850, 140, 910, 200, 990, 120); g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '600 30px "Barlow Condensed","Arial Narrow",sans-serif'; g.fillText('AVANCE POR OBRA', 60, 130); g.fillText('FLUJO DE CAJA', 580, 130);
+      });
+      var scr = new T.Mesh(new T.PlaneGeometry(4.6, 2.15), new T.MeshBasicMaterial({ map: scrTex })); scr.position.set(-18.0, 3.2, -9.93); scene.add(scr);
+      scene.add(box(4.8, 2.35, 0.05, M('#15171d'), -18.0, 3.2, -9.97, { cast: false })); glow(4.8, 0.05, 0.06, 0xe31b1f, -18.0, 1.98, -9.9);
+      /* --- Sala de reuniones de vidrio (derecha) --- */
+      rug(3.6, -5.6, 7.2, 7.6, '#3b4047', '#a8171b');
+      glassWall(0.3, -2.0, 7.0, -2.0, 2.6); glassWall(0.3, -9.7, 0.3, -2.0, 2.6);
+      var tbl = cyl(1.0, 1.0, 0.08, M('#2c3036', { roughness: 0.3 }), 3.7, 0.98, -5.8, 40); tbl.scale.set(1.9, 1, 1.0); scene.add(tbl);
+      scene.add(cyl(0.12, 0.2, 0.95, M('#20242c'), 3.7, 0.48, -5.8, 12)); glow(3.4, 0.03, 0.03, 0xe31b1f, 3.7, 0.93, -4.78);
+      for (var ci = 0; ci < 6; ci++) { var ang = (ci / 6) * Math.PI * 2 + 0.52; chair(3.7 + Math.cos(ang) * 2.5, -5.8 + Math.sin(ang) * 1.5, -ang - Math.PI / 2, '#4a5059'); }
+      var rtv = canvasTex(1024, 512, function (g, w, h) {
+        g.fillStyle = '#10141b'; g.fillRect(0, 0, w, h); g.fillStyle = '#e31b1f'; g.fillRect(0, 0, 16, h);
+        g.fillStyle = '#fff'; g.font = '700 84px "Barlow Condensed","Arial Narrow",sans-serif'; g.fillText('SALA DE REUNIONES', 60, 220);
+        g.fillStyle = '#9aa3b2'; g.font = '600 44px "Barlow Condensed","Arial Narrow",sans-serif'; g.fillText('Obras · Presupuestos · Cobros', 62, 290);
+      });
+      var tvm = new T.Mesh(new T.PlaneGeometry(3.6, 1.8), new T.MeshBasicMaterial({ map: rtv })); tvm.position.set(3.7, 2.1, -9.93); scene.add(tvm);
+      scene.add(box(3.8, 2.0, 0.05, M('#15171d'), 3.7, 2.1, -9.97, { cast: false }));
+      plant(6.6, -9.0, 1.2); plant(0.9, -9.0, 1.0);
+      /* --- Maqueta de obra (derecha, adelante) --- */
+      var MX = 3.7, MZ = 4.2;
+      scene.add(box(5.2, 0.9, 2.8, M('#f3f4f6', { roughness: 0.4 }), MX, 0.45, MZ));
+      scene.add(box(4.9, 0.06, 2.5, M('#7ea36b', { roughness: 0.95 }), MX, 0.93, MZ));
+      scene.add(box(5.0, 0.05, 0.62, M('#3a3d44', { roughness: 0.9 }), MX, 0.97, MZ + 0.5)); [-2.0, -1.0, 0, 1.0, 2.0].forEach(function (dx) { scene.add(box(0.4, 0.02, 0.05, M('#f4f4f2'), MX + dx, 1.0, MZ + 0.5)); });
+      var bcols = ['#e9ebed', '#c4c8ce', '#b4b9c0', '#f2c230', '#8a9099'];
+      [[-1.8, -0.6, 0.7, 1.0, 0.6], [-0.9, -0.7, 0.6, 1.5, 0.6], [0.1, -0.6, 0.8, 0.8, 0.7], [1.1, -0.65, 0.6, 1.9, 0.6], [1.9, -0.5, 0.5, 1.2, 0.5], [-0.6, 0.0, 0.5, 0.6, 0.4]].forEach(function (b, i) {
+        scene.add(box(b[2], b[3], b[4], M(bcols[i % 5], { roughness: 0.6 }), MX + b[0], 0.96 + b[3] / 2, MZ + b[1]));
+      });
+      scene.add(box(0.5, 0.18, 0.3, M('#f2c230'), MX - 1.6, 1.05, MZ + 0.1)); scene.add(box(0.14, 0.5, 0.14, M('#f2c230'), MX - 1.5, 1.3, MZ + 0.1));
+      scene.add(box(5.6, 0.05, 3.2, M('#2c3036'), MX, 0.02, MZ, { cast: false }));
+      glow(5.2, 0.03, 0.03, 0xe31b1f, MX, 0.9, MZ + 1.4);
+      plant(6.8, 8.9, 1.2); plant(0.8, 8.9, 1.0);
+      /* luces cálidas en cada zona */
+      [[-18.6, 3.0, 4.5, 0xffe2b0], [3.7, 3.4, -5.8, 0xfff0d8], [3.7, 3.2, 4.2, 0xfff0d8]].forEach(function (L) { var pl2 = new T.PointLight(L[3], 0.55, 11); pl2.position.set(L[0], L[1], L[2]); scene.add(pl2); });
+    }
+
     function monitor() {
       var g = new T.Group();
       g.add(box(1.0, 0.62, 0.05, M('#0d1016', { roughness: 0.4 }), 0, 0, 0));
@@ -964,15 +1039,16 @@
 
     /* ===== Rincón de obra (atrás a la izquierda, junto a Administración) ===== */
     var shelfCols = ['#e9ebed', '#c4c8ce', '#8a9099', '#4a5059', '#f2c230'];
-    scene.add(box(0.55, 2.7, 5.4, M('#eceef0'), -14.7, 1.35, -6.3));
+    scene.add(box(0.55, 2.7, 5.4, M('#eceef0'), -22.2, 1.35, -6.3));
     for (var lv = 0; lv < 3; lv++) for (var bi = 0; bi < 17; bi++) {
-      scene.add(box(0.3, 0.6, 0.22, M(shelfCols[(bi * 3 + lv) % 5]), -14.3, 0.5 + lv * 0.85, -8.8 + bi * 0.29, { cast: false }));
+      scene.add(box(0.3, 0.6, 0.22, M(shelfCols[(bi * 3 + lv) % 5]), -21.8, 0.5 + lv * 0.85, -8.8 + bi * 0.29, { cast: false }));
     }
 
 
     /* ===== Administración: vidrios entre escritorios ===== */
     [-9.5, -5.5].forEach(function (x) { glassWall(x, 4.0, x, 6.9, 1.7); });
     plant(-14.0, 9.0, 1.0); plant(-1.0, 9.0, 0.9);
+    zonasNuevas();
     plant(-3.3, 0.9, 1.0);
 
     /* ===== Identidad CODES: rojo de marca, logo y láminas de maquinaria ===== */
@@ -983,8 +1059,8 @@
       g.fillStyle = '#f4f4f2'; g.fillRect(0, 0, w, h); g.fillStyle = RED;
       for (var i = -2; i < 12; i++) { g.beginPath(); g.moveTo(i * 32, h); g.lineTo(i * 32 + 16, h); g.lineTo(i * 32 + 32, 0); g.lineTo(i * 32 + 16, 0); g.closePath(); g.fill(); }
     });
-    hzTex.wrapS = T.RepeatWrapping; hzTex.repeat.set(29, 1);
-    var hz = new T.Mesh(new T.PlaneGeometry(14.8, 0.2), new T.MeshBasicMaterial({ map: hzTex }));
+    hzTex.wrapS = T.RepeatWrapping; hzTex.repeat.set(58, 1);
+    var hz = new T.Mesh(new T.PlaneGeometry(29.6, 0.2), new T.MeshBasicMaterial({ map: hzTex }));
     hz.position.set(-7.5, 0.3, -9.935); scene.add(hz);
     /* logo grande detrás del Director Ejecutivo */
     var logoImg = new Image(), logoOk = false;
@@ -1053,11 +1129,11 @@
       var pm = new T.Mesh(new T.PlaneGeometry(w, hh), new T.MeshBasicMaterial({ map: tex })); pm.position.z = 0.04; gp.add(pm);
       gp.position.set(x, y, z); gp.rotation.y = ry; scene.add(gp); signs.push({ tex: tex, paint: paint });
     }
-    lamina('excavadora', 'EXCAVADORA', -0.06, 2.3, -6.0, -Math.PI / 2, 1.9);
-    lamina('motoniveladora', 'MOTONIVELADORA', -0.06, 2.3, -2.0, -Math.PI / 2, 1.9);
-    lamina('cargadora', 'CARGADORA FRONTAL', -14.95, 2.3, -1.0, Math.PI / 2, 1.9);
-    lamina('rodillo', 'RODILLO COMPACTADOR', -14.95, 2.3, 3.0, Math.PI / 2, 1.9);
-    lamina('hormigonero', 'CAMIÓN HORMIGONERO', -14.95, 2.3, 7.0, Math.PI / 2, 1.9);
+    lamina('excavadora', 'EXCAVADORA', 7.44, 2.3, -6.0, -Math.PI / 2, 1.9);
+    lamina('motoniveladora', 'MOTONIVELADORA', 7.44, 2.3, 7.0, -Math.PI / 2, 1.9);
+    lamina('cargadora', 'CARGADORA FRONTAL', -22.45, 2.3, -1.0, Math.PI / 2, 1.9);
+    lamina('rodillo', 'RODILLO COMPACTADOR', -22.45, 2.3, 3.0, Math.PI / 2, 1.9);
+    lamina('hormigonero', 'CAMIÓN HORMIGONERO', -22.45, 2.3, 7.0, Math.PI / 2, 1.9);
 
     /* ===== Agentes ===== */
     var pickRoots = [], idleAv = [];
@@ -1076,9 +1152,9 @@
 
     /* cámara */
     var W = 800, H = 500, tween = null, homeSet = false;
-    var HOME_DIR = new T.Vector3(0.07, 0.55, 0.83).normalize(), HOME_TGT = new T.Vector3(-7.5, 0, -0.5);
+    var HOME_DIR = new T.Vector3(0.07, 0.58, 0.83).normalize(), HOME_TGT = new T.Vector3(-7.5, 0, -0.5);
     function homePose() {
-      var a = W / H, d = Math.min(40, 23 * Math.pow(Math.max(1, 1.2 / a), 0.85));
+      var a = W / H, d = Math.min(48, 29 * Math.pow(Math.max(1, 1.6 / a), 0.85));
       return { pos: HOME_TGT.clone().addScaledVector(HOME_DIR, d), tgt: HOME_TGT.clone() };
     }
     function flyTo(pos, tgt, ms) {
