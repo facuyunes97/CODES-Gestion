@@ -341,3 +341,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.65 (5-nov-2026)
 - **Oficina 3D, nombres en los escritorios:** las tarjetas flotantes ya no tapan la vista. Cada agente tiene una placa en el frente de su escritorio con su nombre, su estado (Urgente, Entregó, etc.), el porcentaje y la barra. La placa tiene el color del estado y se marca con borde blanco al seleccionar. Se puede hacer clic en ella igual que en el agente.
 - **Los cinco contadores quedan en una sola fila,** uno al lado del otro y sin escritorios detrás de otros: Compras, Pagos, Cobros, Maquinaria e Impuestos. Se ajustaron aros, vidrios y líneas del organigrama a la nueva disposición.
+
+## Codes 1.66 (5-nov-2026)
+- **Facturas recopiladas, emitidas:** dos facturas distintas del mismo cliente con el mismo punto de venta y número, por ejemplo una factura B y su nota de crédito B, se tomaban como la misma: una quedaba oculta («llegó también en otro mail») y al cargar una se marcaba la otra. Ahora la clave incluye el tipo y si es emitida o recibida.
+- **Facturas recopiladas:** la pantalla cargaba solo las últimas 500; ahora carga hasta 3000, para que no queden afuera las pendientes cuando hay muchas cargadas.
