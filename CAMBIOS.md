@@ -321,3 +321,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.61 (5-nov-2026)
 - **Oficina 3D, arrastre más fluido:** al arrastrar una máquina dentro del terreno, la animación de la obra ya no la mueve de vuelta mientras la llevás (saltaba y se trababa). Si los datos se refrescan en medio del arrastre, la escena ya no se reconstruye: espera a que sueltes. Se evita seleccionar texto o arrastrar la imagen del navegador, y la ficha que acompaña al mouse desde la playa «Sin obra» ahora lleva el color de la máquina y se mueve más suave.
+
+## Codes 1.62 (5-nov-2026)
+- **Oficina sin Marketing:** se borró toda el área (Michael, Imagen, Guion y Redes): agentes, tarjetas, organigrama, hallazgos, pendientes y el cartel. Quedan 7 agentes (Director Ejecutivo, Director Adm. y 5 contadores).
+- **Oficina 3D reacomodada:** el salón es más angosto y el Director Ejecutivo queda centrado sobre Administración. Se sacó el rincón de estudio y la mesa de planos; las láminas de excavadora y motoniveladora pasaron a la pared derecha. La cámara arranca centrada en la nueva oficina.
+- **Director Ejecutivo (chat):** ya no menciona Marketing (función `director` actualizada).

@@ -5,7 +5,7 @@
   var CSS = ":host{display:block;--o-bg:var(--bg);--o-surface:var(--surface);--o-fg:var(--ink);--o-muted:var(--ink-2);--o-line:var(--line);--o-stage:var(--surface-2);--o-alert:#d8352a;--o-amber:#ffc93c;--o-ok:#2f9e6b;--o-display:var(--f-display,'Barlow Condensed','Arial Narrow',sans-serif);--o-body:var(--f-body,'Barlow',system-ui,sans-serif);font-family:var(--o-body);color:var(--o-fg);font-size:15px;line-height:1.45}\n.bar-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:12px}\n.fnd i{color:var(--o-muted);font-style:normal;font-size:12px}\n.feed{display:grid;gap:2px}.feed li{padding-left:0}.feed li::before{display:none}\n.feed button{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:7px 8px 7px 14px;border-radius:7px;border-left:4px solid var(--tc);font-size:13.5px;line-height:1.3;position:relative}\n.feed button:hover,.feed button:focus-visible{background:color-mix(in srgb,var(--o-fg) 7%,transparent)}\n.feed button b{font-weight:700}.feed button span{float:right;color:var(--o-muted);font-size:12px;margin-left:8px}\ndetails{margin:14px 0 0}details summary{cursor:pointer;font:600 13px/1 var(--o-display);letter-spacing:.14em;text-transform:uppercase;color:var(--o-muted);padding:4px 0}\ndetails ul{margin-top:8px}\n.chip[hidden]{display:none}\n[hidden]{display:none!important}\n/* Layout: tabs switch between the 3D cutaway office and the org chart; roster dock under them; detail panel at the right (below on phones).\n   Palette: whites and cool grays everywhere; one accent per team (coral, indigo, teal) plus signal-red for pending items; the 3D scene is a white/gray architectural office. */\n\n\n\n\n*{box-sizing:border-box}\n\n\n\n.eyebrow{font:600 13px/1 var(--o-display);letter-spacing:.14em;text-transform:uppercase;color:var(--o-muted)}\n\n.chips{display:flex;flex-wrap:wrap;gap:8px}\n.chip{display:inline-flex;align-items:baseline;gap:6px;padding:7px 12px;border:1px solid var(--o-line);background:var(--o-surface);border-radius:8px;font-size:13px;color:var(--o-muted);font-family:var(--o-body)}\n.chip b{font:700 20px/1 var(--o-display);color:var(--o-fg);font-variant-numeric:tabular-nums}\nbutton.chip{cursor:pointer}\n.chip.red{background:var(--o-alert);border-color:var(--o-alert);color:#fff}\n.chip.red b{color:#fff}\nbutton:focus-visible,.card:focus-visible{outline:3px solid var(--o-amber);outline-offset:2px}\n\n.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}\n@media (min-width:980px){.layout{grid-template-columns:minmax(0,1fr) 370px}}\n.left{display:flex;flex-direction:column;gap:12px;min-width:0}\n\n.tabs{display:flex;gap:4px;padding:4px;background:var(--o-surface);border:1px solid var(--o-line);border-radius:10px;align-self:flex-start}\n.tabs button{font:600 14px var(--o-body);padding:8px 16px;border:0;border-radius:7px;background:transparent;color:var(--o-muted);cursor:pointer}\n.tabs button[aria-selected=\"true\"]{background:var(--o-fg);color:var(--o-bg)}\n\n.stage{position:relative;height:clamp(440px,68vh,720px);border-radius:12px;overflow:hidden;background:var(--o-stage);isolation:isolate}\n.stage[hidden],.org[hidden]{display:none}\n.stage canvas{display:block;width:100%;height:100%;touch-action:none}\n#cards{position:absolute;inset:0;pointer-events:none;overflow:hidden}\n.callout{position:absolute;left:12px;top:12px;z-index:6;max-width:210px;background:var(--o-alert);color:#fff;border-radius:10px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}\n.callout b{display:block;font:700 20px/1 var(--o-display);letter-spacing:.02em;text-transform:uppercase}\n.callout span{display:block;margin:5px 0 8px;font-size:12.5px;line-height:1.3;opacity:.95}\n.callout button{font:600 12px var(--o-body);color:var(--o-alert);background:#fff;border:0;border-radius:6px;padding:6px 10px;cursor:pointer}\n.home{position:absolute;right:12px;top:12px;z-index:6;font:600 13px var(--o-body);color:#fff;background:rgba(14,16,25,.78);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:8px 12px;cursor:pointer;backdrop-filter:blur(6px)}\n.hint{position:absolute;left:12px;bottom:10px;z-index:6;font-size:12px;color:rgba(255,255,255,.7);background:rgba(14,16,25,.6);padding:5px 9px;border-radius:6px;pointer-events:none}\n.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#c9d1dd}\n\n.card{position:absolute;left:0;top:0;width:182px;padding:9px 11px 10px;border-radius:14px;background:rgba(12,15,23,.93);border:2px solid var(--sc);color:#fff;\n  box-shadow:0 0 0 1px rgba(0,0,0,.45),0 0 18px var(--gl),0 8px 22px rgba(0,0,0,.45);cursor:pointer;pointer-events:auto;text-align:left;\n  font-family:var(--o-body);transform-origin:50% 100%;will-change:transform;user-select:none}\n.card .top{display:flex;align-items:center;gap:7px}\n.card .dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--tc)}\n.card .name{font:700 16px/1.1 var(--o-body);white-space:nowrap}\n.card .badge{margin-left:auto;font:700 9px/1 var(--o-body);letter-spacing:.07em;text-transform:uppercase;padding:4px 6px;border-radius:6px;color:var(--sc);background:rgba(255,255,255,.08);white-space:nowrap}\n.card .role{margin-top:4px;font-size:12px;color:#b3bccb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n.card .bar{margin-top:8px;height:5px;border-radius:3px;background:rgba(255,255,255,.13);overflow:hidden}\n.card .bar i{display:block;height:100%;width:0;background:var(--sc);border-radius:3px}\n.card.compact{width:auto;padding:6px 11px;border-radius:12px}\n.card.compact .role,.card.compact .bar,.card.compact .badge{display:none}\n.card.sel{z-index:5}\n.card[hidden]{display:none}\n\n/* organigrama */\n.org{background:var(--o-surface);border:1px solid var(--o-line);border-radius:12px;padding:22px 14px 16px;overflow-x:auto}\n.org-note{margin:18px 4px 0;font-size:13px;color:var(--o-muted);display:flex;flex-wrap:wrap;gap:6px 18px}\n.org-note span::before{content:\"\";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;background:var(--c)}\n.tree,.tree ul{list-style:none;margin:0;padding:0}\n.tree{display:flex;width:max-content;margin:0 auto}\n.tree ul{display:flex;justify-content:center;padding-top:26px;position:relative}\n.tree li{display:flex;flex-direction:column;align-items:center;position:relative;padding:26px 7px 0}\n.tree li::before,.tree li::after{content:\"\";position:absolute;top:0;right:50%;width:50%;height:26px;border-top:2px solid var(--o-line)}\n.tree li::after{right:auto;left:50%;border-left:2px solid var(--o-line)}\n.tree li:only-child::before,.tree li:only-child::after{display:none}\n.tree li:only-child{padding-top:0}\n.tree li:first-child::before,.tree li:last-child::after{border:0 none}\n.tree li:last-child::before{border-right:2px solid var(--o-line);border-radius:0 8px 0 0}\n.tree li:first-child::after{border-radius:8px 0 0 0}\n.tree ul ul::before,.tree li>ul::before{content:\"\";position:absolute;top:0;left:50%;border-left:2px solid var(--o-line);width:0;height:26px}\n.tree>li{padding-top:0}\n.node{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:118px;padding:9px 10px;border:2px solid var(--tc,var(--o-fg));border-radius:10px;background:var(--o-surface);color:var(--o-fg);text-align:left;font-family:var(--o-body);cursor:pointer}\n.node .nm{display:flex;align-items:center;gap:7px;min-width:0}\n.node .dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--tc)}\n.node b{font:700 14px/1.15 var(--o-body)}\n.node small{display:block;font-size:11.5px;color:var(--o-muted);line-height:1.25}\n.node.big{width:172px}\n.node[aria-pressed=\"true\"]{background:color-mix(in srgb,var(--tc) 18%,var(--o-surface))}\n.node.owner{border-style:dashed;cursor:default;width:190px}\n@media (max-width:720px){\n  .tree{display:block;width:auto;margin:0}\n  .tree ul{display:block;padding:0 0 0 14px;margin-left:12px;border-left:2px solid var(--o-line)}\n  .tree ul::before,.tree li>ul::before{display:none}\n  .tree li{display:block;padding:10px 0 0 16px}\n  .tree li::before{display:block;content:\"\";position:absolute;left:0;top:34px;width:16px;height:0;right:auto;border:0;border-top:2px solid var(--o-line);border-radius:0}\n  .tree li::after{display:none}\n  .tree>li{padding-left:0}.tree>li::before{display:none}\n  .tree li:only-child{padding-top:10px}\n  .tree>li:only-child{padding-top:0}\n  .node,.node.big,.node.owner{width:auto;max-width:none}\n}\n\n.dock{display:flex;align-items:center;gap:6px;padding:8px;background:var(--o-surface);border:1px solid var(--o-line);border-radius:12px;overflow-x:auto}\n.who{flex:none;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--o-fg);font:600 14px var(--o-body);cursor:pointer;white-space:nowrap}\n.who i{width:11px;height:11px;border-radius:50%;background:var(--tc,var(--o-muted))}\n.who:hover{background:color-mix(in srgb,var(--o-fg) 7%,transparent)}\n.who[aria-pressed=\"true\"]{border-color:var(--o-fg);background:color-mix(in srgb,var(--o-fg) 8%,transparent)}\n.dock .sep{flex:none;width:1px;align-self:stretch;background:var(--o-line);margin:2px 4px}\n\n.panel{background:var(--o-surface);border:1px solid var(--o-line);border-radius:12px;padding:20px;min-width:0}\n@media (min-width:980px){.panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}}\n.p-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}\n.p-dot{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--tc) 22%,transparent);border:2px solid var(--tc)}\n.p-dot i{width:14px;height:14px;border-radius:50%;background:var(--tc)}\n.panel h2{margin:2px 0 0;font:700 30px/1 var(--o-display);text-transform:uppercase;letter-spacing:.01em}\n.panel h3{margin:18px 0 6px;font:600 13px/1 var(--o-display);letter-spacing:.14em;text-transform:uppercase;color:var(--o-muted)}\n.panel h3 em{font-style:normal;margin-left:8px;padding:2px 7px;border-radius:5px;background:color-mix(in srgb,var(--o-amber) 30%,transparent);color:var(--o-fg);letter-spacing:.06em;font-family:var(--o-body);font-weight:600;font-size:11px;text-transform:none}\n.panel ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}\n.panel li{padding-left:16px;position:relative;text-wrap:pretty}\n.panel li::before{content:\"\";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:2px;background:var(--tc,var(--o-alert))}\n.status{display:inline-flex;align-items:center;gap:8px;margin:0;padding:5px 10px;border-radius:7px;background:color-mix(in srgb,var(--sc) 18%,transparent);font-weight:600;font-size:13px}\n.status i{width:8px;height:8px;border-radius:50%;background:var(--sc)}\n.rel{margin:12px 0 0;font-size:13.5px;color:var(--o-muted);display:grid;gap:3px}\n.rel b{color:var(--o-fg);font-weight:600}\n.fnd li::before{background:var(--fc)}\n.fnd b.sev{font:700 10px/1 var(--o-body);letter-spacing:.08em;text-transform:uppercase;margin-right:6px;padding:2px 5px;border-radius:4px;color:#fff;background:var(--fc);vertical-align:1px}\n.panel h3 small{font:500 11px var(--o-body);letter-spacing:0;text-transform:none;margin-left:8px}\n.note{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--o-line);font-size:13px;color:var(--o-muted)}\n.pending{color:var(--o-muted);font-style:normal;font-weight:600}\n@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}\n.chat{margin-top:12px;background:var(--o-surface);border:1px solid var(--o-line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}\n.c-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--o-line)}\n.c-head b{font:700 20px/1 var(--o-display);text-transform:uppercase;letter-spacing:.02em}\n.c-head small{color:var(--o-muted);font-size:12.5px}\n.c-head button{all:unset;margin-left:auto;cursor:pointer;font-size:12px;color:var(--o-muted);padding:4px 8px;border-radius:6px}\n.c-head button:hover,.c-head button:focus-visible{background:color-mix(in srgb,var(--o-fg) 8%,transparent)}\n.c-log{height:min(420px,56vh);overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:var(--o-stage)}\n.msg{max-width:min(680px,88%);padding:9px 13px;border-radius:12px;font-size:14.5px;line-height:1.45;overflow-wrap:anywhere}\n.msg p{margin:0}.msg p+p,.msg p+ul,.msg ul+p{margin-top:6px}.msg ul{margin:0;padding-left:18px;display:block}.msg li{padding:0;margin:2px 0}.msg li::before{display:none}\n.msg.ia{align-self:flex-start;background:var(--o-surface);border:1px solid var(--o-line)}\n.msg.user{align-self:flex-end;background:var(--o-fg);color:var(--o-bg)}\n.msg.err{border-color:var(--o-alert);color:var(--o-alert)}\n.dots i{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--o-muted);animation:cd 1s infinite ease-in-out}\n.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}\n@keyframes cd{0%,80%,100%{opacity:.25}40%{opacity:1}}\n@media (prefers-reduced-motion:reduce){.dots i{animation:none}}\n.c-sug{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0}\n.sg{all:unset;box-sizing:border-box;cursor:pointer;font-size:12.5px;padding:5px 10px;border:1px solid var(--o-line);border-radius:999px;color:var(--o-fg)}\n.sg:hover,.sg:focus-visible{background:color-mix(in srgb,var(--o-fg) 8%,transparent)}\n.c-note{margin:8px 16px 0;font-size:12.5px;color:var(--o-muted)}\n.c-form{display:flex;gap:8px;padding:12px 16px;align-items:flex-end}\n.c-form textarea{flex:1;min-width:0;resize:none;font:inherit;font-size:15px;line-height:1.35;padding:9px 12px;border:1px solid var(--o-line);border-radius:10px;background:var(--o-bg);color:var(--o-fg);max-height:140px}\n.c-form textarea:focus-visible{outline:2px solid var(--o-fg);outline-offset:1px}\n.c-form button{font:700 14px var(--o-body);padding:10px 18px;border:0;border-radius:10px;background:var(--o-fg);color:var(--o-bg);cursor:pointer;min-height:40px}\n.c-form button:disabled{opacity:.45;cursor:default}\n\n.callout{display:none!important}\n.layout.vo{grid-template-columns:minmax(0,1fr)}\n.layout.vo .panel,.layout.vo .dock,.layout.vo .chat,.bar-top.vo .chips{display:none}\n";
   var MARK = "<div class=\"bar-top\">\n  <div class=\"chips\" aria-label=\"Resumen\">\n    <span class=\"chip\"><b id=\"n-ag\">9</b> agentes</span>\n    <button class=\"chip red\" id=\"chip-urg\" type=\"button\" hidden><b id=\"n-urg\">0</b> urgentes</button>\n  </div>\n  <div class=\"tabs\" role=\"tablist\" aria-label=\"Vista\">\n    <button type=\"button\" role=\"tab\" id=\"tab-3d\" aria-selected=\"true\">Oficina 3D</button>\n    <button type=\"button\" role=\"tab\" id=\"tab-org\" aria-selected=\"false\">Organigrama</button>\n    <button type=\"button\" role=\"tab\" id=\"tab-obras\" aria-selected=\"false\">Obras y m\u00e1quinas</button>\n  </div>\n</div>\n<div class=\"layout\">\n  <section class=\"left\" aria-label=\"Oficina\">\n    <div class=\"stage\" id=\"stage\">\n      <div id=\"cards\"></div>\n      <div class=\"callout\"><b id=\"callout-b\">Cargando</b><span id=\"callout-s\"></span><button type=\"button\" id=\"call-toca\">Ver resumen</button></div>\n      <button class=\"home\" id=\"home\" type=\"button\">Vista general</button>\n      <div class=\"hint\" id=\"hint\">Arrastra para girar \u00b7 rueda o pellizco para acercar \u00b7 toca un agente</div>\n      <div class=\"nogl\" id=\"nogl\" hidden>No se pudo abrir la vista 3D en este navegador. El organigrama y la barra de agentes siguen disponibles.</div>\n    </div>\n    <div class=\"org\" id=\"org\" hidden></div>\n    <div class=\"org\" id=\"obras\" hidden></div>\n    <nav class=\"dock\" id=\"dock\" aria-label=\"Agentes\"></nav>\n    <section class=\"chat\" id=\"chat\" aria-label=\"Charla con el Director Ejecutivo\">\n  <div class=\"c-head\"><b>Director Ejecutivo</b><small>Habla con \u00e9l como con una persona. Solo recomienda: nada sale sin tu \u00abva\u00bb.</small><button type=\"button\" id=\"c-clear\">Borrar charla</button></div>\n  <div class=\"c-log\" id=\"c-log\" role=\"log\" aria-live=\"polite\"></div>\n  <div class=\"c-sug\" id=\"c-sug\"></div>\n  <p class=\"c-note\" id=\"c-note\" hidden></p>\n  <form class=\"c-form\" id=\"c-form\"><textarea id=\"c-in\" rows=\"1\" placeholder=\"Escr\u00edbele al director\u2026\" aria-label=\"Mensaje para el Director Ejecutivo\"></textarea><button type=\"submit\" id=\"c-send\">Enviar</button></form>\n</section>\n  </section>\n  <aside class=\"panel\" id=\"panel\" aria-live=\"polite\"></aside>\n</div>";
   /* ---------- Análisis en vivo (solo lectura sobre los datos que ya tiene el sistema) ---------- */
-  var IDS = ['ejecutivo', 'admin', 'compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'dirmkt', 'imagen', 'guion', 'redes'];
+  var IDS = ['ejecutivo', 'admin', 'compras', 'pagos', 'cobros', 'maquinaria', 'impuestos'];
   var SEV = { alta: { l: 'Urgente', c: '#d8352a' }, media: { l: 'Revisar', c: '#d98a00' }, info: { l: 'Dato', c: '#666c76' } };
   function mm(n) {
     var a = Math.abs(n), s = n < 0 ? '−' : '';
@@ -248,23 +248,6 @@
     if (rent.length) add('admin', 'info', 'Caja por obra (cobrado menos gastado, antes de IVA e impuestos; no es la ganancia real): ' + rent.map(function (x) { return esc(x.o.codigo) + ' ' + mm(x.cob - x.gas) + (x.cob ? ' (' + ((x.cob - x.gas) / x.cob * 100).toFixed(0) + '%)' : ''); }).join(' · ') + '. La ganancia real necesita el avance físico de cada obra.');
     add('admin', 'info', 'En el sistema hay ' + obras.length + ' obras, ' + (S.terceros || []).length + ' clientes y proveedores, ' + act.length + ' movimientos, ' + (S.cheques || []).length + ' cheques y ' + facs.length + ' facturas.');
 
-    /* ===== MARKETING ===== */
-    var pub = sal.filter(function (t) { return /publicidad|marketing|instagram|redes/i.test(t.concepto || ''); });
-    add('dirmkt', 'info', pub.length ? 'Gasto marcado como publicidad: ' + pub.slice(0, 2).map(function (t) { return esc(t.concepto) + ' ' + mm(t.total) + ' (' + t.fecha.split('-').reverse().join('/') + ')'; }).join('; ') + '. No hay forma de medir qué se obtuvo con eso.' : 'No hay ningún gasto de publicidad cargado, así que no se puede medir qué se invirtió.');
-    /* ===== MARKETING (lectura del perfil @codesconstrucciones hecha el 29-oct-2026; se actualiza a mano al volver a leerlo) ===== */
-    function mk(id, sev, txt) { out.tot[id]++; if (sev !== 'info') out.bad[id]++; add(id, sev, txt); }
-    mk('imagen', 'info', 'Instagram limpio (29-oct): las 18 publicaciones quedaron archivadas, se pueden restaurar desde «Ver archivo». Foto de perfil con el logo nuevo.');
-    mk('imagen', 'info', 'El material archivado es bueno (excavadora, losas, encofrado, estructura, interiores): se reusa para las series «Cómo se hace».');
-    mk('imagen', 'media', 'Falta una plantilla visual fija: título sobre la foto, logo chico en una esquina y mismo estilo en todas las piezas (como Criba y Cemex).');
-    mk('guion', 'media', 'La bio sigue sin decir qué hace CODES. Propuesta: «Constructora · Santiago del Estero. Obras viales, hormigón y edificios. Acá te contamos cómo se hace una obra.» Falta tu OK y agregar el WhatsApp desde el celular.');
-    mk('guion', 'info', 'Línea editorial: «Cómo se hace», para informar y no para vender. 70 % edificio y construcción tradicional, 20 % maquinaria (incluye obras viales), 10 % herramientas. 3 publicaciones por semana, sin precios ni «contáctenos».');
-    mk('guion', 'info', 'Primeras 4 semanas: losa en 4 pasos, cómo funciona una excavadora, antes y después; encofrado, hormigón armado, equipo; edificio piso por piso, compactación, una herramienta; controles antes de hormigonar, obra contada de principio a fin.');
-    mk('guion', 'media', 'Destacados por crear: Cómo se hace, Máquinas, Herramientas, Obras y Contacto. Fijar 3 publicaciones arriba.');
-    mk('redes', 'info', 'Comparación con 5 cuentas (Criba, Cemex, Vinci, Caterpillar, Groff Tractor): todas usan plantilla visual constante, texto sobre la imagen, personas en las fotos, destacados y un solo enlace. Criba (48 mil seguidores) es la más cercana en tono; Vinci (876) en tamaño.');
-    mk('redes', 'media', 'La cuenta parte de 94 seguidores y 0 publicaciones. Las estadísticas de la cuenta todavía no se revisaron: falta tu OK para abrirlas.');
-    var nomM = { imagen: 'Imagen', guion: 'Guion', redes: 'Redes' };
-    ['imagen', 'guion', 'redes'].forEach(function (id) { out.find[id].forEach(function (f) { out.tot.dirmkt++; if (f[0] !== 'info') out.bad.dirmkt++; add('dirmkt', f[0], f[1] + ' <i>(' + nomM[id] + ')</i>'); }); });
-
     /* ===== EJECUTIVO ===== */
     /* ---- Impuestos: informe semanal calculado en la base (viernes 13 h) ---- */
     (function () {
@@ -286,9 +269,9 @@
       add('impuestos', 'info', 'Cómo se calcula: ventas netas menos compras netas con factura, proyectado a ritmo constante. Escala de sociedades 2026 (25 %, 30 %, 35 %). No incluye amortizaciones, sueldos, anticipos ni ajuste por inflación. Es una estimación: validar con el contador matriculado.');
     })();
 
-    var nom = { admin: 'Dir. Adm.', compras: 'Compras', pagos: 'Pagos', cobros: 'Cobros', maquinaria: 'Maquinaria', impuestos: 'Impuestos', dirmkt: 'Marketing' };
+    var nom = { admin: 'Dir. Adm.', compras: 'Compras', pagos: 'Pagos', cobros: 'Cobros', maquinaria: 'Maquinaria', impuestos: 'Impuestos' };
     var todas = [];
-    ['cobros', 'compras', 'pagos', 'maquinaria', 'impuestos', 'admin', 'dirmkt'].forEach(function (id) { out.find[id].forEach(function (f) { if (f[0] !== 'info') todas.push([id, f]); }); });
+    ['cobros', 'compras', 'pagos', 'maquinaria', 'impuestos', 'admin'].forEach(function (id) { out.find[id].forEach(function (f) { if (f[0] !== 'info') todas.push([id, f]); }); });
     todas.sort(function (a, b) { return (a[1][0] === 'alta' ? 0 : 1) - (b[1][0] === 'alta' ? 0 : 1); });
     todas.slice(0, 6).forEach(function (x) { chk('ejecutivo', true, x[1][0], x[1][1] + ' <i>(' + nom[x[0]] + ')</i>'); });
     if (!todas.length) { out.tot.ejecutivo++; add('ejecutivo', 'info', 'Sin alertas en Administración con los datos de hoy.'); }
@@ -301,8 +284,6 @@
     });
     facs.forEach(function (f) { ev.push({ k: 'F' + f.id, ag: f.lado === 'debito' ? 'cobros' : 'compras', f: f.creada || f.fecha, o: 0, t: 'Factura ' + (f.lado === 'debito' ? 'de venta ' : 'de compra ') + esc(f.tipo) + ' ' + f.nro + ' · ' + esc(tn(f.terceroId)) + ' · ' + mm(f.total) }); });
     comb.forEach(function (x) { ev.push({ k: 'G' + x.id, ag: 'compras', f: x.fh.slice(0, 10), o: 0, t: 'Combustible · ' + esc((cen[x.maqId] || {}).nombre || 'máquina') + ' · ' + lts(x.litros) }); });
-    ev.push({ k: 'M-perfil', ag: 'redes', f: '2026-10-29', o: 0, t: 'Limpió y revisó @codesconstrucciones y la comparó con 5 cuentas del rubro' });
-    ev.push({ k: 'M-plan', ag: 'guion', f: '2026-10-29', o: 0, t: 'Armó la línea «Cómo se hace» y el plan de 4 semanas' });
     ev.sort(function (a, b) { return a.f < b.f ? 1 : a.f > b.f ? -1 : b.o - a.o; });
     ev.forEach(function (e) { out.keys[e.k] = e; });
     out.feed = ev.slice(0, 12);
@@ -334,12 +315,12 @@
     conectar: { label: 'Por conectar', c: '#ffc93c' },
     listo:    { label: 'Entregó',      c: '#3ddc97' }
   };
-  var EXE = '#ff6a4d', ADM = '#6c7cff', MKT = '#19b394';
+  var EXE = '#ff6a4d', ADM = '#6c7cff';
   var LIVE = null;
   var PEND = '<span class="pending">[pendiente]</span>';
   var AGENTS = [
     { id: 'ejecutivo', name: 'Director Ejecutivo', short: 'Ejecutivo', role: 'Habla contigo', area: 'Dirección ejecutiva', level: 'Rango 1', boss: null, tc: EXE, state: 'listo',
-      desk: { x: 0, z: -6.2, w: 3.4 }, look: { shirt: 0x1d2026, hat: 0xf4f4f0, tie: 0xff6a4d, acc: 0xff6a4d },
+      desk: { x: -7.5, z: -6.2, w: 3.4 }, look: { shirt: 0x1d2026, hat: 0xf4f4f0, tie: 0xff6a4d, acc: 0xff6a4d },
       does: ['Es el único que se comunica contigo.', 'Recibe el trabajo de los dos directores y te lo entrega resumido.', 'Te dice qué está esperando tu «va». Nada se paga, se borra ni se publica sin él.'],
       skills: ['Resumen ejecutivo corto, con lo urgente primero, lo que tienes que decidir y lo que puede esperar.', 'Agenda de decisiones: lista de lo que espera tu «va», con la fecha límite de cada cosa.', 'Cruza las dos áreas: por ejemplo, cuánto se gasta en publicidad frente a lo que hay en caja.', 'Resuelve prioridades cuando las dos áreas piden lo mismo, y te avisa si no se pueden cumplir ambas.', 'Lleva el registro de lo que decidiste, para no repetir las mismas conversaciones.'],
       needs: ['Que confirmes el organigrama y las habilidades de cada agente.', 'Cada cuánto quieres el resumen y en qué formato: ' + PEND + '.'] },
@@ -380,28 +361,6 @@
       skills: ['Ventas brutas (con IVA) y netas del ejercicio, con notas de crédito restadas.', 'Gastos deducibles: compras y servicios con factura. Lo pagado sin comprobante se informa aparte y no se descuenta.', 'Resultado a hoy y proyectado al 31/12 según el ritmo de lo facturado.', 'Impuesto a las Ganancias estimado con la escala de sociedades 2026, y cuánto quedaría después de impuesto.', 'IVA débito y crédito del ejercicio e impuesto a los créditos y débitos pagado (puede tomarse como pago a cuenta).', 'Chequeos antes de aprobar: facturas que no suman, fechas imposibles, datos de pocos meses, gastos sin factura.'],
       needs: [LIVE, 'Amortizaciones de maquinaria, sueldos y cargas sociales (F.931) y anticipos de Ganancias ya pagados: ' + PEND + '.', 'Es una estimación para ordenar la decisión: la cifra final la valida tu contador matriculado.'] },
 
-    { id: 'dirmkt', name: 'Michael', short: 'Michael', role: 'Director de Marketing · productor y orquestador', area: 'Marketing', level: 'Rango 2', boss: 'ejecutivo', tc: MKT, state: 'espera',
-      desk: { x: 7.5, z: -0.2, w: 3.0 }, look: { shirt: 0x2b3038, hat: 0xf4f4f0, tie: 0x19b394, acc: 0x19b394, headset: true },
-      does: ['Es el jefe de Marketing: dirige a Imagen, Guion y Redes. Mientras no tenga empleados, escribe él mismo los textos para Instagram.', 'Trabaja con el recetario de marca de CODES: tu voz (formal, cordial, humilde y tranquila), lo que ofrecen y lo que nunca se dice.', 'Antes de entregarte algo lo revisa solo: sin datos inventados, sin presumir y con una sola petición al final.', 'Solo habla contigo. No responde ni escribe a nadie más, y no tiene acceso a las cuentas: tú copias y publicas.'],
-      skills: ['Posts, carruseles, guiones de reel e historias para Instagram, 3 piezas por semana.', 'Cada pieza: gancho en la primera línea, una sola idea, algo útil para el cliente y una sola petición (escribir por mensaje privado de Instagram).', 'Entrega una versión lista para copiar y 2 ganchos de repuesto, con una línea de «revisado contra tu recetario».', 'Guarda cada pieza en su carpeta de proyectos y anota tus correcciones para no repetir el error.', 'Colores rojo y gris, letra simple y firme.'],
-      needs: ['Una frase textual de lo que le duele al cliente: ' + PEND + '.', 'Palabras que nunca usarías: ' + PEND + '.', 'Confirmar los ejemplos «así sí / así no» y tu OK al primer post (el del hospital en 48 horas).'] },
-    { id: 'imagen', name: 'Imagen', short: 'Imagen', role: 'Fotos y videos de obra', area: 'Marketing', level: 'Rango 3', boss: 'dirmkt', tc: MKT, state: 'conectar',
-      desk: { x: 3.5, z: 6.2, w: 2.4 }, look: { shirt: 0xc4c8ce, hair: 0x2a1a12, cam: true, lan: 0x19b394, acc: 0x19b394 },
-      does: ['Es el experto en imágenes de construcción.', 'Busca y extrae imágenes épicas y buenas de las obras.'],
-      skills: ['Elige las mejores tomas de cada obra y descarta las flojas.', 'Ordena el archivo por obra, fecha y etapa, para encontrar rápido cualquier foto.', 'Lista de tomas para pedir en obra: plano general, detalle, gente trabajando con casco y chaleco, avance semanal, antes y después, vista aérea.', 'Recomienda la mejor hora de luz y el ángulo para una foto o un video.', 'Prepara los formatos para cada red: vertical, cuadrado y horizontal.', 'Cuida los permisos: sin caras, patentes ni carteles de terceros sin autorización. Usa fotos propias de CODES o con licencia; las de internet quedan solo como referencia.'],
-      needs: ['Una carpeta con fotos y videos de las obras.', 'Quién saca las fotos en obra: ' + PEND + '.'] },
-
-    { id: 'guion', name: 'Guion', short: 'Guion', role: 'Textos y publicidad', area: 'Marketing', level: 'Rango 3', boss: 'dirmkt', tc: MKT, state: 'espera',
-      desk: { x: 7.5, z: 6.2, w: 2.4 }, look: { shirt: 0x9aa1ab, hair: 0x6b4a2a, glasses: true, lan: 0x19b394, acc: 0x19b394 },
-      does: ['Escribe todos los textos que la empresa necesita para su publicidad.'],
-      skills: ['Textos para publicaciones, con el trato formal de CODES.', 'Fichas de obra: qué se hizo, dónde y para quién. Solo con datos reales que cargues; no inventa cifras.', 'Guiones cortos para videos de obra.', 'Gacetillas de prensa para inauguraciones y finales de obra.', 'Presentación institucional de CODES, con sus obras viales y de hormigón.', 'Revisa que el texto suene a CODES y no a una máquina.'],
-      needs: ['Datos reales de cada obra para contar (ubicación, qué se hizo, fechas): ' + PEND + '.', 'Frases tuyas, para tomar tu manera de hablar.'] },
-
-    { id: 'redes', name: 'Redes', short: 'Redes', role: 'Métricas e ideas de marca', area: 'Marketing', level: 'Rango 3', boss: 'dirmkt', tc: MKT, state: 'conectar',
-      desk: { x: 11.5, z: 6.2, w: 2.4 }, look: { shirt: 0xdfe2e6, hair: 0x8a3b52, headset: true, lan: 0x19b394, acc: 0x19b394 },
-      does: ['Es una genia de internet: analiza los parámetros de las redes para ver si las publicaciones están siendo exitosas o no.', 'Te da ideas para que la marca CODES crezca y sea reconocida.'],
-      skills: ['Tablero por publicación: alcance, interacciones, guardados, compartidos y clics, contra el promedio propio.', 'Qué formatos, días y horarios funcionan mejor.', 'Ideas de contenido para cada semana, pensadas desde lo que ya funcionó.', 'Mira cómo comunican otras constructoras y organismos de obra, para tomar ideas. Solo información pública.', 'Menciones y comentarios: avisa si hay algo que atender o responder.', 'Informe mensual de crecimiento de la marca.'],
-      needs: ['Los usuarios de 4 empresas del rubro para compararlas con CODES.', 'Tu OK para abrir las estadísticas de la cuenta (instagram: codesconstrucciones).'] }
   ];
 
 
@@ -419,18 +378,17 @@
   var hooks = { focus: function () {}, home: function () {}, mark: function () {}, sync: function () {}, pulse: function () {} };
   var cardsEl = $('#cards'), dock = $('#dock'), panel = $('#panel'), stageEl = $('#stage'), orgEl = $('#org');
   $('#n-ag').textContent = AGENTS.length;
-  var LIVEIDS = { ejecutivo: 1, admin: 1, compras: 1, pagos: 1, cobros: 1, maquinaria: 1, impuestos: 1, dirmkt: 1, imagen: 1, guion: 1, redes: 1 };
+  var LIVEIDS = { ejecutivo: 1, admin: 1, compras: 1, pagos: 1, cobros: 1, maquinaria: 1, impuestos: 1 };
   var DECIDE = [
     'Decidir qué te alarma: % de desvío de presupuesto, días de pago vencido y días de cobro atrasado. Con eso se ajustan los semáforos.',
-    'Decidir si se agregan kilómetros u horas de motor a cada carga de combustible, para poder auditar el consumo por máquina.',
-    'Aprobar la bio nueva de Instagram y agregar el WhatsApp (desde el celular). Dar el OK para abrir las estadísticas de la cuenta.'
+    'Decidir si se agregan kilómetros u horas de motor a cada carga de combustible, para poder auditar el consumo por máquina.'
   ];
 
   function urg(id) { return A.find[id].filter(function (f) { return f[0] === 'alta'; }).length; }
   function setStates() {
     AGENTS.forEach(function (a) {
-      if (LIVEIDS[a.id]) { var u = urg(a.id); var md = (A.find[a.id] || []).filter(function (x) { return x[0] === 'media'; }).length; a.state = u ? 'alerta' : 'listo'; a.badge = u ? u + (u === 1 ? ' urgente' : ' urgentes') : (a.area === 'Marketing' && md ? 'Trabajando' : 'Al día'); }
-      else { a.state = a.id === 'guion' ? 'espera' : 'conectar'; a.badge = STATES[a.state].label; }
+      if (LIVEIDS[a.id]) { var u = urg(a.id); var md = (A.find[a.id] || []).filter(function (x) { return x[0] === 'media'; }).length; a.state = u ? 'alerta' : 'listo'; a.badge = u ? u + (u === 1 ? ' urgente' : ' urgentes') : 'Al día'; }
+      else { a.state = 'conectar'; a.badge = STATES[a.state].label; }
       var st = STATES[a.state];
       a.card.style.setProperty('--sc', st.c); a.card.style.setProperty('--gl', rgba(st.c, 0.28));
       a.card.querySelector('.badge').textContent = a.badge;
@@ -438,7 +396,7 @@
       var tot = A.tot[a.id], bad = A.bad[a.id];
       a.pct = LIVEIDS[a.id] && tot ? Math.round((tot - bad) / tot * 100) : 0;
     });
-    var eq = ['admin', 'compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'dirmkt'].map(byId);
+    var eq = ['admin', 'compras', 'pagos', 'cobros', 'maquinaria', 'impuestos'].map(byId);
     byId('ejecutivo').pct = Math.round(eq.reduce(function (s, x) { return s + x.pct; }, 0) / eq.length);
     AGENTS.forEach(function (a) { a.card.querySelector('.bar i').style.width = a.pct + '%'; });
     var total = urg('ejecutivo');
@@ -488,7 +446,7 @@
     }
     orgEl.innerHTML =
       '<ul class="tree"><li><div class="node owner" style="--tc:var(--o-fg)"><span class="nm"><b>Facundo Yunes</b></span><small>Dueño · da el «va»</small></div><ul>' + branch('ejecutivo') + '</ul></li></ul>' +
-      '<div class="org-note"><span style="--c:' + EXE + '">Dirección ejecutiva</span><span style="--c:' + ADM + '">Administración</span><span style="--c:' + MKT + '">Marketing</span></div>';
+      '<div class="org-note"><span style="--c:' + EXE + '">Dirección ejecutiva</span><span style="--c:' + ADM + '">Administración</span></div>';
     var nodes = orgEl.querySelectorAll('.node[data-id]');
     for (var i = 0; i < nodes.length; i++) nodes[i].addEventListener('click', function (e) { select(e.currentTarget.dataset.id); });
   })();
@@ -513,7 +471,7 @@
       var kids = AGENTS.filter(function (k) { return k.boss === a.id; });
       var fl = A.find[a.id] || [];
       h = '<div class="p-head" style="--tc:' + a.tc + '"><div class="p-dot"><i></i></div><div><div class="eyebrow">' + a.area + ' · ' + a.level + '</div><h2>' + a.name + '</h2></div></div>' +
-        '<p class="status" style="--sc:' + st.c + '"><i></i>' + (LIVEIDS[a.id] ? a.badge + (a.area === 'Marketing' ? ' · leyó el Instagram de CODES' : ' · leyendo tu sistema') : st.label) + '</p>' +
+        '<p class="status" style="--sc:' + st.c + '"><i></i>' + (LIVEIDS[a.id] ? a.badge + ' · leyendo tu sistema' : st.label) + '</p>' +
         '<div class="rel"><span>Responde a: <b>' + (boss ? boss.name : 'Facundo Yunes') + '</b></span>' +
         (kids.length ? '<span>Tiene a su cargo: <b>' + kids.map(function (k) { return k.name; }).join(', ') + '</b></span>' : '') + '</div>' +
         (fl.length ? '<h3>Lo que encontró<small>datos en vivo</small></h3>' + findList(fl) : '') +
@@ -618,14 +576,13 @@
     function strip(h) { return String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' '); }
     function contexto() {
       var D = getD(), L = ['Fecha de hoy: ' + D.hoy + ' (usa esta fecha; no la calcules)', 'Los hallazgos de abajo ya consideran solo lo cargado desde el 2026-10-01 (salvo Combustible y Maquinaria). Conoces toda la historia de CODES, pero las correcciones se piden solo desde esa fecha.', 'Hallazgos de los contadores (urgencia · texto):'];
-      ['compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'admin', 'dirmkt', 'imagen', 'guion', 'redes', 'ejecutivo'].forEach(function (id) {
+      ['compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'admin', 'ejecutivo'].forEach(function (id) {
         var fl = (A.find[id] || []).slice(0, 14);
         if (!fl.length) return;
         L.push('[' + byId(id).name + ']');
         fl.forEach(function (f) { L.push('- ' + f[0] + ' · ' + strip(f[1])); });
       });
       if (A.feed && A.feed.length) { L.push('Movimiento reciente:'); A.feed.slice(0, 8).forEach(function (e) { L.push('- ' + strip(e.t) + ' (' + (e.f || '') + ')'); }); }
-      L.push('Marketing: perfil de Instagram @codesconstrucciones leído el 29-oct-2026 (lectura hecha por Claude en el navegador, no en vivo). Facundo ya archivó las publicaciones y cambió la foto de perfil. No se publica ni borra nada sin su «va»; archivar, la foto y el enlace se hacen desde el celular.');
       return L.join('\n');
     }
     function draw() {
@@ -774,10 +731,10 @@
       }
       g.strokeStyle = 'rgba(60,66,74,.22)'; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
     });
-    ft.wrapS = ft.wrapT = T.RepeatWrapping; ft.repeat.set(10, 6.67);
-    var floor = new T.Mesh(new T.PlaneGeometry(30, 20), new T.MeshStandardMaterial({ map: ft, roughness: 0.55 }));
-    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-    scene.add(box(30.6, 0.4, 20.6, M(G4), 0, -0.21, 0, { cast: false }));
+    ft.wrapS = ft.wrapT = T.RepeatWrapping; ft.repeat.set(5, 6.67);
+    var floor = new T.Mesh(new T.PlaneGeometry(15, 20), new T.MeshStandardMaterial({ map: ft, roughness: 0.55 }));
+    floor.position.x = -7.5; floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+    scene.add(box(15.6, 0.4, 20.6, M(G4), -7.5, -0.21, 0, { cast: false }));
 
     /* paredes: blanco liso al fondo, pared acanalada a la izquierda */
     var skyTex = canvasTex(2048, 420, function (g, w, h) {
@@ -794,15 +751,15 @@
         x += bw + rnd() * 14;
       }
     });
-    scene.add(box(30.6, 6.8, 0.3, M(WHITE), 0, 3.4, -10.15));
-    var wallLow = new T.Mesh(new T.PlaneGeometry(30, 3.2), new T.MeshStandardMaterial({ color: WHITE, roughness: 0.9 }));
-    wallLow.position.set(0, 1.6, -9.99); wallLow.receiveShadow = true; scene.add(wallLow);
-    scene.add(box(30, 0.16, 0.1, M(G4), 0, 0.08, -9.94, { cast: false }));
-    var sky = new T.Mesh(new T.PlaneGeometry(29.4, 3.2), new T.MeshBasicMaterial({ map: skyTex }));
-    sky.position.set(0, 4.9, -9.99); scene.add(sky);
+    scene.add(box(15.6, 6.8, 0.3, M(WHITE), -7.5, 3.4, -10.15));
+    var wallLow = new T.Mesh(new T.PlaneGeometry(15, 3.2), new T.MeshStandardMaterial({ color: WHITE, roughness: 0.9 }));
+    wallLow.position.set(-7.5, 1.6, -9.99); wallLow.receiveShadow = true; scene.add(wallLow);
+    scene.add(box(15, 0.16, 0.1, M(G4), -7.5, 0.08, -9.94, { cast: false }));
+    var sky = new T.Mesh(new T.PlaneGeometry(14.4, 3.2), new T.MeshBasicMaterial({ map: skyTex }));
+    sky.position.set(-7.5, 4.9, -9.99); scene.add(sky);
     var steel = M('#22262c', { roughness: 0.5, metalness: 0.4 });
-    scene.add(box(29.8, 0.1, 0.12, steel, 0, 6.5, -9.9, { cast: false })); scene.add(box(29.8, 0.1, 0.12, steel, 0, 3.3, -9.9, { cast: false }));
-    for (var mx = -14.6; mx <= 14.7; mx += 3.65) scene.add(box(0.07, 3.2, 0.12, steel, mx, 4.9, -9.9, { cast: false }));
+    scene.add(box(14.8, 0.1, 0.12, steel, -7.5, 6.5, -9.9, { cast: false })); scene.add(box(14.8, 0.1, 0.12, steel, -7.5, 3.3, -9.9, { cast: false }));
+    for (var mx = -14.6; mx <= 0.05; mx += 3.65) scene.add(box(0.07, 3.2, 0.12, steel, mx, 4.9, -9.9, { cast: false }));
 
     scene.add(box(0.3, 6.8, 20.6, M(WHITE), -15.15, 3.4, 0));
     var flute = canvasTex(512, 256, function (g, w, h) {
@@ -814,6 +771,9 @@
     flute.wrapS = flute.wrapT = T.RepeatWrapping; flute.repeat.set(5, 1);
     var leftWall = new T.Mesh(new T.PlaneGeometry(20, 6.6), new T.MeshStandardMaterial({ map: flute, roughness: 0.8 }));
     leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-14.99, 3.3, 0); leftWall.receiveShadow = true; scene.add(leftWall);
+    scene.add(box(0.3, 6.8, 20.6, M(WHITE), 0.15, 3.4, 0));
+    var rightWall = new T.Mesh(new T.PlaneGeometry(20, 6.6), new T.MeshStandardMaterial({ map: flute, roughness: 0.8 }));
+    rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(-0.01, 3.3, 0); rightWall.receiveShadow = true; scene.add(rightWall);
 
     /* alfombras, tarimas, aros y líneas del organigrama en el piso */
     function rug(x, z, w, d, col, border) {
@@ -832,15 +792,14 @@
       var w = Math.abs(x2 - x1) || 0.07, d = Math.abs(z2 - z1) || 0.07;
       scene.add(box(w + (x1 === x2 ? 0 : 0.07), 0.01, d + (z1 === z2 ? 0 : 0.07), new T.MeshBasicMaterial({ color: 0xffffff }), (x1 + x2) / 2, 0.062, (z1 + z2) / 2, { cast: false }));
     }
-    rug(0, -6.7, 9.4, 5.8, '#3b4047', '#a8171b');       /* dirección ejecutiva */
+    rug(-7.5, -6.7, 9.4, 5.8, '#3b4047', '#a8171b');       /* dirección ejecutiva */
     rug(-7.9, 3.15, 13, 12.5, '#c4c8ce', '#b0b5bc');    /* administración */
-    rug(7.9, 3.15, 13, 12.5, '#d3d0cb', '#bfbbb4');     /* marketing */
-    dais(0, -6.7, 7.0, 5.0, 0.24);
-    dais(-7.5, -0.6, 5.4, 3.6, 0.16); dais(7.5, -0.6, 5.4, 3.6, 0.16);
-    line(0, -4.0, 0, -2.9); line(-7.5, -2.9, 7.5, -2.9); line(-7.5, -2.9, -7.5, -2.5); line(7.5, -2.9, 7.5, -2.5);
-    line(-7.5, 1.4, -7.5, 3.0); line(7.5, 1.4, 7.5, 3.0);
-    line(-11.5, 3.0, -3.5, 3.0); line(3.5, 3.0, 11.5, 3.0);
-    [-11.5, -7.5, -3.5, 3.5, 7.5, 11.5].forEach(function (x) { line(x, 3.0, x, 4.2); });
+    dais(-7.5, -6.7, 7.0, 5.0, 0.24);
+    dais(-7.5, -0.6, 5.4, 3.6, 0.16);
+    line(-7.5, -4.0, -7.5, -2.5);
+    line(-7.5, 1.4, -7.5, 3.0);
+    line(-11.5, 3.0, -3.5, 3.0);
+    [-11.5, -7.5, -3.5].forEach(function (x) { line(x, 3.0, x, 4.2); });
 
     function decal(text, sub, x, z, y) {
       var tex = canvasTex(1024, 256, function (g, w, h) {
@@ -852,9 +811,9 @@
       m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); scene.add(m); decals.push(tex);
     }
     var decals = [];
-    decal('RANGO 1', 'DIRECCIÓN EJECUTIVA', 0, -4.9, 0.27);
-    decal('RANGO 2', 'DIRECTORES DE ÁREA', 0, -0.4, 0.075);
-    decal('RANGO 3', 'ESPECIALISTAS', 0, 6.4, 0.075);
+    decal('RANGO 1', 'DIRECCIÓN EJECUTIVA', -7.5, -4.9, 0.27);
+    decal('RANGO 2', 'DIRECTOR DE ÁREA', -7.5, -0.4, 0.075);
+    decal('RANGO 3', 'ESPECIALISTAS', -7.5, 8.2, 0.075);
 
     /* vidrios con marco negro fino */
     var glassMat = new T.MeshStandardMaterial({ color: 0xcfe3f2, transparent: true, opacity: 0.2, roughness: 0.1, side: T.DoubleSide, depthWrite: false });
@@ -991,18 +950,17 @@
       var m = new T.Mesh(new T.PlaneGeometry(w, w / 4), new T.MeshBasicMaterial({ map: tex, transparent: true }));
       m.position.set(x, y, z); scene.add(m); signs.push({ tex: tex, paint: paint });
     }
-    sign('ADMINISTRACIÓN', '5 AGENTES · DIRECTOR Y 4 CONTADORES', ADM, -9, 4.6, -9.85, 6.8);
-    sign('DIRECCIÓN EJECUTIVA', '1 AGENTE', EXE, 0, 4.6, -9.85, 6.6);
-    sign('MARKETING', '4 AGENTES · DIRECTOR, IMAGEN, GUION Y REDES', MKT, 9, 4.6, -9.85, 6.8);
+    sign('ADMINISTRACIÓN', '6 AGENTES · DIRECTOR Y 5 CONTADORES', ADM, -7.5, 4.1, -9.85, 5.6);
+    sign('DIRECCIÓN EJECUTIVA', '1 AGENTE', EXE, -7.5, 5.7, -9.85, 5.6);
     function repaintSigns() { signs.forEach(function (s) { var c = s.tex.image; s.paint(c.getContext('2d'), c.width, c.height); s.tex.needsUpdate = true; }); }
     if (document.fonts && document.fonts.load) {
       Promise.all([document.fonts.load('700 98px "Barlow Condensed"'), document.fonts.load('600 46px "Barlow Condensed"')]).then(repaintSigns, function () {});
     }
 
     /* ===== Dirección ejecutiva: oficina de vidrio ===== */
-    glassWall(-5.0, -3.6, -1.4, -3.6, 2.5); glassWall(1.4, -3.6, 5.0, -3.6, 2.5);
-    glassWall(-5.0, -9.7, -5.0, -3.6, 2.5); glassWall(5.0, -9.7, 5.0, -3.6, 2.5);
-    plant(-4.3, -9.0, 1.0); plant(4.3, -9.0, 1.0);
+    glassWall(-12.5, -3.6, -8.9, -3.6, 2.5); glassWall(-6.1, -3.6, -2.5, -3.6, 2.5);
+    glassWall(-12.5, -9.7, -12.5, -3.6, 2.5); glassWall(-2.5, -9.7, -2.5, -3.6, 2.5);
+    plant(-11.8, -9.0, 1.0); plant(-3.2, -9.0, 1.0);
 
     /* ===== Rincón de obra (atrás a la izquierda, junto a Administración) ===== */
     var shelfCols = ['#e9ebed', '#c4c8ce', '#8a9099', '#4a5059', '#f2c230'];
@@ -1010,54 +968,12 @@
     for (var lv = 0; lv < 3; lv++) for (var bi = 0; bi < 17; bi++) {
       scene.add(box(0.3, 0.6, 0.22, M(shelfCols[(bi * 3 + lv) % 5]), -14.3, 0.5 + lv * 0.85, -8.8 + bi * 0.29, { cast: false }));
     }
-    var bpTex = canvasTex(1024, 512, function (g, w, h) {
-      g.fillStyle = '#35517a'; g.fillRect(0, 0, w, h);
-      g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = 1;
-      for (var x = 0; x <= w; x += 32) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
-      for (var y = 0; y <= h; y += 32) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
-      g.strokeStyle = '#ffffff'; g.lineWidth = 14; g.beginPath(); g.moveTo(40, 400); g.bezierCurveTo(300, 380, 420, 120, 980, 140); g.stroke();
-      g.strokeStyle = '#35517a'; g.lineWidth = 3; g.setLineDash([22, 18]); g.beginPath(); g.moveTo(40, 400); g.bezierCurveTo(300, 380, 420, 120, 980, 140); g.stroke(); g.setLineDash([]);
-      g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 3; g.strokeRect(620, 250, 120, 80); g.strokeRect(780, 270, 90, 90); g.strokeRect(150, 90, 140, 70);
-    });
-    var SX = -9.4, SZ = -6.6;
-    scene.add(box(4.2, 0.08, 2.0, M('#f3f4f6', { roughness: 0.45 }), SX, 0.95, SZ));
-    [[-1.9, -0.85], [1.9, -0.85], [-1.9, 0.85], [1.9, 0.85]].forEach(function (p) { scene.add(box(0.07, 0.95, 0.07, steel, SX + p[0], 0.47, SZ + p[1])); });
-    var plan = new T.Mesh(new T.PlaneGeometry(3.8, 1.8), new T.MeshStandardMaterial({ map: bpTex, roughness: 0.9 }));
-    plan.rotation.x = -Math.PI / 2; plan.position.set(SX, 0.995, SZ); plan.receiveShadow = true; scene.add(plan);
-    hardHat(SX - 1.3, 1.0, SZ - 0.3, '#f2c230'); hardHat(SX + 1.1, 1.0, SZ + 0.3, '#f4f4f2'); hardHat(SX - 0.2, 1.0, SZ + 0.55, '#ff8f1f');
-    var roll = cyl(0.09, 0.09, 1.2, M('#fafafa'), SX + 1.5, 1.08, SZ - 0.5, 12); roll.rotation.z = Math.PI / 2; scene.add(roll);
-    cone(-6.6, -4.4); cone(-12.4, -4.4);
-    for (var cb = 0; cb < 6; cb++) scene.add(box(1.0, 0.28, 0.62, M(cb % 2 ? '#b9bdc4' : '#aeb3bb'), -12.6, 0.14 + Math.floor(cb / 2) * 0.28, -9.1 + (cb % 2) * 0.7));
-    plant(-5.9, -9.0, 1.1);
 
-    /* ===== Rincón de estudio (atrás a la derecha, junto a Marketing) ===== */
-    scene.add(box(3.6, 2.6, 0.05, M('#fbfbfb', { roughness: 0.95 }), 9.6, 1.3, -9.3));
-    var bdrop = cyl(0.09, 0.09, 3.8, M('#2a2e36'), 9.6, 2.65, -9.25, 10); bdrop.rotation.z = Math.PI / 2; scene.add(bdrop);
-    [8.0, 11.2].forEach(function (x) {
-      scene.add(cyl(0.03, 0.03, 1.9, M('#2a2e36'), x, 0.95, -7.2, 8));
-      scene.add(box(0.8, 0.8, 0.12, new T.MeshBasicMaterial({ color: 0xfffaf0 }), x, 1.95, -7.1, { cast: false }));
-    });
-    var tri = new T.Group(); tri.position.set(9.6, 0, -5.6);
-    for (var tl = 0; tl < 3; tl++) { tri.add(limb(new T.Vector3(0, 1.2, 0), new T.Vector3(Math.cos(tl * 2.09) * 0.45, 0, Math.sin(tl * 2.09) * 0.45), 0.025, M('#2a2e36'))); }
-    tri.add(box(0.4, 0.26, 0.3, M('#15171d'), 0, 1.32, 0));
-    var lens3 = cyl(0.07, 0.07, 0.18, M('#0b0c10'), 0, 1.32, 0.24, 12); lens3.rotation.x = Math.PI / 2; tri.add(lens3);
-    scene.add(tri);
-    var pinTex = canvasTex(512, 640, function (g, w, h) {
-      g.fillStyle = '#d9dbde'; g.fillRect(0, 0, w, h);
-      var cols = ['#9aa0a8', '#c4c8ce', '#6f757e', '#e6e8eb', '#8a9099', '#b4b9c0', '#4a5059'];
-      for (var i = 0; i < 9; i++) {
-        var px = 40 + (i % 3) * 150 + rnd() * 20, py = 40 + Math.floor(i / 3) * 190 + rnd() * 16;
-        g.save(); g.translate(px + 60, py + 70); g.rotate((rnd() - 0.5) * 0.2); g.fillStyle = '#fff'; g.fillRect(-62, -72, 124, 144);
-        g.fillStyle = cols[i % 7]; g.fillRect(-54, -64, 108, 100); g.restore();
-      }
-    });
-    var pin = new T.Mesh(new T.PlaneGeometry(1.5, 1.9), new T.MeshBasicMaterial({ map: pinTex })); pin.position.set(13.2, 1.9, -9.85); scene.add(pin);
-    plant(13.6, -8.6, 1.2); plant(5.9, -9.0, 1.0);
 
-    /* ===== Administración y Marketing: vidrios entre escritorios ===== */
-    [-9.5, -5.5, 5.5, 9.5].forEach(function (x) { glassWall(x, 4.0, x, 6.9, 1.7); });
-    plant(-14.0, 9.0, 1.0); plant(-1.0, 9.0, 0.9); plant(1.0, 9.0, 0.9); plant(14.0, 9.0, 1.0);
-    plant(-3.3, 0.9, 1.0); plant(3.3, 0.9, 1.0);
+    /* ===== Administración: vidrios entre escritorios ===== */
+    [-9.5, -5.5].forEach(function (x) { glassWall(x, 4.0, x, 6.9, 1.7); });
+    plant(-14.0, 9.0, 1.0); plant(-1.0, 9.0, 0.9);
+    plant(-3.3, 0.9, 1.0);
 
     /* ===== Identidad CODES: rojo de marca, logo y láminas de maquinaria ===== */
     var RED = '#e31b1f', REDD = '#b3171b';
@@ -1067,9 +983,9 @@
       g.fillStyle = '#f4f4f2'; g.fillRect(0, 0, w, h); g.fillStyle = RED;
       for (var i = -2; i < 12; i++) { g.beginPath(); g.moveTo(i * 32, h); g.lineTo(i * 32 + 16, h); g.lineTo(i * 32 + 32, 0); g.lineTo(i * 32 + 16, 0); g.closePath(); g.fill(); }
     });
-    hzTex.wrapS = T.RepeatWrapping; hzTex.repeat.set(58, 1);
-    var hz = new T.Mesh(new T.PlaneGeometry(29.6, 0.2), new T.MeshBasicMaterial({ map: hzTex }));
-    hz.position.set(0, 0.3, -9.935); scene.add(hz);
+    hzTex.wrapS = T.RepeatWrapping; hzTex.repeat.set(29, 1);
+    var hz = new T.Mesh(new T.PlaneGeometry(14.8, 0.2), new T.MeshBasicMaterial({ map: hzTex }));
+    hz.position.set(-7.5, 0.3, -9.935); scene.add(hz);
     /* logo grande detrás del Director Ejecutivo */
     var logoImg = new Image(), logoOk = false;
     function logoPaint(g, cw, ch) {
@@ -1082,7 +998,7 @@
     var logoTex = canvasTex(1024, 320, logoPaint);
     if (logoOk) logoImg.onload();
     var logoM = new T.Mesh(new T.PlaneGeometry(4.6, 1.44), new T.MeshBasicMaterial({ map: logoTex, transparent: true }));
-    logoM.position.set(0, 2.15, -9.93); scene.add(logoM); signs.push({ tex: logoTex, paint: logoPaint });
+    logoM.position.set(-7.5, 2.15, -9.93); scene.add(logoM); signs.push({ tex: logoTex, paint: logoPaint });
     /* láminas de maquinaria */
     function wheel(g, x, y, r) { g.fillStyle = '#23272d'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#b4b9c0'; g.beginPath(); g.arc(x, y, r * 0.45, 0, 7); g.fill(); }
     function pl(g, pts, w, col) { g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach(function (p, i) { i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }); g.stroke(); }
@@ -1137,8 +1053,8 @@
       var pm = new T.Mesh(new T.PlaneGeometry(w, hh), new T.MeshBasicMaterial({ map: tex })); pm.position.z = 0.04; gp.add(pm);
       gp.position.set(x, y, z); gp.rotation.y = ry; scene.add(gp); signs.push({ tex: tex, paint: paint });
     }
-    lamina('excavadora', 'EXCAVADORA', -12.3, 2.15, -9.9, 0, 1.9);
-    lamina('motoniveladora', 'MOTONIVELADORA', -7.2, 2.15, -9.9, 0, 1.9);
+    lamina('excavadora', 'EXCAVADORA', -0.06, 2.3, -6.0, -Math.PI / 2, 1.9);
+    lamina('motoniveladora', 'MOTONIVELADORA', -0.06, 2.3, -2.0, -Math.PI / 2, 1.9);
     lamina('cargadora', 'CARGADORA FRONTAL', -14.95, 2.3, -1.0, Math.PI / 2, 1.9);
     lamina('rodillo', 'RODILLO COMPACTADOR', -14.95, 2.3, 3.0, Math.PI / 2, 1.9);
     lamina('hormigonero', 'CAMIÓN HORMIGONERO', -14.95, 2.3, 7.0, Math.PI / 2, 1.9);
@@ -1160,9 +1076,9 @@
 
     /* cámara */
     var W = 800, H = 500, tween = null, homeSet = false;
-    var HOME_DIR = new T.Vector3(0.07, 0.55, 0.83).normalize(), HOME_TGT = new T.Vector3(0, 0, -0.5);
+    var HOME_DIR = new T.Vector3(0.07, 0.55, 0.83).normalize(), HOME_TGT = new T.Vector3(-7.5, 0, -0.5);
     function homePose() {
-      var a = W / H, d = Math.min(46, 27 * Math.pow(Math.max(1, 1.6 / a), 0.85));
+      var a = W / H, d = Math.min(40, 23 * Math.pow(Math.max(1, 1.2 / a), 0.85));
       return { pos: HOME_TGT.clone().addScaledVector(HOME_DIR, d), tgt: HOME_TGT.clone() };
     }
     function flyTo(pos, tgt, ms) {
@@ -1261,7 +1177,7 @@
         if (LIVEIDS[a.id] && a.id !== 'ejecutivo') {
           var u = urg(a.id), m = (A.find[a.id] || []).filter(function (x) { return x[0] === 'media'; }).length;
           var n = Math.min(a.id === 'admin' ? 2 : 3, u) + (m ? 1 : 0);
-          hot = u > 0 || (a.area === 'Marketing' && m > 0);
+          hot = u > 0;
           for (var i = 0; i < n; i++) {
             var isUrg = i < u;
             flows.push({ p: pathOf(a), env: envMesh(isUrg ? 0xd8352a : 0xd98a00), speed: 0.06 + 0.012 * (a.rank === 3 ? 1 : 0), ph: (i / Math.max(1, n)) + (a.rank === 3 ? 0.07 : 0.33) });
