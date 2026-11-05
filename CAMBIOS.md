@@ -356,3 +356,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Facturas recopiladas:** al cargar una nota de crédito se vincula sola si coincide en total con una única factura del mismo cliente o proveedor; si no, se carga igual y avisa cuántas quedaron sin vincular.
 - **Facturas:** cada nota muestra «Corrige 0001-00000090» o «Sin factura vinculada». El botón **Vincular notas** liga las notas ya cargadas cuando el total coincide con una sola factura. También se cambia con Modificar.
 - **Oficina:** Dir. Adm. avisa de las notas de crédito sin factura vinculada, solo desde el 1/10/2026.
+
+## Codes 1.69 (5-nov-2026)
+- **Notas de crédito y débito, criterio de ARCA (RG 4540):** toda nota se asocia a **una o más facturas** del mismo cliente o proveedor y de la misma letra, **o al período que ajusta**. Las dos clases se tratan igual. Si las facturas son anteriores al sistema se tilda «anteriores al sistema». Reemplaza el campo de una sola factura de la 1.68. En la base: `facturas_afectadas`, `periodo_ajustado` y `afecta_previa` (sql/24).
+- **Saldos:** una nota de crédito con varias facturas se aplica a cada una hasta su total, por orden de fecha. El saldo a cobrar y a pagar de cada factura baja con sus notas.
+- **Facturas:** cada nota muestra «Corrige 0001-… +2», «Ajusta marzo 2026», «Factura anterior al sistema» o «Sin factura asociada». **Vincular notas** asocia las notas de crédito cuyo total coincide con una sola factura. Con Modificar se elige a mano.
+- **Facturas recopiladas:** las notas que no se pueden vincular solas se cargan igual y el aviso cuenta cuántas quedaron sin asociar.
+- **Oficina:** Dir. Adm. avisa de las notas de crédito y de débito sin asociar, solo desde el 1/10/2026.

@@ -40,7 +40,7 @@
     var ent = ars.filter(function (t) { return t.tipo === 'entrada'; });
     var facs = (S.facturas || []).filter(desde);
     var NC = function (f) { return String(f.tipo).indexOf('NC') === 0; };
-    var notasSin = facs.filter(function (f) { return NC(f) && !f.afecta; });
+    var notasSin = facs.filter(function (f) { return /^N[CD]_/.test(f.tipo) && !((f.afecta && f.afecta.length) || f.perAj || f.previa); });
     var ventas = facs.filter(function (f) { return f.lado === 'debito' && !NC(f); });
     var compras = facs.filter(function (f) { return f.lado === 'credito' && !NC(f); });
     var EXCL = /mano de obra|moneda extranjera|distribuci|impuesto|sueldo|repuestos|arca/i;
@@ -247,7 +247,7 @@
     chk('admin', finVacia.length > 0, 'media', function () { return finVacia.length + ' obra' + (finVacia.length === 1 ? '' : 's') + ' figura' + (finVacia.length === 1 ? '' : 'n') + ' finalizada' + (finVacia.length === 1 ? '' : 's') + ' con contrato (' + finVacia.map(function (o) { return esc(o.codigo) + ' ' + mm(o.contrato); }).join(', ') + ') y sin un solo movimiento.'; });
     var rent = cajaObra.filter(function (x) { return x.cob > 0; }).sort(function (a, b) { return b.cob - a.cob; }).slice(0, 4);
     if (rent.length) add('admin', 'info', 'Caja por obra (cobrado menos gastado, antes de IVA e impuestos; no es la ganancia real): ' + rent.map(function (x) { return esc(x.o.codigo) + ' ' + mm(x.cob - x.gas) + (x.cob ? ' (' + ((x.cob - x.gas) / x.cob * 100).toFixed(0) + '%)' : ''); }).join(' · ') + '. La ganancia real necesita el avance físico de cada obra.');
-    chk('admin', notasSin.length > 0, 'media', function () { return notasSin.length + ' nota' + (notasSin.length === 1 ? '' : 's') + ' de crédito desde el 1/10 sin factura vinculada (' + notasSin.slice(0, 3).map(function (f) { return esc(f.tipo) + ' ' + f.nro; }).join(', ') + (notasSin.length > 3 ? '…' : '') + '). Cada nota tiene que ir con su factura: se vincula desde Facturas → Modificar o con «Vincular notas».'; });
+    chk('admin', notasSin.length > 0, 'media', function () { return notasSin.length + ' nota' + (notasSin.length === 1 ? '' : 's') + ' de crédito o débito desde el 1/10 sin factura asociada (' + notasSin.slice(0, 3).map(function (f) { return esc(f.tipo) + ' ' + f.nro; }).join(', ') + (notasSin.length > 3 ? '…' : '') + '). ARCA exige asociar cada nota a su factura (o al período que ajusta): se hace desde Facturas → Modificar o con «Vincular notas».'; });
     add('admin', 'info', 'En el sistema hay ' + obras.length + ' obras, ' + (S.terceros || []).length + ' clientes y proveedores, ' + act.length + ' movimientos, ' + (S.cheques || []).length + ' cheques y ' + facs.length + ' facturas.');
 
     /* ===== EJECUTIVO ===== */
