@@ -367,3 +367,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.70 — Control de facturas
 - **Notas vinculadas:** 29 notas de crédito/débito se asociaron solas a la única factura con su mismo total (mismo cliente, lado y letra, fecha anterior). Quedan 41 sin asociar (varias facturas con el mismo total, o sin factura que coincida): se eligen con Modificar.
 - **Vera Suasnavar 2001-4623:** el IVA estaba cargado como $225.000 con otros tributos −$185.950. Corregido a IVA $39.049,59 y otros $0 (neto $185.950,41, total $225.000).
+
+## Codes 1.71 — Facturas borradas vuelven a recopiladas
+- **Error:** al borrar una factura, su fila en Facturas recopiladas seguía en «cargada» sin factura. El aviso decía «figura cargada desde el mail pero no está en Facturas» (B 120, NC_B 17 y otras).
+- **Arreglo:** al borrar una factura, su recopilada vuelve a «pendiente» y se puede cargar de nuevo (sql/25). Se corrigieron las 10 que ya estaban así (DGA B 120 ×3, NC_B 17, B 117 Vialidad, NC_C 1899 y otras de compras).
