@@ -363,3 +363,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Facturas:** cada nota muestra «Corrige 0001-… +2», «Ajusta marzo 2026», «Factura anterior al sistema» o «Sin factura asociada». **Vincular notas** asocia las notas de crédito cuyo total coincide con una sola factura. Con Modificar se elige a mano.
 - **Facturas recopiladas:** las notas que no se pueden vincular solas se cargan igual y el aviso cuenta cuántas quedaron sin asociar.
 - **Oficina:** Dir. Adm. avisa de las notas de crédito y de débito sin asociar, solo desde el 1/10/2026.
+
+## Codes 1.70 — Control de facturas
+- **Notas vinculadas:** 29 notas de crédito/débito se asociaron solas a la única factura con su mismo total (mismo cliente, lado y letra, fecha anterior). Quedan 41 sin asociar (varias facturas con el mismo total, o sin factura que coincida): se eligen con Modificar.
+- **Vera Suasnavar 2001-4623:** el IVA estaba cargado como $225.000 con otros tributos −$185.950. Corregido a IVA $39.049,59 y otros $0 (neto $185.950,41, total $225.000).
