@@ -332,31 +332,31 @@
       needs: [LIVE, 'Qué te alarma: ' + PEND + ' % de desvío de presupuesto, días de pago vencido y de cobro atrasado.'] },
 
     { id: 'compras', name: 'Compras', short: 'Compras', role: 'Proveedores e insumos', area: 'Administración · contador', level: 'Rango 3', boss: 'admin', tc: ADM, state: 'listo',
-      desk: { x: -11.5, z: 6.2, w: 2.4 }, look: { shirt: 0xd9dce0, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff },
+      desk: { x: -12.5, z: 5.0, w: 2.2 }, look: { shirt: 0xd9dce0, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff },
       does: ['Analiza los proveedores y los insumos comprados, y los ordena por rubro.', 'Compara los precios pagados con los del mercado actual: ¿estamos comprando bien o no?'],
       skills: ['Ranking de proveedores por rubro: precio, cumplimiento de entrega, plazo de pago y calidad.', 'Historial de precio de cada insumo, con alerta cuando sube más que un índice de costos de la construcción.', 'Planilla de tres cotizaciones para las compras grandes, con la diferencia contra la más barata.', 'Detecta compras duplicadas, partidas en pedazos para esquivar controles o sin obra asignada.', 'Cantidad comprada contra cantidad presupuestada por obra, para ver desperdicios y faltantes.', 'Sugiere juntar pedidos de varias obras para negociar mejor precio y plazo de pago.'],
       needs: [LIVE, 'De dónde sacar los precios de mercado (listas de proveedores, cámaras, índices): ' + PEND + '.', 'Agregar kilómetros u horas de motor a cada carga de combustible, y el camión de cada carga de los alquilados.'] },
 
     { id: 'pagos', name: 'Pagos', short: 'Pagos', role: 'Egresos y finanzas', area: 'Administración · contador', level: 'Rango 3', boss: 'admin', tc: ADM, state: 'listo',
-      desk: { x: -7.5, z: 6.2, w: 2.4 }, look: { shirt: 0xa9afb8, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff, glasses: true, stern: true },
+      desk: { x: -10, z: 5.0, w: 2.2 }, look: { shirt: 0xa9afb8, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff, glasses: true, stern: true },
       does: ['Controla todos los egresos de la empresa.', 'Te dice si estamos pagando rápido o muy lento, y si la plata se nos va de las manos.', 'Te aconseja cómo manejarla. Es un contador duro, a quien no le gusta pagar y que sabe de finanzas.'],
       skills: ['Plazo promedio de pago por proveedor, comparado con el plazo acordado.', 'Proyección de caja semanal y mensual: egresos comprometidos contra ingresos esperados, con lo que le pase Cobros.', 'No da el «ok» a un pago sin comprobante: orden de compra, remito y factura tienen que coincidir.', 'Negocia plazos y descuentos por pronto pago, y los compara con lo que costaría financiarse.', 'Ordena los vencimientos: sueldos, cargas sociales e impuestos primero, después los proveedores críticos.', 'Costo financiero: intereses, descubiertos y cheques diferidos o rechazados.', 'Ratios de salud financiera: capital de trabajo, endeudamiento y punto de equilibrio por obra.', 'Opciones para el dinero que sobra (plazo fijo, fondos comunes de inversión y otras), con rendimiento, riesgo y liquidez frente a la inflación y a lo que piden las obras. Presenta opciones: la decisión es tuya, no invierte nada sin tu «va» y conviene validarlo con tu contador matriculado.'],
       needs: [LIVE, 'Cuánta plata quieres tener siempre disponible como colchón de caja: ' + PEND + '.'] },
 
     { id: 'cobros', name: 'Cobros', short: 'Cobros', role: 'Presupuestos y contratos', area: 'Administración · contador', level: 'Rango 3', boss: 'admin', tc: ADM, state: 'listo',
-      desk: { x: -3.5, z: 6.2, w: 2.4 }, look: { shirt: 0xeceef0, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff },
+      desk: { x: -7.5, z: 5.0, w: 2.2 }, look: { shirt: 0xeceef0, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff },
       does: ['Controla que todos los presupuestos y contratos se estén cobrando a tiempo y en forma.'],
       skills: ['Seguimiento de cada certificado de obra: emisión, aprobación, factura y cobro.', 'Antigüedad de la deuda por cliente (0 a 30, 31 a 60, 61 a 90 y más de 90 días): municipios, Vialidad, Arquitectura y privados.', 'Revisa que el monto cobrado coincida con el contrato más adicionales y redeterminaciones, y que las retenciones estén bien aplicadas.', 'Fondos de reparo y garantías: fechas de devolución y vencimiento de pólizas.', 'Anticipos financieros: que se descuenten en proporción en cada certificado.', 'Calcula los intereses por mora que se pueden reclamar según el contrato.', 'Redacta borradores de reclamos y recordatorios formales. No los envía sin tu «va».', 'Resultado de cada obra (cobrado menos gastado), junto con Compras y Pagos.'],
       needs: [LIVE, 'Plazos de cobro de cada contrato, si no están cargados en el sistema: ' + PEND + '.'] },
 
     { id: 'maquinaria', name: 'Maquinaria', short: 'Maquinaria', role: 'Combustible y horas de máquina', area: 'Administración · contador', level: 'Rango 3', boss: 'admin', tc: ADM, state: 'listo',
-      desk: { x: -3.5, z: 1.9, w: 2.4 }, look: { shirt: 0xb9bec6, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff, glasses: true },
+      desk: { x: -5, z: 5.0, w: 2.2 }, look: { shirt: 0xb9bec6, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff, glasses: true },
       does: ['Es el experto en máquinas: junta las cargas de combustible de cada semana y calcula cuántas horas debió trabajar cada una.', 'Lee el manual o la ficha de cada máquina (tanque, motor, consumo) y marca las cargas que no cierran, para revisar si el consumo es real.'],
       skills: ['Horas esperadas por máquina y por semana, a partir de litros cargados y consumo por hora del fabricante.', 'Alerta si una carga supera la capacidad del tanque o si los litros no entran en las horas posibles entre dos cargas.', 'Compara máquinas parecidas entre sí y contra la obra donde trabajaron.', 'Para camiones y camionetas: litros cada 100 km cuando haya kilometraje.'],
       needs: [LIVE, 'Marca, modelo y manual (o foto de la chapa) de cada máquina: ' + PEND + '.', 'Horas de motor (horómetro) y kilómetros en cada carga de combustible: ' + PEND + '.'] },
 
     { id: 'impuestos', name: 'Impuestos', short: 'Impuestos', role: 'Ganancias estimadas del ejercicio', area: 'Administración · contador', level: 'Rango 3', boss: 'admin', tc: ADM, state: 'listo',
-      desk: { x: -11.5, z: 1.9, w: 2.4 }, look: { shirt: 0xdfe3e8, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff, glasses: true },
+      desk: { x: -2.5, z: 5.0, w: 2.2 }, look: { shirt: 0xdfe3e8, hat: 0xf2c230, lan: 0x6c7cff, acc: 0x6c7cff, glasses: true },
       does: ['Es el contador experto en impuestos: suma las ventas del ejercicio, resta los gastos deducibles con comprobante y estima la ganancia al cierre.', 'Todos los viernes a las 13 h arma el informe; el Director Adm. lo revisa y, si aprueba, el Director Ejecutivo avisa a Facundo y a los contadores.'],
       skills: ['Ventas brutas (con IVA) y netas del ejercicio, con notas de crédito restadas.', 'Gastos deducibles: compras y servicios con factura. Lo pagado sin comprobante se informa aparte y no se descuenta.', 'Resultado a hoy y proyectado al 31/12 según el ritmo de lo facturado.', 'Impuesto a las Ganancias estimado con la escala de sociedades 2026, y cuánto quedaría después de impuesto.', 'IVA débito y crédito del ejercicio e impuesto a los créditos y débitos pagado (puede tomarse como pago a cuenta).', 'Chequeos antes de aprobar: facturas que no suman, fechas imposibles, datos de pocos meses, gastos sin factura.'],
       needs: [LIVE, 'Amortizaciones de maquinaria, sueldos y cargas sociales (F.931) y anticipos de Ganancias ya pagados: ' + PEND + '.', 'Es una estimación para ordenar la decisión: la cifra final la valida tu contador matriculado.'] },
@@ -797,9 +797,9 @@
     dais(-7.5, -6.7, 7.0, 5.0, 0.24);
     dais(-7.5, -0.6, 5.4, 3.6, 0.16);
     line(-7.5, -4.0, -7.5, -2.5);
-    line(-7.5, 1.4, -7.5, 3.0);
-    line(-11.5, 3.0, -3.5, 3.0);
-    [-11.5, -7.5, -3.5].forEach(function (x) { line(x, 3.0, x, 4.2); });
+    line(-7.5, 1.4, -7.5, 2.0);
+    line(-12.5, 2.0, -2.5, 2.0);
+    [-12.5, -10, -7.5, -5, -2.5].forEach(function (x) { line(x, 2.0, x, 2.7); });
 
     function decal(text, sub, x, z, y) {
       var tex = canvasTex(1024, 256, function (g, w, h) {
@@ -813,7 +813,7 @@
     var decals = [];
     decal('RANGO 1', 'DIRECCIÓN EJECUTIVA', -7.5, -4.9, 0.27);
     decal('RANGO 2', 'DIRECTOR DE ÁREA', -7.5, -0.4, 0.075);
-    decal('RANGO 3', 'ESPECIALISTAS', -7.5, 8.2, 0.075);
+    decal('RANGO 3', 'ESPECIALISTAS', -7.5, 7.0, 0.075);
 
     /* vidrios con marco negro fino */
     var glassMat = new T.MeshStandardMaterial({ color: 0xcfe3f2, transparent: true, opacity: 0.2, roughness: 0.1, side: T.DoubleSide, depthWrite: false });
@@ -941,7 +941,7 @@
       var top = boss ? M('#2c3036', { roughness: 0.35 }) : M('#f3f4f6', { roughness: 0.45 }), panel = boss ? M('#1f2328') : M('#d3d6da');
       g.add(box(w, 0.08, 1.2, top, 0, 1.0, 0));
       g.add(box(0.06, 1.0, 1.1, steel, -w / 2 + 0.06, 0.5, 0)); g.add(box(0.06, 1.0, 1.1, steel, w / 2 - 0.06, 0.5, 0));
-      g.add(box(w - 0.2, 0.5, 0.04, panel, 0, 0.74, 0.55));
+      g.add(box(w - 0.2, 0.9, 0.04, panel, 0, 0.54, 0.55));
       if (boss) g.add(box(0.7, 0.025, 0.16, M(BRASS, { metalness: 0.7, roughness: 0.3 }), 0, 1.05, 0.42));
       var mon = monitor(); mon.position.set(0, 1.58, -0.02); g.add(mon);
       g.add(box(0.62, 0.025, 0.2, M('#e2e5e9'), 0, 1.06, -0.28)); g.add(box(0.1, 0.025, 0.16, M('#e2e5e9'), 0.5, 1.06, -0.28));
@@ -1027,7 +1027,7 @@
     }
     sign('ADMINISTRACIÓN', '6 AGENTES · DIRECTOR Y 5 CONTADORES', ADM, -7.5, 4.1, -9.85, 5.6);
     sign('DIRECCIÓN EJECUTIVA', '1 AGENTE', EXE, -7.5, 5.7, -9.85, 5.6);
-    function repaintSigns() { signs.forEach(function (s) { var c = s.tex.image; s.paint(c.getContext('2d'), c.width, c.height); s.tex.needsUpdate = true; }); }
+    function repaintSigns() { signs.forEach(function (s) { var c = s.tex.image; s.paint(c.getContext('2d'), c.width, c.height); s.tex.needsUpdate = true; }); if (typeof repaintPlaques === 'function') repaintPlaques(); }
     if (document.fonts && document.fonts.load) {
       Promise.all([document.fonts.load('700 98px "Barlow Condensed"'), document.fonts.load('600 46px "Barlow Condensed"')]).then(repaintSigns, function () {});
     }
@@ -1046,7 +1046,7 @@
 
 
     /* ===== Administración: vidrios entre escritorios ===== */
-    [-9.5, -5.5].forEach(function (x) { glassWall(x, 4.0, x, 6.9, 1.7); });
+    [-11.25, -8.75, -6.25, -3.75].forEach(function (x) { glassWall(x, 3.4, x, 6.2, 1.7); });
     plant(-14.0, 9.0, 1.0); plant(-1.0, 9.0, 0.9);
     zonasNuevas();
     plant(-3.3, 0.9, 1.0);
@@ -1139,12 +1139,37 @@
     var pickRoots = [], idleAv = [];
     var selRing = new T.Mesh(new T.RingGeometry(1.7, 2.0, 56), new T.MeshBasicMaterial({ color: 0x111418, transparent: true, opacity: 0.9, side: T.DoubleSide }));
     selRing.rotation.x = -Math.PI / 2; selRing.visible = false; scene.add(selRing);
+    /* placa en el frente de cada escritorio: nombre, estado y barra (reemplaza a las tarjetas flotantes) */
+    var plaques = [];
+    function plaque(a) {
+      var d = a.desk, pw = d.w - 0.35, ph = Math.min(0.84, pw * 0.4), cw = 1000, ch = Math.round(1000 * ph / pw), u = ch / 400;
+      function paint(g, w, h) {
+        var st = STATES[a.state] || STATES.espera, c = st.c, isSel = sel === a.id;
+        g.clearRect(0, 0, w, h);
+        rr(g, 6, 6, w - 12, h - 12, 26 * u); g.fillStyle = '#16191e'; g.fill();
+        g.lineWidth = (isSel ? 14 : 7) * u; g.strokeStyle = isSel ? '#ffffff' : c; g.stroke();
+        g.fillStyle = a.tc; g.beginPath(); g.arc(52 * u, 86 * u, 24 * u, 0, 7); g.fill();
+        g.textBaseline = 'alphabetic'; g.textAlign = 'left'; g.fillStyle = '#ffffff';
+        var fs = 128 * u; g.font = '800 ' + fs + 'px ' + FONT; while (g.measureText(a.name).width > w - 120 * u && fs > 40) { fs -= 4; g.font = '800 ' + fs + 'px ' + FONT; }
+        g.fillText(a.name, 96 * u, 130 * u);
+        g.fillStyle = c; g.font = '800 ' + 84 * u + 'px ' + FONT; g.fillText(a.badge || st.label, 40 * u, 244 * u);
+        g.fillStyle = '#c4cad4'; g.font = '700 ' + 70 * u + 'px ' + FONT; g.textAlign = 'right'; g.fillText((a.pct || 0) + '%', w - 40 * u, 244 * u);
+        g.fillStyle = 'rgba(255,255,255,.16)'; rr(g, 40 * u, 284 * u, w - 80 * u, 62 * u, 31 * u); g.fill();
+        var bw = Math.max(0, Math.min(1, (a.pct || 0) / 100)) * (w - 80 * u);
+        if (bw > 2) { g.fillStyle = c; rr(g, 40 * u, 284 * u, Math.max(bw, 40 * u), 62 * u, 31 * u); g.fill(); }
+      }
+      var tex = canvasTex(cw, ch, paint);
+      var m = new T.Mesh(new T.PlaneGeometry(pw, ph), new T.MeshBasicMaterial({ map: tex }));
+      m.position.set(d.x, a.base + 0.54, d.z + 0.575); m.userData.agentId = a.id; scene.add(m); pickRoots.push(m);
+      plaques.push({ tex: tex, paint: paint });
+    }
+    function repaintPlaques() { plaques.forEach(function (p) { var c = p.tex.image; p.paint(c.getContext('2d'), c.width, c.height); p.tex.needsUpdate = true; }); }
     AGENTS.forEach(function (a) {
-      desk(a);
+      desk(a); plaque(a);
       var av = avatar(a); av.position.set(a.desk.x, a.base, a.desk.z - 1.15); av.userData.agentId = a.id;
       scene.add(av); pickRoots.push(av); idleAv.push(av);
       var cx = a.desk.x, cz = a.desk.z - 0.55;
-      ring(cx, a.base, cz, a.rank < 3 ? 2.2 : 1.85, hex(a.look.acc), 0.6);
+      ring(cx, a.base, cz, a.rank < 3 ? 2.2 : 1.2, hex(a.look.acc), 0.6);
       a.anchor = new T.Vector3(a.desk.x, 3.2 + a.base, a.desk.z - 1.15);
       a.ringAt = new T.Vector3(cx, a.base + 0.03, cz);
       a.focusAt = new T.Vector3(a.desk.x, 1.5 + a.base, a.desk.z - 0.9);
@@ -1169,7 +1194,8 @@
     };
     hooks.mark = function (id) {
       var a = byId(id);
-      if (a) { selRing.position.copy(a.ringAt); selRing.visible = true; } else selRing.visible = false;
+      if (a) { selRing.position.copy(a.ringAt); selRing.scale.setScalar(a.rank < 3 ? 1 : 0.62); selRing.visible = true; } else selRing.visible = false;
+      repaintPlaques();
     };
 
     function resize() {
@@ -1204,6 +1230,7 @@
       AGENTS.forEach(function (a) {
         v.copy(a.anchor).project(camera);
         var c = a.card;
+        c.hidden = true; return;
         if (v.z > 1 || v.z < -1) { c.hidden = true; return; }
         c.hidden = false;
         var dist = camera.position.distanceTo(a.anchor), ppu = H / (dist * fovK);
@@ -1246,6 +1273,7 @@
       return m;
     }
     hooks.sync = function () {
+      repaintPlaques();
       flows.forEach(function (f) { scene.remove(f.env); });
       flows = [];
       AGENTS.forEach(function (a) {

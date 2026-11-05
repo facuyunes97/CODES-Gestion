@@ -337,3 +337,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
   - **Sala de reuniones de vidrio** a la derecha, con mesa ovalada, seis sillas y TV.
   - **Maqueta de obra** con edificios, calle y una grúa.
   - Luces cálidas por zona y tiras de luz en rojo CODES.
+
+## Codes 1.65 (5-nov-2026)
+- **Oficina 3D, nombres en los escritorios:** las tarjetas flotantes ya no tapan la vista. Cada agente tiene una placa en el frente de su escritorio con su nombre, su estado (Urgente, Entregó, etc.), el porcentaje y la barra. La placa tiene el color del estado y se marca con borde blanco al seleccionar. Se puede hacer clic en ella igual que en el agente.
+- **Los cinco contadores quedan en una sola fila,** uno al lado del otro y sin escritorios detrás de otros: Compras, Pagos, Cobros, Maquinaria e Impuestos. Se ajustaron aros, vidrios y líneas del organigrama a la nueva disposición.
