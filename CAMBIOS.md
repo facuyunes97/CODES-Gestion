@@ -326,3 +326,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Oficina sin Marketing:** se borró toda el área (Michael, Imagen, Guion y Redes): agentes, tarjetas, organigrama, hallazgos, pendientes y el cartel. Quedan 7 agentes (Director Ejecutivo, Director Adm. y 5 contadores).
 - **Oficina 3D reacomodada:** el salón es más angosto y el Director Ejecutivo queda centrado sobre Administración. Se sacó el rincón de estudio y la mesa de planos; las láminas de excavadora y motoniveladora pasaron a la pared derecha. La cámara arranca centrada en la nueva oficina.
 - **Director Ejecutivo (chat):** ya no menciona Marketing (función `director` actualizada).
+
+## Codes 1.63 (5-nov-2026)
+- **Facturas / IVA, notas de crédito:** en la lista de Facturas las notas de crédito ahora se ven en negativo (neto, IVA y total), igual que como restan en la Posición de IVA. El cálculo toma siempre el valor absoluto del IVA y aplica el signo según el tipo (NC resta, ND suma), así que un comprobante cargado con importes negativos ya no se da vuelta.
