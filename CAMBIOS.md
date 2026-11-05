@@ -375,3 +375,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.72 — Oficina: urgencias que se actualizan solas
 - **«Faltan comprobantes» (Compras):** ya no cuenta lo que se aplicó a una factura. Antes comparaba los pagos de octubre en adelante con las facturas de octubre en adelante, y un pago aplicado a una factura anterior seguía figurando como faltante (Lo Bruno SA: $297,5 M aplicados a facturas de febrero y marzo). Ahora compara el pago sin aplicar contra la factura sin cubrir.
 - **Tiempo real:** el cambio de aplicaciones (`transaccion_facturas`) y de facturas recopiladas ahora avisa a todas las pantallas abiertas (sql/26: publicación realtime). La Oficina se vuelve a analizar sola al aplicar un comprobante, cargar o borrar una factura, sin recargar.
+
+## Codes 1.73 — «Faltan comprobantes» solo desde noviembre 2026
+- **Compras (Oficina):** el aviso «pagos por X y facturas cargadas por Y. Faltan comprobantes» ahora mira solo pagos desde el 1/11/2026. Los pagos anteriores no se controlan contra facturas, porque no se va a revisar si lo anterior a noviembre está pagado o facturado.
+- El resto de los controles siguen mirando desde el 1/10/2026.

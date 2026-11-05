@@ -20,6 +20,8 @@
   function agrupar(a, kf) { var m = {}; a.forEach(function (x) { var k = kf(x); (m[k] = m[k] || []).push(x); }); return m; }
 
   var INICIO = '2026-10-01';
+  /* «Faltan comprobantes» solo mira pagos desde noviembre 2026: lo anterior no se controla contra facturas. */
+  var FALTAN_DESDE = '2026-11-01';
   function analizar(D) {
     var S = D.S, hoy = D.hoy, out = { find: {}, tot: {}, bad: {}, feed: [], keys: {} };
     IDS.forEach(function (id) { out.find[id] = []; out.tot[id] = 0; out.bad[id] = 0; });
@@ -112,7 +114,7 @@
        pago sin aplicar = total − aplicado; factura sin cubrir = total − lo aplicado por pagos. */
     var aplicT = {}, aplicF = {};
     (S.trans || []).forEach(function (t) { if (t.estado !== 'activa') return; (t.facts || []).forEach(function (x) { aplicT[t.id] = (aplicT[t.id] || 0) + (+x.importe || 0); aplicF[x.facturaId] = (aplicF[x.facturaId] || 0) + (+x.importe || 0); }); });
-    var salPorTer = agrupar(sal.filter(function (t) { return !excl(t.terceroId) && t.conFact !== 'no'; }), function (t) { return t.terceroId; });
+    var salPorTer = agrupar(sal.filter(function (t) { return !excl(t.terceroId) && t.conFact !== 'no' && String(t.fecha || '').slice(0, 10) >= FALTAN_DESDE; }), function (t) { return t.terceroId; });
     var comPorTer = agrupar(compras, function (f) { return f.terceroId; });
     var faltan = Object.keys(salPorTer).map(function (id) {
       var pag = suma(salPorTer[id], function (t) { return Math.max(0, t.total - (aplicT[t.id] || 0)); }), fac = suma(comPorTer[id] || [], function (f) { return Math.max(0, f.total - (aplicF[f.id] || 0)); });
