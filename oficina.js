@@ -583,7 +583,7 @@
     }
     function strip(h) { return String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' '); }
     function contexto() {
-      var D = getD(), L = ['Fecha de hoy: ' + D.hoy + ' (usa esta fecha; no la calcules)', 'Los hallazgos de abajo ya consideran solo lo cargado desde el 2026-10-01 (salvo Combustible y Maquinaria). Conoces toda la historia de CODES, pero las correcciones se piden solo desde esa fecha.', 'Hallazgos de los contadores (urgencia · texto):'];
+      var D = getD(), L = ['Fecha de hoy: ' + D.hoy + ' (usa esta fecha; no la calcules)', 'Los hallazgos de abajo ya consideran solo lo cargado desde el 2026-10-01 (salvo Combustible y Maquinaria). Conoces toda la historia de CODES, pero las correcciones se piden solo desde esa fecha. Excepción: «faltan comprobantes» (pagos sin factura de compra) se evalúa solo desde el 2026-11-01; no reclames pagos anteriores.', 'Hallazgos de los contadores (urgencia · texto):'];
       ['compras', 'pagos', 'cobros', 'maquinaria', 'impuestos', 'admin', 'ejecutivo'].forEach(function (id) {
         var fl = (A.find[id] || []).slice(0, 14);
         if (!fl.length) return;

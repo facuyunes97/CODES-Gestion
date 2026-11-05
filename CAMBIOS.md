@@ -379,3 +379,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.73 — «Faltan comprobantes» solo desde noviembre 2026
 - **Compras (Oficina):** el aviso «pagos por X y facturas cargadas por Y. Faltan comprobantes» ahora mira solo pagos desde el 1/11/2026. Los pagos anteriores no se controlan contra facturas, porque no se va a revisar si lo anterior a noviembre está pagado o facturado.
 - El resto de los controles siguen mirando desde el 1/10/2026.
+
+## Codes 1.74 — El Director Ejecutivo evalúa «faltan comprobantes» desde noviembre 2026
+- **Director Ejecutivo (chat):** ya no reclama ni cuenta como faltante ningún pago anterior al 1/11/2026, ni pide verificar si lo anterior a noviembre está pagado o facturado. El resto de sus controles siguen desde el 1/10/2026 (combustible y maquinaria, también con fechas anteriores).
+- Función `director` actualizada y el contexto que le manda la Oficina lo aclara.
