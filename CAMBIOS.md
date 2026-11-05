@@ -345,3 +345,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.66 (5-nov-2026)
 - **Facturas recopiladas, emitidas:** dos facturas distintas del mismo cliente con el mismo punto de venta y número, por ejemplo una factura B y su nota de crédito B, se tomaban como la misma: una quedaba oculta («llegó también en otro mail») y al cargar una se marcaba la otra. Ahora la clave incluye el tipo y si es emitida o recibida.
 - **Facturas recopiladas:** la pantalla cargaba solo las últimas 500; ahora carga hasta 3000, para que no queden afuera las pendientes cuando hay muchas cargadas.
+
+## Codes 1.67 (5-nov-2026)
+- **Notas de débito emitidas:** ahora se cargan siempre, desde Facturas y desde Facturas recopiladas. No piden elegir mes de IVA (cuenta en el mes de su fecha), no se frenan por «factura repetida» y en recopiladas no se marcan como «ya estaba cargada» sin cargarlas. La nota queda con su propio saldo a cobrar.
+- **Facturas recopiladas, emitidas:** ya no exige «que sea a nombre de CODES SRL» (eso solo vale para las recibidas).
