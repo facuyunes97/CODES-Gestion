@@ -37,7 +37,7 @@
     '.ob-bay .bl{display:flex;flex-wrap:wrap;gap:5px}.ob-bay .bc{all:unset;cursor:grab;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;border:1px solid #c9ced6;background:#fff;font:700 12px var(--o-body,system-ui);touch-action:none}.ob-bay .bc:hover{border-color:#e31b1f}' +
     '.ob-bay .bc i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}.ob-bay .bh{margin-top:5px;font-weight:500;color:#666c76}' +
     '.pl-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.pl-it{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1.5px solid rgba(128,128,128,.35);background:transparent;color:inherit;font:600 13px var(--o-body,system-ui);cursor:pointer;text-align:left}.pl-it:hover{border-color:#e31b1f}.pl-it i{width:12px;height:12px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.25)}.pl-it small{display:block;font-weight:500;opacity:.7;font-size:11.5px}.ob-pick{position:absolute;inset:0;z-index:8;background:rgba(15,18,24,.45);display:flex;align-items:center;justify-content:center;padding:16px}.ob-pick>div{background:var(--o-card,#fff);color:var(--o-ink,#1d2026);border-radius:14px;padding:16px 18px;max-width:360px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);font:600 14px var(--o-body,system-ui)}.ob-pick h4{margin:0 0 4px;font-size:15px}.ob-pick p{margin:0 0 12px;font-weight:500;font-size:12.5px;opacity:.75}.ob-pick button{display:block;width:100%;text-align:left;margin:6px 0 0;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit;cursor:pointer}.ob-pick button:hover{border-color:#e31b1f}.ob-pick button[disabled]{opacity:.45;cursor:default}.ob-pick .x{border:0;opacity:.7;text-align:center}' +
-    '.ob-ghost{position:absolute;left:0;top:0;z-index:5;pointer-events:none;background:#1d2026;color:#fff;font:700 12px var(--o-body,system-ui);padding:5px 10px;border-radius:99px}' +
+    '.ob-ghost{position:absolute;left:0;top:0;z-index:5;pointer-events:none;background:#1d2026;color:#fff;font:700 13px var(--o-body,system-ui);padding:6px 12px;border-radius:99px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 8px 22px rgba(0,0,0,.4);will-change:transform;user-select:none;-webkit-user-select:none}.ob-ghost i{width:11px;height:11px;border-radius:50%;border:1px solid rgba(255,255,255,.6)}.ob-stage,.ob-bay{user-select:none;-webkit-user-select:none}' +
     '.ob-hint{position:absolute;right:10px;bottom:8px;font-size:12px;color:#555b66;background:rgba(255,255,255,.75);padding:4px 9px;border-radius:6px;pointer-events:none}' +
     '.ob-add{font:700 13px var(--o-body,system-ui);padding:8px 14px;border-radius:9px;border:0;background:#e31b1f;color:#fff;cursor:pointer}.ob-add:hover{filter:brightness(1.08)}' +
     '.ob-addf{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ob-addf input{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--o-line,#c9ced6);background:var(--o-bg,#fff);color:var(--o-fg,#1d2026);min-width:240px}' +
@@ -601,6 +601,7 @@
     var bd = null;
     bay.addEventListener('pointerdown', function (ev) {
       var b = ev.target.closest && ev.target.closest('.bc'); if (!b || ev.button > 0) return;
+      if (ev.pointerType === 'mouse') ev.preventDefault();
       bd = { id: b.getAttribute('data-m'), el: b, x0: ev.clientX, y0: ev.clientY, moved: false, ghost: null, to: null };
       try { b.setPointerCapture(ev.pointerId); } catch (e) { }
       api.hover(null);
@@ -609,7 +610,7 @@
       if (!bd) return;
       if (!bd.moved && Math.hypot(ev.clientX - bd.x0, ev.clientY - bd.y0) < 6) return;
       if (!api.puede()) return;
-      if (!bd.moved) { bd.moved = true; bd.ghost = document.createElement('div'); bd.ghost.className = 'ob-ghost'; bd.ghost.textContent = bd.el.textContent; stage.appendChild(bd.ghost); }
+      if (!bd.moved) { bd.moved = true; bd.ghost = document.createElement('div'); bd.ghost.className = 'ob-ghost'; bd.ghost.innerHTML = bd.el.innerHTML; stage.appendChild(bd.ghost); }
       var r = stage.getBoundingClientRect(); bd.ghost.style.transform = 'translate(' + (ev.clientX - r.left) + 'px,' + (ev.clientY - r.top) + 'px) translate(-50%,-50%)';
       var gp = ground(ev), to = gp && !overBay(ev) ? target(gp.x, gp.z) : null; bd.to = to;
       if (to) { S.hl.visible = true; S.hl.scale.set(to.w, 1, to.h); S.hl.position.set(to.x + to.w / 2, 0.12, to.z + to.h / 2); } else if (S.hl) S.hl.visible = false;
@@ -619,7 +620,7 @@
       try { D.el.releasePointerCapture(ev.pointerId); } catch (e) { }
       if (D.ghost) D.ghost.remove(); if (S.hl) S.hl.visible = false;
       if (!D.moved) { api.click(D.id); return; }
-      if (D.to) api.drop(D.id, D.to.id);
+      if (D.to) api.drop(D.id, D.to.id); else api.end();
     }
     bay.addEventListener('pointerup', bayFin); bay.addEventListener('pointercancel', bayFin);
     function addLabel(html, cls) { var e = document.createElement('div'); e.className = cls; e.innerHTML = html; ov.appendChild(e); return e; }
@@ -793,6 +794,7 @@
       if (ev.button > 0) return;
       var a = pick(ev); if (!a) { S.bg = { x: ev.clientX, y: ev.clientY }; return; }
       S.hover = a; S.bg = null;
+      if (ev.pointerType === 'mouse') ev.preventDefault();
       ev.stopImmediatePropagation();
       S.drag = { a: a, x0: ev.clientX, y0: ev.clientY, moved: false, to: null }; controls.enabled = false;
       try { cv.setPointerCapture(ev.pointerId); } catch (e) { }
@@ -836,7 +838,7 @@
       if (!S.d) return;
       resize();
       S.plots.forEach(function (P) { if (P.dumpAnim) P.dumpAnim(t); });
-      S.actors.forEach(function (a) { if (a.upd) a.upd(t); });
+      S.actors.forEach(function (a) { if (a.upd && !(S.drag && S.drag.moved && S.drag.a === a)) a.upd(t); });
       controls.update(); renderer.render(scene, camera);
       var w = S.size[0], h = S.size[1];
       S.actors.forEach(function (a) {
@@ -855,6 +857,7 @@
       empty: function (msg) { S.d = null; clearAll(); emptyEl.hidden = false; emptyEl.textContent = msg; cv.style.visibility = 'hidden'; hint.hidden = true; },
       plot: function (pid) { S.selPlot = pid; },
       select: function (mid) { S.pinned = mid; S.actors.forEach(function (a) { a.ring.visible = mid === a.m.id; }); },
+      busy: function () { return !!(S.drag || bd); },
       frame: frame
     };
   }
@@ -1429,6 +1432,7 @@
       [].forEach.call(panelEl.querySelectorAll('.pl-it'), function (b) { b.onclick = function () { abrir(b.getAttribute('data-m'), true); }; });
       if (panelEl.scrollIntoView) { try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { } }
     }
+    var pend = false;
     var api = {
       plotSel: function (pid) { mostrarPlot(pid); },
       puede: function () { var d = stage.__d; return !!(d && d.puede); },
@@ -1446,14 +1450,15 @@
       drop: function (mid, toId) {
         var d = stage.__d, M = d && d.maqs.filter(function (m) { return m.id === mid; })[0];
         if (M && toId !== null && toId !== undefined && (M.obraActual || '') !== toId) { var r = moverMaq(d, M, toId); if (r === false) return; if (r) pinned = M.id; }
-        render();
+        pend = false; render();
       },
+      end: function () { if (pend) { pend = false; render(); } },
       hide: function (pid) { var d = stage.__d; hideTip(); if (d && d.puede && d.D.maq.ocultar(pid, true)) render(); }
     };
     if (!webglOK()) glMsg = window.THREE ? 'Este navegador no tiene WebGL activo' : 'La librer\u00eda 3D no termin\u00f3 de cargar';
     if (webglOK()) { try { gl = engine3D(stage, api); } catch (e) { gl = null; stage.classList.remove('gl'); stage.innerHTML = ''; if (window.console) console.error(e); } }
     render();
-    return { refresh: function () { if (!drag) render(); } };
+    return { refresh: function () { if (drag || (gl && gl.busy && gl.busy())) { pend = true; return; } render(); } };
   }
   window.OFICINA_OBRAS = { montar: mount };
 })();

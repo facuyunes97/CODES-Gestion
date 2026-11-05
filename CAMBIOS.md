@@ -318,3 +318,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.60 (2-nov-2026)
 - **Oficina: correcciones solo desde el 1/10/2026.** Los avisos de los contadores (faltan comprobantes, ventas sin cobro, cobros sin marcar, etc.) ahora miran solo lo cargado desde esa fecha, porque no se va a cargar el año anterior. Combustible y Maquinaria no se filtran. Los saldos de cuentas y la caja por obra siguen usando todo el historial.
 - **Director Ejecutivo:** conoce toda la historia de CODES, pero solo pide correcciones y comprobantes desde el 1/10/2026.
+
+## Codes 1.61 (5-nov-2026)
+- **Oficina 3D, arrastre más fluido:** al arrastrar una máquina dentro del terreno, la animación de la obra ya no la mueve de vuelta mientras la llevás (saltaba y se trababa). Si los datos se refrescan en medio del arrastre, la escena ya no se reconstruye: espera a que sueltes. Se evita seleccionar texto o arrastrar la imagen del navegador, y la ficha que acompaña al mouse desde la playa «Sin obra» ahora lleva el color de la máquina y se mueve más suave.
