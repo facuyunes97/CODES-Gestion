@@ -21,3 +21,9 @@ create policy gps_u_cc on public.gps_unidades for update to authenticated using 
 drop policy if exists gps_d_lee on public.gps_diario;
 create policy gps_d_lee on public.gps_diario for select to authenticated using (true);
 -- escribe solo la función (service role)
+
+-- 24: la plataforma (getOdometer, odometro_gps=0) devuelve en "km" lo recorrido DESPUÉS de esa fecha hasta hoy.
+-- El recorrido del día es: valor del día anterior - valor del día. Validado contra coordenadas de history/get.
+create or replace view public.gps_km_dia with (security_invoker = true) as
+select imei, fecha, round((lag(km) over (partition by imei order by fecha) - km)::numeric, 2) as km_dia
+from public.gps_diario;
