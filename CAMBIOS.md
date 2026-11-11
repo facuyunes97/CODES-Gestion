@@ -395,3 +395,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.77 — Calendario: un evento borrado en el sistema ya no «resucita» desde Google
 - Si se borraba un evento del sistema justo antes de que el script de Google corriera, el evento todavía estaba en Google y se volvía a importar (quedaba como nuevo). Ahora la función `calendario` ignora los eventos que están esperando ser borrados en Google.
+
+## Codes 1.78 — Calendario: las tareas hechas se eliminan solas a las 48 horas
+- Un evento marcado como **hecho** se elimina solo, del sistema y del Google Calendar compartido, 48 horas después de marcarlo (el control corre cada hora). Si se vuelve a pendiente antes, no se borra.
+- Los 4 que ya estaban hechos empiezan a contar desde hoy (11-nov).
+- El formulario del evento lo avisa.

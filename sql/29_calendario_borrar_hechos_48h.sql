@@ -1,0 +1,4 @@
+-- Ya aplicado en Supabase (migración 29). Solo documentación.
+-- calendario_eventos.hecho_at: cuándo se marcó como hecho (lo pone el trigger trg_cal_hecho_at; null si vuelve a pendiente).
+-- cal_borrar_hechos_viejos(): borra los eventos hechos hace más de 48 h; el trigger trg_cal_borrado los manda a borrar también en Google.
+-- pg_cron «calendario-borrar-hechos»: corre en el minuto 7 de cada hora.
