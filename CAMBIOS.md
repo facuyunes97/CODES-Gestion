@@ -413,3 +413,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - El aviso trae el botón «Descargar resumen»: Excel con hojas Por mes, Por máquina, Por obra y Mes-máquina-obra (cargas, litros, total $, precio medio por litro).
 - Mismo botón en la pantalla Combustible.
 - El Director Ejecutivo ahora sabe de este aviso y lo confirma si se le pregunta.
+
+## Codes 1.81 (11-nov-2026)
+- Calendario: botón «Seleccionar varios». Se tocan los eventos y cheques pagados que se quieran (☐/☑) y se pueden **marcar como hechos** o **eliminar** todos juntos, con pregunta de seguridad.
+- «Elegir todos los hechos/pagados del mes» para limpiar el mes de una vez.
+- Eliminar sigue las mismas reglas: solo se borran eventos hechos y cheques pagados (también del Google Calendar compartido). Lo que no cumpla no se toca y se avisa.
