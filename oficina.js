@@ -606,7 +606,7 @@
       busy = true; send.disabled = true; inp.value = ''; inp.style.height = '';
       msgs.push({ role: 'user', content: text }); bubble('user', text); save();
       var d = bubble('ia', ''); d.classList.add('typing'); d.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>';
-      var acc = '';
+      var acc = '', files = [];
       Promise.resolve(C.token()).then(function (tk) {
         if (!tk) throw new Error('sin sesión');
         return fetch(C.url + '/functions/v1/director', {
@@ -624,7 +624,16 @@
             var lines = buf.split('\n'); buf = lines.pop();
             lines.forEach(function (l) {
               if (l.indexOf('data:') !== 0) return;
-              try { var j = JSON.parse(l.slice(5)); if (j.type === 'content_block_delta' && j.delta && j.delta.text) { acc += j.delta.text; d.classList.remove('typing'); d.innerHTML = md(acc); log.scrollTop = log.scrollHeight; } } catch (e) {}
+              try { var j = JSON.parse(l.slice(5));
+                if (j.type === 'content_block_delta' && j.delta && j.delta.text) { acc += j.delta.text; d.classList.remove('typing'); d.innerHTML = md(acc); files.forEach(function (f) { d.appendChild(f); }); log.scrollTop = log.scrollHeight; }
+                else if (j.type === 'estado' && !acc) { d.innerHTML = '<span class="dots"><i></i><i></i><i></i></span> <small>' + esc(j.texto || '') + '</small>'; }
+                else if (j.type === 'archivo' && j.hojas) {
+                  var bt = el('button', 'sg', '⬇ Descargar Excel: ' + j.nombre); bt.type = 'button'; bt.style.display = 'block'; bt.style.marginTop = '8px';
+                  bt.addEventListener('click', function () { if (C.descargar) C.descargar(j.nombre, j.hojas); });
+                  files.push(bt); d.classList.remove('typing'); d.appendChild(bt); log.scrollTop = log.scrollHeight;
+                }
+                else if (j.type === 'error' && !acc) { throw new Error(j.error || 'error'); }
+              } catch (e) { if (e && e.message && e.message.indexOf('ia_') === 0) throw e; }
             });
             return pump();
           });
@@ -643,7 +652,7 @@
     form.addEventListener('submit', function (e) { e.preventDefault(); ask(inp.value); });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(inp.value); } });
     inp.addEventListener('input', function () { inp.style.height = 'auto'; inp.style.height = Math.min(140, inp.scrollHeight) + 'px'; });
-    ['¿Qué atiendo primero hoy?', 'Resumen de cobros', 'Qué proveedores reclamar', 'Redáctame un reclamo de cobro'].forEach(function (t) {
+    ['¿Qué atiendo primero hoy?', 'Excel del combustible por máquina y obra', 'Excel de ingresos de la obra Loreto', 'Excel de gastos de Mercado Pago', 'Redáctame un reclamo de cobro'].forEach(function (t) {
       var b = el('button', 'sg', t); b.type = 'button'; b.addEventListener('click', function () { ask(t); }); sug.appendChild(b);
     });
     $('#c-clear').addEventListener('click', function () { msgs = []; save(); draw(); });

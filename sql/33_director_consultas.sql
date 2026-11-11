@@ -1,0 +1,8 @@
+-- Codes 1.83 (documentación; ya aplicado como migraciones 33, 34 y 35)
+-- El Director Ejecutivo consulta la base en SOLO LECTURA:
+--  * rol director_ro (sin login): SELECT únicamente, sin config_secretos, ingesta_claves, backups*, perfiles,
+--    proveedor_remitentes, papelera ni sueldos_*; con una policy "director_ro_select" (using true) por tabla con RLS.
+--  * director_sql(q, lim): security invoker, ejecuta con SET LOCAL ROLE director_ro, transacción de solo lectura,
+--    timeout 20 s, una sola sentencia SELECT/WITH, tope de filas. Solo la puede ejecutar service_role (edge function).
+--  * director_esquema(filtro): lista tablas/columnas visibles para el rol (se le pasa al Director como esquema).
+-- Si se agrega una tabla nueva con RLS, hay que darle GRANT SELECT a director_ro y su policy para que el Director la vea.

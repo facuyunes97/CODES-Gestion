@@ -421,3 +421,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.82 (11-nov-2026)
 - Director Ejecutivo con una IA más potente (Claude Opus 5.5, con respaldo automático al modelo anterior si falla), respuestas más largas y razonamiento más profundo, y rol de coordinador de alertas e informes.
+
+## Codes 1.83 (11-nov-2026)
+- El Director Ejecutivo ahora puede **consultar la base de datos** (solo lectura) para responder cualquier pregunta con datos reales, sin depender del resumen de pantalla.
+- Puede **entregar planillas de Excel**: pedile por ejemplo «Excel del combustible por máquina y obra», «ingresos de la obra Loreto» o «gastos de Mercado Pago». Aparece un botón «Descargar Excel» debajo de su respuesta.
+- No tiene acceso a sueldos, usuarios, claves ni copias de seguridad, y no puede cargar, modificar ni borrar nada.
+- Nuevas sugerencias en el chat del Director.
