@@ -392,3 +392,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Eventos:** solo se pueden eliminar los que están marcados como hechos (antes se podía eliminar cualquiera). Al apretar «Eliminar» pregunta «¿Seguro?» y recién ahí se borra, del sistema y del Google Calendar compartido.
 - **Cheques y echeqs pagados o cobrados:** en el calendario se pueden tocar y «Eliminar del calendario» (con pregunta de seguridad). Se sacan del calendario del sistema y del Google Calendar compartido; el cheque NO se borra: sigue en Cheques → Pagados y en sus transacciones. Si se «deshace» el pago, vuelve a aparecer.
 - Base: columna `cheques.oculto_cal` y trigger `trg_cheque_oculto_cal` (migraciones 27 y 28).
+
+## Codes 1.77 — Calendario: un evento borrado en el sistema ya no «resucita» desde Google
+- Si se borraba un evento del sistema justo antes de que el script de Google corriera, el evento todavía estaba en Google y se volvía a importar (quedaba como nuevo). Ahora la función `calendario` ignora los eventos que están esperando ser borrados en Google.

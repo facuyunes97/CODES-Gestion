@@ -76,11 +76,14 @@ Deno.serve(async (req) => {
     if (b.action === "importar") {
       const desde = String(b.desde || ""), hasta = String(b.hasta || "");
       if (!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta) || !Array.isArray(b.eventos)) return json({ ok: false, error: "faltan datos" }, 400);
-      const [ch, rs] = await Promise.all([
+      const [ch, rs, bo] = await Promise.all([
         sb.from("cheques_calendario").select("evento_id"),
         sb.from("calendario_eventos").select("*").or(`google_event_id.not.is.null,and(fecha.gte.${desde},fecha.lte.${hasta})`),
+        sb.from("calendario_borrados").select("google_event_id"),
       ]);
-      if (ch.error || rs.error) return json({ ok: false, error: (ch.error || rs.error)!.message }, 500);
+      if (ch.error || rs.error || bo.error) return json({ ok: false, error: (ch.error || rs.error || bo.error)!.message }, 500);
+      // eventos borrados en el sistema que Google todavía no borró: no se vuelven a importar (si no, "resucitan" hasta el próximo ciclo)
+      const borrando = new Set((bo.data || []).map((x: any) => x.google_event_id));
       const cheques = new Set((ch.data || []).map((x: any) => x.evento_id));
       const porG = new Map((rs.data || []).filter((r: any) => r.google_event_id).map((r: any) => [r.google_event_id, r]));
       const vistos = new Set<string>();
@@ -94,7 +97,7 @@ Deno.serve(async (req) => {
       let creados = 0, actualizados = 0, borrados = 0;
       for (const e of b.eventos.slice(0, 1000)) {
         if (!e || !e.id || !/^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha || ""))) continue;
-        if (cheques.has(e.id) || /^(✔ )?(cheque|echeq)\b/i.test(String(e.titulo || "").trim())) continue;
+        if (borrando.has(e.id) || cheques.has(e.id) || /^(✔ )?(cheque|echeq)\b/i.test(String(e.titulo || "").trim())) continue;
         vistos.add(e.id);
         const p = parseTitulo(e.titulo);
         const g = { tipo: p.tipo, titulo: p.titulo, fecha: e.fecha, fecha_fin: /^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha_fin || "")) && e.fecha_fin >= e.fecha ? e.fecha_fin : e.fecha, hora: e.hora || null, hora_fin: e.hora_fin || null, descripcion: e.desc || null, hecho: p.hecho };
