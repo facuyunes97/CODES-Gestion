@@ -387,3 +387,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.75 — Cheques: pestaña «Pagados»
 - **Cheques y Echeqs:** la pestaña por defecto (ahora «Pendientes») muestra solo los que siguen en cartera o emitidos, sin los ya pagados o cobrados.
 - Nueva pestaña **«Pagados»** con los cheques y echeqs marcados como pagados o cobrados (los más recientes primero); ahí el dueño puede «Deshacer». «Todos» sigue mostrando todo.
+
+## Codes 1.76 — Calendario: eliminar lo hecho / pagado, con confirmación y también en Google
+- **Eventos:** solo se pueden eliminar los que están marcados como hechos (antes se podía eliminar cualquiera). Al apretar «Eliminar» pregunta «¿Seguro?» y recién ahí se borra, del sistema y del Google Calendar compartido.
+- **Cheques y echeqs pagados o cobrados:** en el calendario se pueden tocar y «Eliminar del calendario» (con pregunta de seguridad). Se sacan del calendario del sistema y del Google Calendar compartido; el cheque NO se borra: sigue en Cheques → Pagados y en sus transacciones. Si se «deshace» el pago, vuelve a aparecer.
+- Base: columna `cheques.oculto_cal` y trigger `trg_cheque_oculto_cal` (migraciones 27 y 28).
