@@ -1,0 +1,6 @@
+-- Ya aplicado en Supabase (migración 30 + trigger trg_cal_reset_avisos). Solo documentación.
+-- calendario_series: definición de un evento que se repite (regla jsonb: freq dia|semana|mes|anio, cada, dias[] ISO, fin {tipo nunca|fecha|veces, fecha, veces}).
+-- calendario_eventos.serie_id / aviso_min int[] (minutos antes para avisar). calendario_avisos_enviados: avisos ya mandados.
+-- cal_crear_serie(p jsonb) / cal_serie_eliminar(evento, 'este'|'siguientes'): las llama la app (dueño y contadores).
+-- cal_generar_serie / cal_mantener_series (cron diario 03:17, genera ~120 días hacia adelante) / cal_enviar_avisos (cron cada minuto, manda a Telegram con pg_net).
+-- Cada repetición es un evento común: se sincroniza con Google Calendar como evento suelto y se puede marcar hecho / borrar solo.

@@ -400,3 +400,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Un evento marcado como **hecho** se elimina solo, del sistema y del Google Calendar compartido, 48 horas después de marcarlo (el control corre cada hora). Si se vuelve a pendiente antes, no se borra.
 - Los 4 que ya estaban hechos empiezan a contar desde hoy (11-nov).
 - El formulario del evento lo avisa.
+
+## Codes 1.79 — Calendario: eventos que se repiten y avisos antes del evento
+- **Se repite:** al crear un evento se puede elegir todos los días / todas las semanas (con los días L M X J V S D) / todos los meses / todos los años, **cada N** (ej. cada 3 días, cada 2 semanas) y **cuándo termina** (nunca, un día, o después de N veces). Se cargan las repeticiones de los próximos ~4 meses y cada día se renueva solo.
+- Cada repetición es un evento normal (se ve en el sistema y en Google Calendar, se marca hecho y se borra a las 48 h). Se puede cortar la repetición con «Eliminar este y los siguientes».
+- **Avisarme:** a la hora, 10 o 30 min, 1 o 3 horas, 1 o 2 días, 1 semana antes. El aviso sale por Telegram al grupo de CODES (los eventos de todo el día cuentan desde las 9:00).
+- Los eventos con serie muestran ↻ y los que tienen aviso 🔔.
+- Por ahora: editar un evento de la serie cambia solo ese día (no toda la serie).
