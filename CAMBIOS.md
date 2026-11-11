@@ -427,3 +427,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Puede **entregar planillas de Excel**: pedile por ejemplo «Excel del combustible por máquina y obra», «ingresos de la obra Loreto» o «gastos de Mercado Pago». Aparece un botón «Descargar Excel» debajo de su respuesta.
 - No tiene acceso a sueldos, usuarios, claves ni copias de seguridad, y no puede cargar, modificar ni borrar nada.
 - Nuevas sugerencias en el chat del Director.
+
+## Codes 1.84 (11-nov-2026)
+- Saldos de las cuentas (Bancos, Cajas, Mercado Pago): verde si están en positivo, rojo si están en negativo (en cero queda neutro).
