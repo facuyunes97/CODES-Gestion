@@ -418,3 +418,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Calendario: botón «Seleccionar varios». Se tocan los eventos y cheques pagados que se quieran (☐/☑) y se pueden **marcar como hechos** o **eliminar** todos juntos, con pregunta de seguridad.
 - «Elegir todos los hechos/pagados del mes» para limpiar el mes de una vez.
 - Eliminar sigue las mismas reglas: solo se borran eventos hechos y cheques pagados (también del Google Calendar compartido). Lo que no cumpla no se toca y se avisa.
+
+## Codes 1.82 (11-nov-2026)
+- Director Ejecutivo con una IA más potente (Claude Opus 5.5, con respaldo automático al modelo anterior si falla), respuestas más largas y razonamiento más profundo, y rol de coordinador de alertas e informes.
