@@ -407,3 +407,9 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Avisarme:** a la hora, 10 o 30 min, 1 o 3 horas, 1 o 2 días, 1 semana antes. El aviso sale por Telegram al grupo de CODES (los eventos de todo el día cuentan desde las 9:00).
 - Los eventos con serie muestran ↻ y los que tienen aviso 🔔.
 - Por ahora: editar un evento de la serie cambia solo ese día (no toda la serie).
+
+## Codes 1.80 (11-nov-2026)
+- Aviso semanal de combustible: todos los miércoles a las 10:00 el Director Ejecutivo avisa al dueño y a los contadores (aviso en el sistema + Telegram) con el resumen del combustible de las máquinas.
+- El aviso trae el botón «Descargar resumen»: Excel con hojas Por mes, Por máquina, Por obra y Mes-máquina-obra (cargas, litros, total $, precio medio por litro).
+- Mismo botón en la pantalla Combustible.
+- El Director Ejecutivo ahora sabe de este aviso y lo confirma si se le pregunta.

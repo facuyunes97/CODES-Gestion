@@ -1,0 +1,6 @@
+-- Codes 1.80 (documentación; ya aplicado como migraciones 31 y 32)
+-- Aviso semanal de combustible: miércoles 10:00 (AR) = 13:00 UTC.
+-- - anuncios.ir (text): si vale 'comb_resumen' el aviso muestra el botón "Descargar resumen".
+-- - combustible_aviso_semanal(): arma el resumen por mes / máquina / obra, crea un anuncio para
+--   el dueño y cada contador activo y manda el texto por Telegram (pg_net).
+-- - cron 'combustible-miercoles' con '0 13 * * 3'.
