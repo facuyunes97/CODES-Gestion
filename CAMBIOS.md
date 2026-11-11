@@ -383,3 +383,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.74 — El Director Ejecutivo evalúa «faltan comprobantes» desde noviembre 2026
 - **Director Ejecutivo (chat):** ya no reclama ni cuenta como faltante ningún pago anterior al 1/11/2026, ni pide verificar si lo anterior a noviembre está pagado o facturado. El resto de sus controles siguen desde el 1/10/2026 (combustible y maquinaria, también con fechas anteriores).
 - Función `director` actualizada y el contexto que le manda la Oficina lo aclara.
+
+## Codes 1.75 — Cheques: pestaña «Pagados»
+- **Cheques y Echeqs:** la pestaña por defecto (ahora «Pendientes») muestra solo los que siguen en cartera o emitidos, sin los ya pagados o cobrados.
+- Nueva pestaña **«Pagados»** con los cheques y echeqs marcados como pagados o cobrados (los más recientes primero); ahí el dueño puede «Deshacer». «Todos» sigue mostrando todo.
