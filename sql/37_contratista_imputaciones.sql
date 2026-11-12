@@ -1,0 +1,5 @@
+-- Codes 1.86 (documentación; ya aplicado como migración 37)
+-- contratista_imputaciones: asigna a mano un egreso ya cargado (transaccion_id, único) a un contratista,
+-- aunque el proveedor de esa transacción no sea el proveedor asociado del contratista.
+-- pagos_contratistas() suma las transacciones del proveedor asociado + las imputadas a mano
+-- (y excluye las imputadas a otro contratista). RLS: ve_ingenieria() lee; maneja_ingenieria() inserta/borra.

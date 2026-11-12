@@ -437,3 +437,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - **Enganchado con Transacciones**: los pagos salen solos de los egresos cargados con ese proveedor; «Ver pagos» abre la lista y cada pago se puede tocar para ver la transacción.
 - Se pueden cargar contratistas de **Administración** (no solo de obras). Descarga en Excel.
 - Son los mismos contratistas de Ingeniería / Obras: lo que se carga en una pantalla aparece en la otra.
+
+## Codes 1.86 (12-nov-2026)
+- Contratistas: dentro de **Editar** hay un botón **Eliminar contratista** (con confirmación; el dueño y el ingeniero). Los pagos cargados en Transacciones no se borran. Si el contratista tiene certificaciones o anticipos, primero hay que eliminarlos o marcarlo como finalizado.
+- Contratistas viejos: botón **Imputar pago** en cada contratista. Muestra los egresos ya cargados que todavía no cuentan para ningún contratista (con buscador por proveedor, concepto, Nº o monto), se tildan los que correspondan y se imputan. No modifica la transacción.
+- En «Ver pagos» los pagos imputados a mano se marcan y se pueden **Quitar**.
