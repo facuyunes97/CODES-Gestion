@@ -442,3 +442,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Contratistas: dentro de **Editar** hay un botón **Eliminar contratista** (con confirmación; el dueño y el ingeniero). Los pagos cargados en Transacciones no se borran. Si el contratista tiene certificaciones o anticipos, primero hay que eliminarlos o marcarlo como finalizado.
 - Contratistas viejos: botón **Imputar pago** en cada contratista. Muestra los egresos ya cargados que todavía no cuentan para ningún contratista (con buscador por proveedor, concepto, Nº o monto), se tildan los que correspondan y se imputan. No modifica la transacción.
 - En «Ver pagos» los pagos imputados a mano se marcan y se pueden **Quitar**.
+
+## Codes 1.87 (12-nov-2026)
+- Los **contadores** ahora pueden cargar, editar, eliminar e imputar pagos a contratistas (pantalla Administración → Contratistas), igual que el dueño y el ingeniero. El resto de Ingeniería (obras, certificaciones, avance) sigue como estaba.
+- Si el contratista tiene un ítem de Avance de obra asignado, el contador no puede eliminarlo: primero lo tiene que quitar el dueño o el ingeniero.

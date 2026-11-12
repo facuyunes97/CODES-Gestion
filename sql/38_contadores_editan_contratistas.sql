@@ -1,0 +1,3 @@
+-- Codes 1.87 (documentación; ya aplicado como migración 38)
+-- maneja_contratistas(): dueño, ingeniero y contador. Las policies de insert/update/delete de
+-- contratistas y contratista_imputaciones usan esta función (el resto de Ingeniería sigue con maneja_ingenieria()).
