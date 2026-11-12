@@ -430,3 +430,10 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.84 (11-nov-2026)
 - Saldos de las cuentas (Bancos, Cajas, Mercado Pago): verde si están en positivo, rojo si están en negativo (en cero queda neutro).
+
+## Codes 1.85 (12-nov-2026)
+- Nueva pantalla **Administración → Contratistas**: cada contratista (proveedor) agrupado por obra o Administración, en solapas que se pueden minimizar. Muestra la tarea, el valor del contrato, el fondo de reparo, lo pagado y el saldo (contrato − pagado), con barra de avance de pago.
+- **Fondo de reparo opcional**: porcentaje a elegir al cargar el contratista (se carga también desde Ingeniería). Con fondo, el saldo indica cuánto está libre para pagar y cuánto queda retenido.
+- **Enganchado con Transacciones**: los pagos salen solos de los egresos cargados con ese proveedor; «Ver pagos» abre la lista y cada pago se puede tocar para ver la transacción.
+- Se pueden cargar contratistas de **Administración** (no solo de obras). Descarga en Excel.
+- Son los mismos contratistas de Ingeniería / Obras: lo que se carga en una pantalla aparece en la otra.
