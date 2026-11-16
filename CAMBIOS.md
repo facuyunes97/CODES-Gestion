@@ -450,3 +450,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.88 (16-nov-2026)
 - Recibos de sueldo: nueva opción **Obra social · diferencial jornada parcial (3 %)**. Aparece al elegir *Media jornada* (viene tildada y se puede destildar). Descuenta el 3 % del total remunerativo como aporte adicional del trabajador (art. 92 ter inc. 4 de la Ley de Contrato de Trabajo), después de la obra social del 3 % común.
 - Se muestra como línea propia en el recibo (pantalla, impresión y PDF) y en el gráfico del costo laboral entra dentro de «Obra social». No cambia los recibos ya emitidos ni los de jornada completa o por hora.
+
+## Codes 1.89 (16-nov-2026)
+- Convenio **UECARA 660/13**: nuevo **adicional por título** (art. 33.2) con tres niveles: A (universitario, terciario de pre-grado o tecnicatura), B (secundario técnico) y C (secundario de otros planes). Los importes se editan en Control Sueldos → Convenios → Parámetros.
+- En el legajo hay un campo **Título (adicional del convenio)**. El recibo suma la línea «Adicional por título» (se paga entero en mensual, la mitad en quincena y proporcional en media jornada, igual que la antigüedad). Es remunerativo, así que entra en la base de aportes.
+- Importes cargados (estimados sobre la escala de octubre 2026 con el +1,8 %, como la antigüedad): A $77.105 · B $65.755 · C $52.663. Verificar contra la planilla oficial del acuerdo sep–nov 2026 y corregir si difieren.
