@@ -446,3 +446,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.87 (12-nov-2026)
 - Los **contadores** ahora pueden cargar, editar, eliminar e imputar pagos a contratistas (pantalla Administración → Contratistas), igual que el dueño y el ingeniero. El resto de Ingeniería (obras, certificaciones, avance) sigue como estaba.
 - Si el contratista tiene un ítem de Avance de obra asignado, el contador no puede eliminarlo: primero lo tiene que quitar el dueño o el ingeniero.
+
+## Codes 1.88 (16-nov-2026)
+- Recibos de sueldo: nueva opción **Obra social · diferencial jornada parcial (3 %)**. Aparece al elegir *Media jornada* (viene tildada y se puede destildar). Descuenta el 3 % del total remunerativo como aporte adicional del trabajador (art. 92 ter inc. 4 de la Ley de Contrato de Trabajo), después de la obra social del 3 % común.
+- Se muestra como línea propia en el recibo (pantalla, impresión y PDF) y en el gráfico del costo laboral entra dentro de «Obra social». No cambia los recibos ya emitidos ni los de jornada completa o por hora.
