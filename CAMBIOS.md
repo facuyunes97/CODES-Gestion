@@ -455,3 +455,7 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Convenio **UECARA 660/13**: nuevo **adicional por título** (art. 33.2) con tres niveles: A (universitario, terciario de pre-grado o tecnicatura), B (secundario técnico) y C (secundario de otros planes). Los importes se editan en Control Sueldos → Convenios → Parámetros.
 - En el legajo hay un campo **Título (adicional del convenio)**. El recibo suma la línea «Adicional por título» (se paga entero en mensual, la mitad en quincena y proporcional en media jornada, igual que la antigüedad). Es remunerativo, así que entra en la base de aportes.
 - Importes cargados (estimados sobre la escala de octubre 2026 con el +1,8 %, como la antigüedad): A $77.105 · B $65.755 · C $52.663. Verificar contra la planilla oficial del acuerdo sep–nov 2026 y corregir si difieren.
+
+## Codes 1.90 (17-nov-2026)
+- Recibos: al imprimir o guardar en PDF ya no se corta el encabezado (título y logo). Ahora el margen lo maneja la propia impresión (14 mm arriba, 11 mm a los costados y 12 mm abajo) en lugar de un margen dibujado dentro de la hoja, y el logo y los datos de la empresa se acomodan sin pisar el título aunque el domicilio sea largo.
+- Se sacó el alto fijo de la hoja que recortaba lo que no entraba: si un recibo es muy largo, ahora sigue en una segunda hoja en vez de cortarse. Un recibo normal entra completo en una A4.
