@@ -459,3 +459,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 ## Codes 1.90 (17-nov-2026)
 - Recibos: al imprimir o guardar en PDF ya no se corta el encabezado (título y logo). Ahora el margen lo maneja la propia impresión (14 mm arriba, 11 mm a los costados y 12 mm abajo) en lugar de un margen dibujado dentro de la hoja, y el logo y los datos de la empresa se acomodan sin pisar el título aunque el domicilio sea largo.
 - Se sacó el alto fijo de la hoja que recortaba lo que no entraba: si un recibo es muy largo, ahora sigue en una segunda hoja en vez de cortarse. Un recibo normal entra completo en una A4.
+
+## Codes 1.91 (18-nov-2026)
+- Formas de pago: **Banco Patagonia** sale ahora como cuenta predeterminada en «Sale de» para todos los medios que salen de un banco (echeq y cheque propios, transferencia, débito, extracción), no solo en transferencias. Antes, al elegir echeq propio, aparecía el primer banco de la lista. Se puede cambiar igual con el desplegable.
