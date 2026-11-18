@@ -462,3 +462,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.91 (18-nov-2026)
 - Formas de pago: **Banco Patagonia** sale ahora como cuenta predeterminada en «Sale de» para todos los medios que salen de un banco (echeq y cheque propios, transferencia, débito, extracción), no solo en transferencias. Antes, al elegir echeq propio, aparecía el primer banco de la lista. Se puede cambiar igual con el desplegable.
+
+## Codes 1.92 (18-nov-2026)
+- Transacciones: nuevo filtro **Usuario**. Elegís un usuario de la lista (solo aparecen los que cargaron transacciones) y se muestran únicamente las transacciones que cargó ese usuario. Funciona junto con los demás filtros, se ve en los totales («usuario …») y también respeta la descarga a Excel. «Todos los usuarios» lo saca.
