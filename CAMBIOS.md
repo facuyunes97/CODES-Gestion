@@ -494,3 +494,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 1.98 (20-nov-2026)
 - Ingreso: mientras el sistema verifica el usuario («Un momento…») el campo de contraseña muestra los puntitos en vez de verse vacío. Si hay un error, el campo vuelve a quedar vacío.
+
+## Codes 1.99 (20-nov-2026)
+- **Ingreso mucho más rápido** (se nota sobre todo en el celular): al entrar, el sistema cargaba todos los datos dos veces a la vez y después hacía unos 15 pedidos al servidor uno detrás del otro. Ahora carga una sola vez y pide a la vez todo lo que no depende de lo demás (papelera, auditoría, avisos, sueldos, estaciones, etc.). En una prueba simulada con 200 ms por pedido, el ingreso pasó de 3,8 s a 0,9 s y los pedidos al servidor, de 79 a 39. También acelera abrir el sistema cuando la sesión quedó recordada. Los datos que se ven son los mismos.
