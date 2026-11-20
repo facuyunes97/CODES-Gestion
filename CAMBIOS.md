@@ -465,3 +465,6 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 
 ## Codes 1.92 (18-nov-2026)
 - Transacciones: nuevo filtro **Usuario**. Elegís un usuario de la lista (solo aparecen los que cargaron transacciones) y se muestran únicamente las transacciones que cargó ese usuario. Funciona junto con los demás filtros, se ve en los totales («usuario …») y también respeta la descarga a Excel. «Todos los usuarios» lo saca.
+
+## Codes 1.93 (20-nov-2026)
+- Resumen diario de maquinaria: el aviso ahora es un cartel corto con el título y el botón **Descargar informe**, que baja un PDF con el detalle de cada máquina (horas de motor, km, service, combustible cargado y acumulado por obra) y el bloque de atención (service, equipos que no se prendieron o no reportan). El mismo PDF llega al grupo de Telegram.
