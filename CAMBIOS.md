@@ -502,3 +502,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - **Nueva portada de ingreso** (compu y celular): fondo oscuro con destello rojo y grilla de plano, tarjeta de ingreso centrada con efecto vidrio y, abajo, el equipo de máquinas trabajando. La portada es siempre oscura, aunque el dispositivo esté en modo claro. En laptops de pantalla baja la tarjeta se achica para no tapar las máquinas. En el celular la tarjeta va arriba y las máquinas, abajo.
 - **Máquinas en una sola fila y sin cruces** (ingreso e Inicio): niveladora, rodillo y topadora con su tierra a la izquierda; el camión va en reversa hasta la tierra, descarga pegado a ella y vuelve a cargar junto a la excavadora, que pasó a la derecha y mira hacia el camión. Antes el camión recorría un carril de adelante y se superponía con las otras máquinas.
 - La escena del ingreso se cambia sola por la del Inicio al entrar y vuelve al salir.
+
+## Codes 2.01 (20-nov-2026)
+- Portada de ingreso en la compu: la maquinaria se achicó (queda centrada, con un ancho máximo) para que se vea más prolija. El piso y la ruta siguen de punta a punta y los costados se difuminan en pantallas muy anchas. El celular quedó igual.
