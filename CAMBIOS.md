@@ -478,3 +478,12 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Inicio: la franja de arriba ahora es una **animación 3D del equipo de obra** (excavadora cargando el camión, camión que descarga, niveladora, rodillo y topadora trabajando). Es liviana y se adapta a cada PC: arranca a 30 cuadros por segundo y baja sola la calidad (menos cuadros y menos partículas) si la máquina no da abasto; si anda sobrada, la vuelve a subir.
 - Solo corre cuando se ve: se detiene al irse de Inicio, al cambiar de pestaña del navegador o si queda fuera de pantalla. Respeta «reducir movimiento» del sistema (queda una imagen fija).
 - Botón ⏸/▶ abajo a la derecha de la animación para pausarla; queda guardado en esa PC.
+
+## Codes 1.96 (20-nov-2026)
+Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
+- **Menú al costado:** la barra de pestañas de arriba se reemplazó por un botón de tres rayitas que abre el menú desde la izquierda. Se cierra al elegir una sección, tocando el fondo gris, con las rayitas o con Esc.
+- **Inicio:** la animación de máquinas no se muestra en el celular (más lugar para la información y nada de consumo). El cartel de bienvenida es más corto: fecha sola, campanita en la esquina y los tres datos (obras, pendiente de cobro, cheques) en una sola fila.
+- **Transacciones:** los filtros arrancan plegados detrás del botón **Filtros**, que muestra cuántos hay puestos. Queda a la vista el buscador y la lista.
+- **Botón flotante «+»** abajo a la derecha para cargar una nueva transacción (no aparece para quien no puede cargar ni dentro de «Nueva transacción»).
+- **Calendario y Cheques y Echeqs:** los siete días entran en el ancho del celular; antes se salían de la pantalla. Al tocar un evento o cheque se abre el detalle completo como siempre.
+- El cartel «Hola, …» al ingresar ahora dura 5 segundos (los demás avisos siguen igual).
