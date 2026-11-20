@@ -491,3 +491,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 1.97 (20-nov-2026)
 - **Recordarme en este dispositivo:** nueva casilla en el ingreso (viene tildada). Con la casilla tildada, la sesión queda guardada en el celular o la compu y el sistema **no vuelve a pedir email y contraseña** al abrirlo otro día. Sin tildar (por ejemplo en una compu compartida), la sesión se cierra al cerrar la pestaña, como antes. **Salir** siempre borra la sesión guardada. El sistema recuerda la última elección de la casilla.
 - **Ingreso más cómodo en el celular:** formulario armado como el que esperan el autocompletado del celular y el llavero (Face ID / huella), con los campos de usuario y contraseña bien identificados y el botón **Ingresar** visible dentro del formulario. Se toma lo que completa el celular aunque no avise, y el Enter envía el formulario. Botón **Ver** para mostrar la contraseña, campos y botón más grandes para el dedo, y la pantalla arranca arriba para que el teclado no tape el formulario.
+
+## Codes 1.98 (20-nov-2026)
+- Ingreso: mientras el sistema verifica el usuario («Un momento…») el campo de contraseña muestra los puntitos en vez de verse vacío. Si hay un error, el campo vuelve a quedar vacío.
