@@ -497,3 +497,8 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 1.99 (20-nov-2026)
 - **Ingreso mucho más rápido** (se nota sobre todo en el celular): al entrar, el sistema cargaba todos los datos dos veces a la vez y después hacía unos 15 pedidos al servidor uno detrás del otro. Ahora carga una sola vez y pide a la vez todo lo que no depende de lo demás (papelera, auditoría, avisos, sueldos, estaciones, etc.). En una prueba simulada con 200 ms por pedido, el ingreso pasó de 3,8 s a 0,9 s y los pedidos al servidor, de 79 a 39. También acelera abrir el sistema cuando la sesión quedó recordada. Los datos que se ven son los mismos.
+
+## Codes 2.00 (20-nov-2026)
+- **Nueva portada de ingreso** (compu y celular): fondo oscuro con destello rojo y grilla de plano, tarjeta de ingreso centrada con efecto vidrio y, abajo, el equipo de máquinas trabajando. La portada es siempre oscura, aunque el dispositivo esté en modo claro. En laptops de pantalla baja la tarjeta se achica para no tapar las máquinas. En el celular la tarjeta va arriba y las máquinas, abajo.
+- **Máquinas en una sola fila y sin cruces** (ingreso e Inicio): niveladora, rodillo y topadora con su tierra a la izquierda; el camión va en reversa hasta la tierra, descarga pegado a ella y vuelve a cargar junto a la excavadora, que pasó a la derecha y mira hacia el camión. Antes el camión recorría un carril de adelante y se superponía con las otras máquinas.
+- La escena del ingreso se cambia sola por la del Inicio al entrar y vuelve al salir.
