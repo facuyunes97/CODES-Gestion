@@ -473,3 +473,8 @@ Versión base con todo lo hecho hasta ahora: facturas, recopiladas de Gmail, sub
 - Inicio: nueva **campanita 🔔** arriba a la derecha, sobre «Cheques a vencer». El numerito rojo cuenta las notificaciones sin leer. Al tocarla se abre «Notificaciones de hoy» con las nuevas y las que ya marcaste como leídas hoy, y cada una tiene el botón **Volver a marcar como nueva**.
 - «Entendido» en una notificación ya no la borra: queda como leída y se puede volver a ver desde la campanita durante el día.
 - Se restauraron para Facundo las notificaciones de hoy que se habían borrado (Informe de Impuestos aprobado, Resumen diario de maquinaria 19/11 y el aviso de IVA).
+
+## Codes 1.95 (20-nov-2026)
+- Inicio: la franja de arriba ahora es una **animación 3D del equipo de obra** (excavadora cargando el camión, camión que descarga, niveladora, rodillo y topadora trabajando). Es liviana y se adapta a cada PC: arranca a 30 cuadros por segundo y baja sola la calidad (menos cuadros y menos partículas) si la máquina no da abasto; si anda sobrada, la vuelve a subir.
+- Solo corre cuando se ve: se detiene al irse de Inicio, al cambiar de pestaña del navegador o si queda fuera de pantalla. Respeta «reducir movimiento» del sistema (queda una imagen fija).
+- Botón ⏸/▶ abajo a la derecha de la animación para pausarla; queda guardado en esa PC.
