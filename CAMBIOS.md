@@ -516,3 +516,11 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 2.03 (25-nov-2026)
 - **Cotizaciones con solapitas:** los paneles (Precios por defecto, Hora de máquina, Armar cotización) se pueden plegar y desplegar tocando su título. El sistema recuerda en ese equipo cuáles dejaste cerrados.
 - Se quitó el panel «Gasoil de hoy»: el precio del litro que se usa para actualizar los precios es el que se carga en Combustible, y se muestra arriba de «Precios por defecto».
+
+## Codes 2.04 (25-nov-2026)
+- **Cotizaciones · tabla de precios más clara:** ahora muestra *Trabajo, Unidad, Precio, Precio sugerido y Peso del combustible*.
+  - **Precio:** el que se usa para cotizar y se puede modificar. Si se deja vacío, se usa el sugerido.
+  - **Precio sugerido:** lo calcula el sistema (precio del pliego × suba del gasoil × inflación) y lo actualiza una vez por semana con el gasoil cargado en Combustible. Al pasar el mouse (o tocar, en el celular) aparece cómo se calculó. Si se cambia un dato del cálculo, se recalcula en el momento.
+  - **Peso del combustible:** lo pone el sistema según el tipo de trabajo, con una explicación al pasar el mouse. En cada presupuesto se puede cambiar en la línea del ítem («Peso comb. (%)») y vale solo para esa línea; el valor del sistema no se toca.
+- Los datos que antes estaban en la tabla (precio del pliego, gasoil de esa fecha, inflación y peso) pasaron a una solapa **«Datos del cálculo»**, cerrada por defecto.
+- **Ítems propios en Cotizaciones:** botón **«+ Agregar ítem propio»** (concepto, unidad, precio estimado, mes del precio, gasoil de ese mes y peso del combustible). El sistema los mantiene actualizados solo: la inflación sale del IPC del INDEC (el sistema busca los índices nuevos una vez por semana, con los de hoy ya cargados hasta octubre de 2026) y el combustible, del precio que se carga en Combustible. Aparecen en la tabla de precios con su Precio sugerido y se pueden elegir al armar la cotización. Se pueden renombrar y quitar (pide confirmar). Quedan guardados para todos.
