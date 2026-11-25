@@ -558,3 +558,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.11
 - Se sacan los carteles naranja «Corroborar precio» de Armar cotización (línea por línea y el aviso de abajo).
+
+## Codes 2.12
+- Armar cotización: **Notas al pie** del presupuesto. Se puede agregar y quitar cuantas notas haga falta; en el PDF salen numeradas (Nota 1, Nota 2…) o como «Nota:» si hay una sola. La nota que ya estaba cargada se conserva.
