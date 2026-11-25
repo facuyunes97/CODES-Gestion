@@ -552,3 +552,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.09
 - Se saca de Cotizaciones la sección «Precios por defecto» (y «Datos del cálculo»). Queda «Hora de máquina» y «Armar cotización».
+
+## Codes 2.10
+- Se saca de Cotizaciones la sección «Hora de máquina». Queda solo «Armar cotización».
