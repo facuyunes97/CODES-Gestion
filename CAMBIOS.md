@@ -542,3 +542,10 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 2.07 (25-nov-2026)
 - **Gastos generales y beneficio en Armar cotización:** dos campos nuevos (%) junto al total. Se suman al precio de cada ítem de la base de precios, porque la revista AYC los trae sin gastos generales ni beneficio (los ítems de Vialidad ya los incluyen y no se tocan). El beneficio se calcula sobre el costo más los gastos generales. En el PDF para el cliente no aparecen como líneas: cada precio unitario ya trae los incrementos y el monto total es el resultado final. Mientras estén en 0, los ítems de la base muestran el aviso «Corroborar precio».
 - **Armar cotización:** todos los precios unitarios se pueden cambiar a mano (también los de Vialidad y las horas de máquina) y se escriben con formato de pesos ($ 20.000,00), igual que en el buscador de la base de precios. En los ítems de la base, debajo del precio se ve «Con incrementos» (precio más gastos generales y beneficio). Se sacó la columna «Peso comb. (%)» de las líneas de la cotización.
+
+## Codes 2.08
+- Se saca la **Base de precios** (menú, buscador, lista y subida de revistas). En Cotizaciones queda todo a mano.
+- **Armar cotización**: cada ítem se carga a mano (descripción, cantidad, unidad y precio unitario). «+ Agregar ítem» suma una línea en blanco.
+- Gastos generales y beneficio se suman al precio unitario de cada ítem y no se ven en el PDF (como en 2.07).
+- Las líneas que ya estaban armadas con los ítems por defecto se pasan solas a líneas manuales.
+- Los datos de la revista siguen guardados en Supabase (`cotiz_items`); no se borró nada de la base.
