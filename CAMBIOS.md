@@ -549,3 +549,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - Gastos generales y beneficio se suman al precio unitario de cada ítem y no se ven en el PDF (como en 2.07).
 - Las líneas que ya estaban armadas con los ítems por defecto se pasan solas a líneas manuales.
 - Los datos de la revista siguen guardados en Supabase (`cotiz_items`); no se borró nada de la base.
+
+## Codes 2.09
+- Se saca de Cotizaciones la sección «Precios por defecto» (y «Datos del cálculo»). Queda «Hora de máquina» y «Armar cotización».
