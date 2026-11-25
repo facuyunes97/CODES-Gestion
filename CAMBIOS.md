@@ -527,3 +527,14 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.05 (25-nov-2026)
 - **Avisos «Corroborar precio» en Armar cotización:** cada ítem muestra en naranja los casos en que el sistema no puede actualizar el precio por inflación o hay algo para revisar: horas de máquina cargadas a mano, precio propio, falta de precio de gasoil en Combustible, gasoil de la fecha del pliego sin confirmar, inflación cargada a mano y desfasada respecto del INDEC, precio sugerido sin renovar hace más de 10 días e IPC cargado con más de 2 meses de atraso. Arriba del botón del PDF aparece un resumen si hay alguno.
+
+## Codes 2.06 (25-nov-2026)
+- **Base de precios (nueva pantalla en Ingeniería / Obras):** buscador de los ítems y precios de la revista AYC N.º 485 (noviembre de 2026): 417 de la lista de mano de obra y 155 del análisis de costos (572 en total). Es una base aparte, no se mezcla con los precios de Cotizaciones.
+  - Se busca por nombre o por parte de la descripción (todas las palabras tienen que estar). Cada resultado muestra al mismo tiempo el precio sin materiales (solo mano de obra) y con materiales, para compararlos. En cada uno se ve el precio sugerido (precio de la revista actualizado por el IPC del INDEC; al pasar el mouse explica el cálculo), el precio de la revista, un precio editable y su propio botón «+ Agregar». El mismo ítem se puede agregar a la lista con las dos versiones.
+  - **Mi lista:** hasta 20 ítems, con cantidad, precio editable y opción con/sin materiales cuando la revista trae los dos (la lista de mano de obra solo trae el precio sin materiales). Se guarda en el navegador.
+  - **«Pasar a la cotización»** agrega la lista a «Armar cotización», con avisos «Corroborar precio» (solo mano de obra, precio propio, revista de hace más de 2 meses).
+  - **«Actualizar base»** vuelve a leer la base cuando el usuario lo pide.
+  - **Revistas:** el dueño y el ingeniero adjuntan el PDF de cada mes; queda guardado como «pendiente de cargar».
+- Base nueva en Supabase: tablas `cotiz_items` y `cotiz_revistas` y depósito privado `revistas-precios`. No se tocó `codes-construcciones`.
+- Control de la carga: los 572 ítems se revisaron uno por uno contra el PDF (descripción, unidad, rubro y precio) y se corrigieron las descripciones mal leídas, los códigos y el rubro de las carpinterías. Cada ítem tiene un código fijo (el de la revista) que sirve para actualizar solo los números el mes siguiente.
+  - Para corroborar con la revista: en 15.1 a 15.5 (carpintería metálica) el total impreso no es igual a materiales + mano de obra; se dejó el total de la revista y los materiales se calcularon como total − mano de obra. En 10.6 el material figura como «1,10» y quedó en 1.311 (total − mano de obra). El 5.12 dice «H ■16» y se leyó como Ø16. Los ítems 18.10 y 18.11 tienen los mismos valores en la revista. El 6.2 aparece dos veces; el segundo quedó como «6.2 bis».
