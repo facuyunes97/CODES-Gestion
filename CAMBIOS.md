@@ -505,3 +505,10 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.01 (20-nov-2026)
 - Portada de ingreso en la compu: la maquinaria se achicó (queda centrada, con un ancho máximo) para que se vea más prolija. El piso y la ruta siguen de punta a punta y los costados se difuminan en pantallas muy anchas. El celular quedó igual.
+
+## Codes 2.02 (25-nov-2026)
+- **Nueva pestaña Cotizaciones** (Ingeniería): arma presupuestos de movimiento de suelo, desbosque, base estabilizada y horas de máquina. Trae precios por defecto basados en los pliegos de Vialidad, actualizados por inflación y por el precio del gasoil de hoy (el aumento del combustible se aplica en proporción). Los precios, el gasoil base, la inflación, el peso del combustible y el nombre de cada concepto se pueden editar; los cambios se guardan y los ven todos los que manejan Ingeniería. Botón para volver a los precios por defecto.
+- **Armar cotización:** cantidades por ítem, movilización (3,75 % por defecto) y margen opcional, con el total a la vista.
+- **Descargar presupuesto en PDF:** documento para el cliente con franjas rojas, logo y datos de CODES, datos de la obra (obra, comitente, ubicación, localidad, fecha), tabla de ítems, monto total y nota. Cada ítem admite una descripción para el cliente. Se guarda desde la impresión del navegador («Guardar como PDF»).
+- Nueva tabla `cotizador_config` en la base de datos, con permisos y sincronización en vivo.
+- Pendiente de confirmar: precio del gasoil de ene-2026 y may-2025 en Santiago, y precios de hora de máquina (quedan en blanco).
