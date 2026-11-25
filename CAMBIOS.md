@@ -512,3 +512,7 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - **Descargar presupuesto en PDF:** documento para el cliente con franjas rojas, logo y datos de CODES, datos de la obra (obra, comitente, ubicación, localidad, fecha), tabla de ítems, monto total y nota. Cada ítem admite una descripción para el cliente. Se guarda desde la impresión del navegador («Guardar como PDF»).
 - Nueva tabla `cotizador_config` en la base de datos, con permisos y sincronización en vivo.
 - Pendiente de confirmar: precio del gasoil de ene-2026 y may-2025 en Santiago, y precios de hora de máquina (quedan en blanco).
+
+## Codes 2.03 (25-nov-2026)
+- **Cotizaciones con solapitas:** los paneles (Precios por defecto, Hora de máquina, Armar cotización) se pueden plegar y desplegar tocando su título. El sistema recuerda en ese equipo cuáles dejaste cerrados.
+- Se quitó el panel «Gasoil de hoy»: el precio del litro que se usa para actualizar los precios es el que se carga en Combustible, y se muestra arriba de «Precios por defecto».
