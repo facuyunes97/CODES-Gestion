@@ -555,3 +555,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.10
 - Se saca de Cotizaciones la sección «Hora de máquina». Queda solo «Armar cotización».
+
+## Codes 2.11
+- Se sacan los carteles naranja «Corroborar precio» de Armar cotización (línea por línea y el aviso de abajo).
