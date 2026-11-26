@@ -568,3 +568,7 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 2.14
 - PDF del presupuesto: el nombre de la obra pasa a ser el título, centrado y más grande, con comitente, ubicación, localidad y fecha en una fila debajo. Los datos de CODES quedan arriba a la izquierda con el logo.
 - Al imprimir ya no sale el encabezado del navegador (fecha, hora y título de la página). Se conserva el margen de 10 mm en cada hoja si el presupuesto ocupa más de una.
+
+## Codes 2.15
+- **Litros de combustible y aceite**: un punto con una o dos cifras después se toma como coma decimal. «60.5» ahora es 60,5 litros (antes se leía 605). «60.50» es 60,5; «60,5» sigue igual. Con tres cifras después del punto («1.500») se lee como mil quinientos.
+- Vale para la carga del operario y para la edición de una carga. Los demás campos de números no cambian.
