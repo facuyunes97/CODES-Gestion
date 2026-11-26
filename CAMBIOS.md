@@ -564,3 +564,7 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.13
 - Armar cotización: la unidad se elige de una lista (m², m³, m, ml, ha, h, día, mes, gl, u, kg, tn, l).
+
+## Codes 2.14
+- PDF del presupuesto: el nombre de la obra pasa a ser el título, centrado y más grande, con comitente, ubicación, localidad y fecha en una fila debajo. Los datos de CODES quedan arriba a la izquierda con el logo.
+- Al imprimir ya no sale el encabezado del navegador (fecha, hora y título de la página). Se conserva el margen de 10 mm en cada hoja si el presupuesto ocupa más de una.
