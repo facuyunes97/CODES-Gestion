@@ -572,3 +572,10 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 2.15
 - **Litros de combustible y aceite**: un punto con una o dos cifras después se toma como coma decimal. «60.5» ahora es 60,5 litros (antes se leía 605). «60.50» es 60,5; «60,5» sigue igual. Con tres cifras después del punto («1.500») se lee como mil quinientos.
 - Vale para la carga del operario y para la edición de una carga. Los demás campos de números no cambian.
+
+## Codes 2.16
+- **Combustible y Aceite**: las cargas se pueden separar por mes y por obra.
+  - Filtros nuevos «Todos los meses» y «Todas las obras» (se suman a máquina y fechas; «Quitar filtros» los saca todos).
+  - Dentro de cada obra, las cargas quedan separadas por mes, con una fila de título que muestra cantidad de cargas, litros y total del mes.
+  - En el Resumen hay una tabla nueva «Por mes».
+  - El Excel de la lista respeta los mismos filtros.
