@@ -582,3 +582,7 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.17
 - **Combustible y Aceite**: el mes y la obra ahora se eligen con solapas (botones) en vez de listas desplegables. Fila «Mes» (Todos + cada mes con cargas) y fila «Obra» (Todas + cada obra). La solapa elegida queda oscura.
+
+## Codes 2.18
+- **Combustible y Aceite**: cada obra y cada mes se pueden minimizar y agrandar tocando su título (flecha ▾). Minimizado sigue mostrando cantidad de cargas, litros y total.
+- Botones «Minimizar todo» y «Agrandar todo» junto a los filtros.
