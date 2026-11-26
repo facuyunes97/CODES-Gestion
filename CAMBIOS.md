@@ -579,3 +579,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
   - Dentro de cada obra, las cargas quedan separadas por mes, con una fila de título que muestra cantidad de cargas, litros y total del mes.
   - En el Resumen hay una tabla nueva «Por mes».
   - El Excel de la lista respeta los mismos filtros.
+
+## Codes 2.17
+- **Combustible y Aceite**: el mes y la obra ahora se eligen con solapas (botones) en vez de listas desplegables. Fila «Mes» (Todos + cada mes con cargas) y fila «Obra» (Todas + cada obra). La solapa elegida queda oscura.
