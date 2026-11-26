@@ -592,3 +592,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.20
 - **Combustible y Aceite**: se vuelve al diseño sobrio del título de cada mes, con letra más grande y legible, y los montos quedan **alineados con sus columnas**: los litros del mes bajo «Litros», el tipo de combustible bajo «Combustible» (si hubo más de uno, separados con « / ») y el total bajo «Total». Reemplaza el diseño con franja roja de 2.19.
+
+## Codes 2.21
+- **Combustible y Aceite**: el resumen de cada mes separa los litros y los pesos por tipo de combustible (una línea por tipo, alineada con «Litros», «Combustible» y «Total») y cierra con «Total del mes» cuando hubo más de un tipo.
