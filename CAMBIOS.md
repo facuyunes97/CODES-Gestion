@@ -586,3 +586,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 2.18
 - **Combustible y Aceite**: cada obra y cada mes se pueden minimizar y agrandar tocando su título (flecha ▾). Minimizado sigue mostrando cantidad de cargas, litros y total.
 - Botones «Minimizar todo» y «Agrandar todo» junto a los filtros.
+
+## Codes 2.19
+- **Combustible y Aceite**: el título de cada mes se ve más grande y resaltado: nombre del mes en grande, y a la derecha las cargas, los litros y el total en $ (el total en rojo), sobre una franja de color con una línea roja arriba.
