@@ -589,3 +589,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.19
 - **Combustible y Aceite**: el título de cada mes se ve más grande y resaltado: nombre del mes en grande, y a la derecha las cargas, los litros y el total en $ (el total en rojo), sobre una franja de color con una línea roja arriba.
+
+## Codes 2.20
+- **Combustible y Aceite**: se vuelve al diseño sobrio del título de cada mes, con letra más grande y legible, y los montos quedan **alineados con sus columnas**: los litros del mes bajo «Litros», el tipo de combustible bajo «Combustible» (si hubo más de uno, separados con « / ») y el total bajo «Total». Reemplaza el diseño con franja roja de 2.19.
