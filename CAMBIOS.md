@@ -636,3 +636,7 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - **Eliminar documentos mal cargados**: en las listas de Recibos y de Notas, solo el dueño tiene el botón «Eliminar» (con confirmación). Borra el documento y sus archivos firmados de forma definitiva y queda en Auditoría. Los contadores no pueden. Para algo ya entregado sigue estando «Anular». Si se elimina el último número emitido, ese número se vuelve a usar.
 - **Archivo firmado** separado en «Recibos» y «Notas», y cada uno ordenado por mes (el más reciente arriba), con el resumen de cada mes: cuántos hay, cuántos firmados y cuántos sin firmar.
 - Base: función `rn_eliminar` (solo dueño).
+
+## Codes 2.28 — Resumen económico por obra en Administración → Resumen
+- El Excel con el resumen económico y el prorrateo de cada obra se baja ahora desde **Administración → Resumen**, en la tabla «Por centro de costo» (y en «Centros finalizados o inactivos»), con un botón «Resumen de obra» al final de la fila de cada obra, después del saldo pendiente. Solo lo ve quien tiene acceso a Administración (dueño, contadores y lector).
+- En **Avance de obra** el botón «Descargar Excel» sigue al lado del porcentaje, pero ahora baja solo el avance de esa obra (ítems y certificaciones), sin datos económicos: el ingeniero ya no puede ver ingresos, gastos ni ganancia.
