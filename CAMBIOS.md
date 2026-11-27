@@ -627,3 +627,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - **Archivo firmado**: nueva pestaña en Recibos y Notas con todos los recibos y notas en una sola lista. Se adjunta la foto o el PDF escaneado del documento firmado (hasta 10 MB, puede haber varios por documento), se abre desde ahí y se filtra por «No firmado» / «Con firmado». En las listas de recibos y notas aparece la marca «Firmado». Dueño y contadores adjuntan; el lector solo mira; solo el dueño puede quitar un archivo.
 - La nota tiene el mismo margen interno que el recibo (el texto queda alineado con el de la tabla).
 - Base: bucket privado `recibos-notas` y tabla `rn_adjuntos`, con permisos y registro en Auditoría.
+
+## Codes 2.26 — Centros de costo en Recibos y Notas
+- El selector «Obra / centro de costo» del recibo y de la nota ahora ofrece todos los centros de costo (Administración general, obras, CODES Maquinaria, campo, USD, etc.; los inactivos se marcan), no solo las obras. En el documento sale «Obra» o «Centro de costo» según corresponda.
