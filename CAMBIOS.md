@@ -595,3 +595,10 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.21
 - **Combustible y Aceite**: el resumen de cada mes separa los litros y los pesos por tipo de combustible (una línea por tipo, alineada con «Litros», «Combustible» y «Total») y cierra con «Total del mes» cuando hubo más de un tipo.
+
+## Codes 2.22
+- **Ingresos: retenciones sobre el monto gravado.** Al cargar un ingreso hay una sección con IIBB, seguridad social (SUSS) y anticipo de Ganancias: se pone el porcentaje y el importe se calcula sobre el monto gravado. La forma de pago baja sola (total menos retenciones).
+  - Monto gravado: neto de las facturas imputadas; sin factura se estima como el total sin el IVA del 21 % (o el total si es sin factura). Se puede escribir a mano.
+  - IIBB lleva jurisdicción; cada retención lleva su Nº de certificado.
+- **Modificar un ingreso**: columnas nuevas «Monto gravado», «IIBB %», «Seg. social %» y «Anticipo Ganancias %». El resumen de confirmación muestra cada retención antes y después, y se recalculan la forma de pago y el impuesto D/C. Bloqueadas si el ingreso tiene varias formas de pago, un cheque de terceros o más de una factura.
+- En la base se guarda el importe de cada retención (no el porcentaje): al reabrir, el porcentaje se calcula dividiendo por el monto gravado.

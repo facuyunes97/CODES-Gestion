@@ -1516,7 +1516,7 @@ function applyDefaults(p,tipo){
 let D=null;
 const CONFACT=[['si','Con factura'],['no','Sin factura (en negro)']];
 const conFactTxt=v=>v==='si'?'Con factura':v==='no'?'Sin factura (en negro)':'Sin definir';
-function resetDraft(tipo='entrada'){D={tipo,fecha:TODAY,concepto:'',terceroId:'',ccId:'',conFact:'',moneda:'ARS',tc:'1',total:'',obs:'',pagos:[],rets:[],facts:{},nf:null};D.pagos=[newPago(tipo)]}
+function resetDraft(tipo='entrada'){D={tipo,fecha:TODAY,concepto:'',terceroId:'',ccId:'',conFact:'',moneda:'ARS',tc:'1',total:'',obs:'',pagos:[],rets:[],facts:{},nf:null,gravado:'',rp:{iibb:'',suss:'',ganancias:''},rj:'',rc:{}};D.pagos=[newPago(tipo)]}
 resetDraft();
 const mIn=(attrs,val,ro)=>`<div class="money"><span aria-hidden="true">${sym[D.moneda]}</span><input class="num" inputmode="decimal" ${attrs} value="${esc(val)}" ${ro?'readonly':''} placeholder="0,00"></div>`;
 function ctaField(k,i,p,r){
@@ -1548,6 +1548,29 @@ function pagoLine(p,i){
    <div class="f"><label for="p${i}-ref">Referencia</label><input id="p${i}-ref" data-p="ref" data-i="${i}" value="${esc(p.ref)}" placeholder="Nº operación"></div>
    ${D.pagos.length>1?`<button type="button" class="btn small rm" data-act="rm-pago" data-i="${i}">Quitar</button>`:''}${chq}</div>`;
 }
+/* Retenciones sobre el monto gravado (ingresos): IIBB, seguridad social y anticipo de Ganancias, como % del neto sin IVA */
+const RET3=[['iibb','IIBB (Ingresos Brutos)'],['suss','Seguridad social (SUSS)'],['ganancias','Anticipo de Ganancias']];
+const RET3S={iibb:'IIBB',suss:'Seguridad social',ganancias:'Anticipo de Ganancias'};
+function gravadoDe(total,facts,conFact){let b=0,n=0;facts.forEach(f=>{const fa=factura(f.facturaId);if(fa&&fa.total>0){b+=num(f.importe)/fa.total*fa.neto;n++}});
+  return n?{base:r2(b),est:false}:{base:r2(conFact==='si'?total/1.21:total),est:true}}
+function baseD(){const g=num(D.gravado);if(g>0)return {base:g,man:true};return gravadoDe(num(D.total),Object.entries(D.facts).filter(([,v])=>num(v)>0).map(([k,v])=>({facturaId:k,importe:num(v)})),D.conFact)}
+const rpHint=b=>b.man?'Cargado a mano.':b.est?'Estimado: '+(D.conFact==='si'?'el total sin el IVA del 21 %':'el total')+'. Elegí la factura o escribí el monto.':'Calculado con el neto de las facturas que imputás.';
+function syncRp(){D.rp=D.rp||{};D.rc=D.rc||{};
+  if(D.tipo!=='entrada'){D.rets=D.rets.filter(r=>!r.fija);return}
+  const b=baseD().base;
+  RET3.forEach(([k])=>{const pct=num(D.rp[k]),i=D.rets.findIndex(r=>r.fija===k);
+    if(pct>0){const o={clase:'retencion',impuesto:k,jur:k==='iibb'?(D.rj||''):'',cert:D.rc[k]||'',importe:toIn(r2(b*pct/100)),fija:k};if(i>=0)Object.assign(D.rets[i],o);else D.rets.push(o)}
+    else if(i>=0)D.rets.splice(i,1)})}
+function rpRefresh(){syncRp();const b=baseD(),g=document.getElementById('d-gravado');if(g&&!D.gravado)g.placeholder=toIn(b.base);
+  const h=document.getElementById('rp-hint');if(h)h.textContent=rpHint(b);
+  RET3.forEach(([k])=>{const v=document.getElementById('rp-'+k+'-v'),r=D.rets.find(x=>x.fija===k);if(v)v.value=r?r.importe:''});autoPago(true);updCuadre()}
+function rpPanel(){if(D.tipo!=='entrada')return '';const b=baseD();
+  return `<section class="panel" id="rppanel"><h2>Retenciones sobre el monto gravado <small>Poné el porcentaje y se calcula sobre el neto sin IVA</small></h2>
+   <div class="fields"><div class="f"><label for="d-gravado">Monto gravado</label><div class="money"><span aria-hidden="true">${sym[D.moneda]}</span><input class="num" inputmode="decimal" id="d-gravado" data-d="gravado" value="${esc(D.gravado)}" placeholder="${toIn(b.base)}"></div><span class="hint" id="rp-hint">${esc(rpHint(b))}</span></div></div>
+   <div class="lines">${RET3.map(([k,l])=>{const r=D.rets.find(x=>x.fija===k);return `<div class="line"><div class="f"><label for="rp-${k}">${l} · porcentaje</label><input class="num" inputmode="decimal" id="rp-${k}" data-rp="${k}" value="${esc(D.rp[k]||'')}" placeholder="% sobre el gravado"></div>
+    <div class="f"><label for="rp-${k}-v">Importe retenido</label><div class="money"><span aria-hidden="true">${sym[D.moneda]}</span><input class="num" id="rp-${k}-v" value="${r?esc(r.importe):''}" readonly placeholder="0,00"></div></div>
+    ${k==='iibb'?`<div class="f"><label for="rp-jur">Jurisdicción</label><input id="rp-jur" data-rpj="1" value="${esc(D.rj||'')}" placeholder="Ej: Santiago del Estero"></div>`:''}
+    <div class="f"><label for="rp-${k}-c">Nº certificado</label><input id="rp-${k}-c" data-rpc="${k}" value="${esc(D.rc[k]||'')}"></div></div>`}).join('')}</div></section>`}
 function retLine(r,i){
   return `<div class="line"><div class="f"><label for="r${i}-clase">Tipo</label><select id="r${i}-clase" data-r="clase" data-i="${i}">${opt('retencion','Retención',r.clase)}${opt('percepcion','Percepción',r.clase)}</select></div>
   <div class="f"><label for="r${i}-impuesto">Impuesto</label><select id="r${i}-impuesto" data-r="impuesto" data-i="${i}">${Object.keys(impTxt).map(k=>opt(k,impTxt[k],r.impuesto)).join('')}</select></div>
@@ -1581,7 +1604,7 @@ function saldosInner(){
   return `<h2>Saldos de las cuentas <small>${hay?'hoy y cómo quedan con este movimiento':'hoy, para decidir el movimiento'}</small></h2><div class="tw"><table><thead><tr><th>Cuenta</th><th class="num">Saldo actual</th>${hay?'<th class="num">Movimiento</th><th class="num">Queda en</th>':''}</tr></thead><tbody>${cs.map(c=>{const s0=saldo(c.id),d=dl[c.id]||0;return `<tr${hay&&Math.abs(d)>0.004?' style="background:var(--surface-2)"':''}><td><b>${esc(c.nombre)}</b></td><td class="num">${money(s0,c.moneda)}</td>${hay?`<td class="num" style="color:${d<0?'var(--bad)':d>0?'var(--ok)':'inherit'}">${Math.abs(d)>0.004?(d>0?'+ ':'− ')+money(Math.abs(d),c.moneda):'—'}</td><td class="num"><b style="color:${s0+d<-0.004?'var(--bad)':'inherit'}">${money(s0+d,c.moneda)}</b></td>`:''}</tr>`}).join('')||'<tr><td class="sub" colspan="2">No hay cuentas.</td></tr>'}</tbody></table></div>`}
 function cuadreHTML(){const c=totals();const ok=Math.abs(c.dif)<0.005;return idcPreview()+`<div><span class="k">Total</span><span class="v">${money(c.total,D.moneda)}</span></div><div><span class="k">Formas de pago</span><span class="v">${money(c.pag,D.moneda)}</span></div><div><span class="k">Ret. y percepciones</span><span class="v">${money(c.ret,D.moneda)}</span></div><div><span class="k">Diferencia</span><span class="v" style="color:${ok?'var(--ok)':'var(--warn)'}">${money(c.dif,D.moneda)}</span><span>${ok?'<span class="pill p-ok">Cuadra</span>':'<span class="pill p-warn">No cuadra · se puede guardar igual</span>'}</span></div>`}
 function vNueva(){
-  autoPago(false);
+  syncRp();autoPago(false);
   const tf=D.tipo==='entrada'?['cliente','ambos']:['proveedor','ambos'];
   const terc=S.terceros.filter(t=>tf.includes(t.tipo)&&!t.sistema).sort(porRazon);
   return head('Nueva transacción','Cada transacción lleva centro de costo. Las retenciones y percepciones se cargan a mano.')+
@@ -1605,7 +1628,8 @@ function vNueva(){
    ${factBlock()}
    <section class="panel"><h2>Formas de pago <button type="button" class="btn small" data-act="add-pago">+ Agregar forma de pago</button></h2><div class="lines">${D.pagos.map(pagoLine).join('')}</div></section>
    ${D.tipo==='interna'?`<section class="panel" id="saldosint">${saldosInner()}</section>`:''}
-   ${D.tipo!=='interna'?`<section class="panel"><h2>Retenciones y percepciones <button type="button" class="btn small" data-act="add-ret">+ Agregar</button></h2>${D.rets.length?`<div class="lines">${D.rets.map(retLine).join('')}</div>`:'<div class="empty">Ninguna cargada. Si te retuvieron, retuviste o te percibieron algo en este pago, agregalo acá.</div>'}</section>`:''}
+   ${rpPanel()}
+   ${D.tipo!=='interna'?`<section class="panel"><h2>Otras retenciones y percepciones <button type="button" class="btn small" data-act="add-ret">+ Agregar</button></h2>${D.rets.some(r=>!r.fija)?`<div class="lines">${D.rets.map((r,i)=>r.fija?'':retLine(r,i)).join('')}</div>`:'<div class="empty">Ninguna cargada. Si te retuvieron, retuviste o te percibieron algo en este pago, agregalo acá.</div>'}</section>`:''}
    <section class="panel"><h2>Observaciones</h2><div class="fields"><div class="f wide"><label for="d-obs" class="sub">Nota interna</label><textarea id="d-obs" data-d="obs" rows="2">${esc(D.obs)}</textarea></div></div><div class="cuadre" id="cuadre">${cuadreHTML()}</div></section>
    <div class="actions"><button type="button" class="btn" data-act="limpiar">Limpiar</button><button type="submit" class="btn primary">Guardar transacción</button></div>
   </form>`;
@@ -2946,13 +2970,23 @@ function borrarTx(id){
   S.trans=S.trans.filter(x=>!ids.includes(x.id));
   S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Eliminación',detalle:'Transacción Nº '+t.numero+' · '+t.concepto+' · '+money(t.total,t.moneda)+(ids.length>1?' (con su impuesto D/C)':''),txId:null});
 }
+/* Retenciones sobre el monto gravado al modificar un ingreso */
+const retEditable=t=>t.tipo==='entrada'&&totalEditable(t);
+const gravadoTx=t=>gravadoDe(t.total,t.facts,t.conFact).base;
+const RETK={rIibb:'iibb',rSuss:'suss',rGan:'ganancias'};
+const retDe=(t,k)=>t.rets.find(r=>r.clase==='retencion'&&r.impuesto===k);
+const pctTxt4=x=>{const n=Math.round(num(x)*10000)/10000;return n?String(n).replace('.',','):''};
+const retsNuevas=(t,v)=>{const ini=EDIT.trans.init(t),gcambia=r2(num(v.gravado))!==r2(num(ini.gravado));
+  return Object.entries(RETK).map(([c,k])=>{const old=retDe(t,k),pn=num(v[c]),po=num(ini[c]);
+    if(!gcambia&&pn===po)return {k,imp:old?r2(old.importe):0,ch:false};
+    return {k,imp:pn>0?r2(num(v.gravado)*pn/100):0,ch:true}})};
 const EDIT={
  trans:{un:'transacción',pl:'transacciones',f:1,get:id=>by(S.trans,id),
   rot:t=>'Nº '+t.numero+' · '+t.concepto,idc:t=>'Nº '+t.numero,
   omitir:t=>!!t.auto,msgOmitir:'El impuesto D/C se recalcula solo: modificá la transacción que lo origina.',
-  cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'concepto',l:'Concepto',t:'text',w:220},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:r=>tercOpts(r.tipo,r.terceroId)},{k:'ccId',l:'Centro de costo',t:'sel',o:r=>ccOpts(r.ccId)},{k:'total',l:'Total',t:'money',sy:r=>sym[r.moneda]},{k:'conFact',l:'¿Tiene factura?',t:'sel',o:()=>[['','Sin definir'],...CONFACT]},{k:'pmedio',l:'Forma de pago',t:'sel',o:(r,v)=>pagoEditable(r)?MEDIOS_EDIT(r.tipo,r).map(m=>[m,medioLbl(r.tipo,m)]):[[r.pagos.length>1?'':(r.pagos[0]?.medio||''),r.pagos.length>1?'Varias formas':(r.pagos[0]?medioLbl(r.tipo,r.pagos[0].medio):'—')]]},{k:'porigen',l:'Sale de',t:'sel',o:(r,v)=>cuentaOpts(r,'origen',v)},{k:'pdestino',l:'Entra a',t:'sel',o:(r,v)=>cuentaOpts(r,'destino',v)},{k:'obs',l:'Observaciones',t:'text',w:180}],
-  ro:(t,c,v)=>(c.k==='conFact'&&(t.tipo==='interna'||t.tipo==='inicial'||t.auto))||(c.k==='terceroId'&&(t.tipo==='interna'||t.tipo==='inicial'))||(c.k==='total'&&!totalEditable(t))||(c.k==='pmedio'&&!pagoEditable(t))||((c.k==='porigen'||c.k==='pdestino')&&(!pagoEditable(t)||!rg(t,(v&&v.pmedio)||t.pagos[0].medio)[c.k==='porigen'?'origen':'destino'])),
-  init:t=>({fecha:t.fecha,concepto:t.concepto,terceroId:t.terceroId||'',ccId:t.ccId,conFact:t.conFact||'',total:toIn(t.total),pmedio:t.pagos.length===1?t.pagos[0].medio:'',porigen:t.pagos.length===1?(t.pagos[0].origen||''):'',pdestino:t.pagos.length===1?(t.pagos[0].destino||''):'',obs:t.obs||''}),
+  cols:[{k:'fecha',l:'Fecha',t:'date'},{k:'concepto',l:'Concepto',t:'text',w:220},{k:'terceroId',l:'Cliente / Proveedor',t:'sel',o:r=>tercOpts(r.tipo,r.terceroId)},{k:'ccId',l:'Centro de costo',t:'sel',o:r=>ccOpts(r.ccId)},{k:'total',l:'Total',t:'money',sy:r=>sym[r.moneda]},{k:'gravado',l:'Monto gravado',t:'money',sy:r=>sym[r.moneda]},{k:'rIibb',l:'IIBB %',t:'pct'},{k:'rSuss',l:'Seg. social %',t:'pct'},{k:'rGan',l:'Anticipo Ganancias %',t:'pct'},{k:'conFact',l:'¿Tiene factura?',t:'sel',o:()=>[['','Sin definir'],...CONFACT]},{k:'pmedio',l:'Forma de pago',t:'sel',o:(r,v)=>pagoEditable(r)?MEDIOS_EDIT(r.tipo,r).map(m=>[m,medioLbl(r.tipo,m)]):[[r.pagos.length>1?'':(r.pagos[0]?.medio||''),r.pagos.length>1?'Varias formas':(r.pagos[0]?medioLbl(r.tipo,r.pagos[0].medio):'—')]]},{k:'porigen',l:'Sale de',t:'sel',o:(r,v)=>cuentaOpts(r,'origen',v)},{k:'pdestino',l:'Entra a',t:'sel',o:(r,v)=>cuentaOpts(r,'destino',v)},{k:'obs',l:'Observaciones',t:'text',w:180}],
+  ro:(t,c,v)=>(['gravado','rIibb','rSuss','rGan'].includes(c.k)&&!retEditable(t))||(c.k==='conFact'&&(t.tipo==='interna'||t.tipo==='inicial'||t.auto))||(c.k==='terceroId'&&(t.tipo==='interna'||t.tipo==='inicial'))||(c.k==='total'&&!totalEditable(t))||(c.k==='pmedio'&&!pagoEditable(t))||((c.k==='porigen'||c.k==='pdestino')&&(!pagoEditable(t)||!rg(t,(v&&v.pmedio)||t.pagos[0].medio)[c.k==='porigen'?'origen':'destino'])),
+  init:t=>({fecha:t.fecha,concepto:t.concepto,terceroId:t.terceroId||'',ccId:t.ccId,conFact:t.conFact||'',total:toIn(t.total),pmedio:t.pagos.length===1?t.pagos[0].medio:'',porigen:t.pagos.length===1?(t.pagos[0].origen||''):'',pdestino:t.pagos.length===1?(t.pagos[0].destino||''):'',obs:t.obs||'',...(t.tipo==='entrada'?(()=>{const g=gravadoTx(t);return {gravado:toIn(g),...Object.fromEntries(Object.entries(RETK).map(([c,k])=>{const r=retDe(t,k);return [c,r&&g>0?pctTxt4(r.importe/g*100):'']}))}})():{gravado:'',rIibb:'',rSuss:'',rGan:''})}),
   valida:(t,v)=>{const e=[];
     if(!v.fecha)e.push('Falta la fecha.');if(!v.concepto.trim())e.push('Falta el concepto.');
     if(t.tipo!=='interna'&&t.tipo!=='inicial'&&!v.terceroId)e.push('Falta elegir '+(t.tipo==='entrada'?'el cliente':'el proveedor')+'.');
@@ -2961,28 +2995,36 @@ const EDIT={
       if(!(nt>0))e.push('El total tiene que ser mayor a cero.');
       else if(r2(nt)!==r2(t.total)){const rt=sum(t.rets,r=>r.importe);if(nt-rt<0)e.push('El total no puede ser menor que las retenciones ('+money(rt,t.moneda)+').');
         if(t.facts.length===1&&r2(t.facts[0].importe)===r2(t.total)){const fa=factura(t.facts[0].facturaId);if(fa&&imputado(fa.id)-t.facts[0].importe+nt>fa.total+0.005)e.push('La factura '+nroFact(fa)+' no alcanza para ese total.')}}}
+    if(retEditable(t)){const rn=retsNuevas(t,v);if(rn.some(x=>x.ch)){
+      ['rIibb','rSuss','rGan'].forEach(c=>{if(v[c]!==''&&(num(v[c])<0||num(v[c])>100))e.push('El porcentaje de retención tiene que estar entre 0 y 100.')});
+      const otras=sum(t.rets.filter(r=>!rn.some(x=>x.k===r.impuesto&&r.clase==='retencion')),r=>r.importe),rt=r2(otras+sum(rn,x=>x.imp)),nt=totalEditable(t)?r2(num(v.total)):t.total;
+      if(rt>=nt)e.push('Las retenciones ('+money(rt,t.moneda)+') tienen que ser menores que el total ('+money(nt,t.moneda)+').')}}
     if(pagoEditable(t)){const r=rg(t,v.pmedio);
       ['origen','destino'].forEach(k=>{const id=v['p'+k];if(!r[k])return;
         if(!id)e.push(k==='origen'?'Indicá de qué cuenta sale el pago.':'Indicá a qué cuenta entra el pago.');
         else if(!r[k](cuenta(id)||{}))e.push('La cuenta '+(cuenta(id)?.nombre||'')+' no corresponde: '+reglaTxt[v.pmedio]+'.')});
       if(v.porigen&&v.porigen===v.pdestino)e.push('La cuenta de origen y la de destino no pueden ser la misma.')}
     return e},
-  extra:(t,v)=>{const nt=totalEditable(t)?r2(num(v.total)):t.total,cp=cambiaPagoTx(t,v);
-    if(!(cp||nt!==r2(t.total)))return [];
+  extra:(t,v)=>{const nt=totalEditable(t)?r2(num(v.total)):t.total,cp=cambiaPagoTx(t,v),rn=retEditable(t)?retsNuevas(t,v).filter(x=>x.ch):[];
+    const itr=rn.map(x=>({l:'Retención '+RET3S[x.k],antes:money(retDe(t,x.k)?retDe(t,x.k).importe:0,t.moneda),despues:money(x.imp,t.moneda)}));
+    if(!(cp||nt!==r2(t.total)||rn.length))return itr;
     const nuevo=idcCalc(t.tipo,[{origen:cp?v.porigen:t.pagos[0].origen,destino:cp?v.pdestino:t.pagos[0].destino,importe:nt}],t.tc);
     const it=[];if(cp&&chequePropio(t)&&!['cheque','echeq'].includes(v.pmedio)){const c=cheque(t.pagos[0].chequeId);it.push({l:(c.tipo==='echeq'?'Echeq ':'Cheque ')+c.numero,antes:'emitido',despues:'se anula'})}
-    if(S.trans.some(h=>h.padreId===t.id)||nuevo.length)it.push({l:'Impuesto D/C',antes:'el actual',despues:'se recalcula con los nuevos datos'});return it},
+    if(S.trans.some(h=>h.padreId===t.id)||nuevo.length)it.push({l:'Impuesto D/C',antes:'el actual',despues:'se recalcula con los nuevos datos'});return itr.concat(it)},
   nota:t=>{if(t.estado!=='activa'||t.auto||pagoEditable(t)&&totalEditable(t))return '';
     return 'Nº '+t.numero+': '+(t.pagos.length>1?'tiene varias formas de pago':t.pagos.some(p=>p.chequeId)?'tiene un cheque que ya fue endosado, depositado o es de terceros':'tiene más de una factura')+', por eso el total y la forma de pago no se pueden cambiar acá.'},
   aplica:(t,v)=>{
     const nt=totalEditable(t)?r2(num(v.total)):t.total,cp=cambiaPagoTx(t,v),cambia=nt!==r2(t.total);
+    const rn=retEditable(t)?retsNuevas(t,v).filter(x=>x.ch):[],retCambia=rn.length>0;
+    if(retCambia){rn.forEach(x=>{const i=t.rets.findIndex(r=>r.clase==='retencion'&&r.impuesto===x.k);if(x.imp>0){if(i>=0)t.rets[i].importe=x.imp;else t.rets.push({clase:'retencion',impuesto:x.k,jur:'',cert:'',importe:x.imp})}else if(i>=0)t.rets.splice(i,1)});
+      t.pagos[0].importe=r2(nt-sum(t.rets,r=>r.importe))}
     if(cp){const p=t.pagos[0],r=rg(t,v.pmedio),ch=p.chequeId&&cheque(p.chequeId),era=p.medio;p.medio=v.pmedio;
       if(r.origen)p.origen=v.porigen;else delete p.origen;if(r.destino)p.destino=v.pdestino;else delete p.destino;
       if(ch){if(['cheque','echeq'].includes(v.pmedio))ch.banco=cuenta(p.origen).nombre;
         else{ch.estado='anulado';delete p.chequeId;S.audit.push({fecha:nowStamp(),ini:S.user,accion:'Cambio de estado',detalle:(ch.tipo==='echeq'?'Echeq ':'Cheque ')+ch.numero+' → Anulado (la transacción Nº '+t.numero+' pasó de '+medioTxt[era]+' a '+medioTxt[v.pmedio]+')',txId:t.id})}}}
     if(cambia){t.pagos[0].importe=r2(nt-sum(t.rets,r=>r.importe));if(t.pagos[0].chequeId&&chequePropio(t))cheque(t.pagos[0].chequeId).importe=t.pagos[0].importe;if(t.facts.length===1&&r2(t.facts[0].importe)===r2(t.total))t.facts[0].importe=nt;t.total=nt}
     t.fecha=v.fecha;t.concepto=v.concepto.trim();if(t.tipo!=='interna'&&t.tipo!=='inicial')t.terceroId=v.terceroId;t.ccId=v.ccId;t.obs=v.obs.trim();if(t.tipo!=='interna'&&t.tipo!=='inicial'&&!t.auto)t.conFact=v.conFact||'';
-    if(cambia||cp){S.trans=S.trans.filter(h=>h.padreId!==t.id);crearIDC(t,nowStamp())}
+    if(cambia||cp||retCambia){S.trans=S.trans.filter(h=>h.padreId!==t.id);crearIDC(t,nowStamp())}
     else S.trans.filter(h=>h.padreId===t.id).forEach(h=>{h.fecha=t.fecha;h.ccId=t.ccId});
   },
   noBorrar:()=>'',borrar:t=>borrarTx(t.id)},
@@ -3058,9 +3100,11 @@ const cbEditDef=fam=>{const FM=FAM[fam];return {un:'carga de '+FM.nom,pl:'cargas
   aviso:()=>'El precio por litro queda el que tenía al cargarse.',
   aplica:(x,v)=>{x.maqId=v.maqId;x.obraId=v.obraId;x.tipo=v.tipo;x.fh=fhISO(v.fh);x.litros=numL(v.litros);x.estId=v.estId},
   noBorrar:()=>'',borrar:x=>{S[FM.arr]=S[FM.arr].filter(y=>y.id!==x.id)}}};
-const norm=(c,x)=>c.t==='money'?String(r2(num(x))):c.up?String(x??'').trim().toUpperCase():String(x??'').trim();
+const norm=(c,x)=>c.t==='pct'?String(Math.round(num(x)*10000)/10000):c.t==='money'?String(r2(num(x))):c.up?String(x??'').trim().toUpperCase():String(x??'').trim();
 function txtVal(c,r,val){const s=val==null?'':val;
   if(c.t==='sel'){if(s==='')return '—';const o=c.o(r,{}).find(([a])=>String(a)===String(s));return o?o[1]:(cuenta(s)?cuenta(s).nombre:s)}
+  if(c.t==='pct')return s===''?'—':pctTxt4(s)+' %';
+  if(c.t==='money'&&s==='')return '—';
   if(c.t==='money')return c.sy?c.sy(r)+' '+toIn(num(s)):money(num(s));
   if(c.t==='date')return fd(s)||'—';
   if(c.t==='dt')return s?fd(String(s).slice(0,10))+' '+String(s).slice(11,16):'—';
@@ -3070,6 +3114,7 @@ function celdaEdit(k,c,r,v){
   if(def.ro(r,c,v))return `<td class="ro">${esc(txtVal(c,r,val))}</td>`;
   const at=`data-e="${c.k}" data-id="${esc(r.id)}" aria-label="${esc(c.l)}"`;
   if(c.t==='sel')return `<td><select ${at}>${c.o(r,v).map(([a,b])=>opt(a,b,val)).join('')}</select></td>`;
+  if(c.t==='pct')return `<td><input class="num" inputmode="decimal" ${at} value="${esc(val)}" placeholder="0" style="min-width:70px;width:84px"></td>`;
   if(c.t==='money')return `<td><div class="money"><span aria-hidden="true">${c.sy?c.sy(r):'$'}</span><input class="num" inputmode="decimal" ${at} value="${esc(val)}"></div></td>`;
   return `<td><input ${c.t==='date'?'type="date"':c.t==='dt'?'type="datetime-local"':''} ${c.n?'inputmode="numeric"':''} ${at} value="${esc(val)}" style="min-width:${c.w||100}px"></td>`;
 }
@@ -4858,10 +4903,13 @@ main.addEventListener('input',e=>{
     if(el.dataset.nf==='ntCuit'){const ya=terPorCuit(el.value);if(ya){Fm.terceroId=usarTerceroExistente(ya,Fm.lado==='debito'?'cliente':'proveedor').id;Fm.ntRazon='';Fm.ntCuit='';Fm.dup=null;Fm.dupOk=false;render();toast('Ese CUIT ya existía: se eligió '+ya.razon);return}}
     if(el.dataset.nf==='neto'){factCalc(Fm);const iv=document.getElementById('nf-'+ctx+'-iva');if(iv)iv.value=Fm.iva}
     const tt=document.getElementById('nf-'+ctx+'-total');if(tt)tt.value=toIn(factTotal(Fm));return}
-  if(el.dataset.d&&!el.dataset.re&&el.tagName!=='SELECT'){D[el.dataset.d]=el.value;if(el.dataset.d==='total')autoPago(true);updCuadre();return}
+  if(el.dataset.rp){D.rp=D.rp||{};D.rp[el.dataset.rp]=el.value;rpRefresh();return}
+  if(el.dataset.rpj){D.rj=el.value;syncRp();return}
+  if(el.dataset.rpc){D.rc=D.rc||{};D.rc[el.dataset.rpc]=el.value;syncRp();return}
+  if(el.dataset.d&&!el.dataset.re&&el.tagName!=='SELECT'){D[el.dataset.d]=el.value;if(el.dataset.d==='total'||el.dataset.d==='gravado'){rpRefresh();return}updCuadre();return}
   if(el.dataset.p&&el.tagName==='INPUT'){D.pagos[+el.dataset.i][el.dataset.p]=el.value;updCuadre();return}
   if(el.dataset.r&&el.tagName==='INPUT'){D.rets[+el.dataset.i][el.dataset.r]=el.value;if(el.dataset.r==='importe')autoPago(true);updCuadre();return}
-  if(el.dataset.facti){D.facts[el.dataset.facti]=el.value;return}
+  if(el.dataset.facti){D.facts[el.dataset.facti]=el.value;rpRefresh();return}
   if(el.dataset.vimp&&S.vinc){S.vinc.facts[el.dataset.vimp]=el.value;return}
 });
 main.addEventListener('change',e=>{
@@ -4908,7 +4956,7 @@ main.addEventListener('change',e=>{
     if(k==='terceroId'&&el.value==='__nuevo__'){Fm.ntRazon='';Fm.ntCuit='';render();setTimeout(()=>{const x=document.getElementById('nf-fac-ntRazon');if(x)x.focus()},0);return}
     if(k==='lado')Fm.terceroId='';if(k==='lado'||k==='terceroId'||k==='tipo'){Fm.afecta=[];Fm.perAj='';Fm.previa=false}if(k==='tipo'&&['B','C'].includes(el.value)&&Fm.lado==='credito')Fm.alic='0';if(k==='alic'||k==='tipo')factCalc(Fm);Fm.dup=null;Fm.dupOk=false;render();return}
   if(el.dataset.d==='terceroId'&&el.value==='__nuevo__'){D.nt={razon:'',cuit:'',err:''};D.terceroId='';D.facts={};render();setTimeout(()=>{const x=document.getElementById('nt-razon');if(x)x.focus()},0);return}
-  if(el.dataset.d&&el.tagName==='SELECT'){D[el.dataset.d]=el.value;if(el.dataset.d==='terceroId'){D.facts={};D.nf=null;const ctr=S.contratistas.find(x=>x.terceroId===el.value);if(ctr&&!D.ccId&&centro(ctr.obraId))D.ccId=ctr.obraId}if(el.dataset.d==='moneda')D.pagos.forEach(p=>applyDefaults(p,D.tipo));if(el.dataset.re)render();return}
+  if(el.dataset.d&&el.tagName==='SELECT'){D[el.dataset.d]=el.value;if(el.dataset.d==='terceroId'){D.facts={};D.nf=null;const ctr=S.contratistas.find(x=>x.terceroId===el.value);if(ctr&&!D.ccId&&centro(ctr.obraId))D.ccId=ctr.obraId}if(el.dataset.d==='moneda')D.pagos.forEach(p=>applyDefaults(p,D.tipo));if(el.dataset.d==='conFact'&&!el.dataset.re){rpRefresh();return}if(el.dataset.re)render();return}
   if(el.dataset.p&&el.tagName==='SELECT'){const p=D.pagos[+el.dataset.i],k=el.dataset.p;p[k]=el.value;
     if(k==='medio'){p.chequeId='';p.modo='cartera';if(p.medio==='transferencia'){p.origen='';p.destino=''}applyDefaults(p,D.tipo);render()}
     else if(k==='modo'){p.chequeId='';applyDefaults(p,D.tipo);render()}
@@ -4923,8 +4971,8 @@ document.addEventListener('change',e=>{const el=e.target;if(el&&el.dataset&&el.d
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.ra){const F=S.auth.f=S.auth.f||{};F[el.dataset.ra]=el.value;if(S.auth.modo==='registro'&&(el.dataset.ra==='nombre'||el.dataset.ra==='apellido')&&!F._iniManual){F.iniciales=sugerirIniciales(F.nombre||'',F.apellido||'');const i=document.getElementById('ra-iniciales');if(i)i.value=F.iniciales}if(el.dataset.ra==='iniciales')F._iniManual=true;return}});
 /* Aviso de versión nueva: compara contra la página publicada y ofrece actualizar (evita quedar con una versión vieja en el navegador) */
 /* Versión visible del programa: subir en cada entrega (Codes 0.1 → 0.2 … 0.9 → 1.0 → 1.1 … hasta 100). BUILD fuerza el aviso de "versión nueva". */
-const VERSION='Codes 2.21';
-const BUILD='26-nov 13:45';
+const VERSION='Codes 2.22';
+const BUILD='27-nov 11:50';
 async function buscarVersion(){
   if(!REAL||document.getElementById('nuevaver'))return;
   try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const m=(await r.text()).match(/const BUILD='([^']+)'/);
