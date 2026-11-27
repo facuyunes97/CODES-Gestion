@@ -616,3 +616,14 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - Con el logo de CODES, pestañas y encabezados en rojo de marca y pie con los datos de la empresa.
 - El resumen económico y el prorrateo solo se incluyen para dueño, contadores y lector; el ingeniero baja solo el avance.
 - El generador de Excel ahora soporta estilos, celdas combinadas e imágenes.
+
+## Codes 2.25 — Recibos y Notas
+- Nuevo ítem en Administración: **Recibos y Notas**. Dos documentos con el diseño del presupuesto (barra roja, logo y datos de CODES SRL, número, fecha y obra, caja roja con el total), listos para imprimir en A4 o guardar en PDF.
+- **Recibo de cobro a clientes**: se puede armar desde un ingreso ya cargado (trae cliente, obra, importe, retenciones y concepto) o a mano. Muestra el total recibido en números y en letras, y las retenciones si las hubo.
+- **Nota formal con membrete**: con textos modelo (presentación de certificado, solicitud de pago, ampliación de plazo, reclamo por demora) o en blanco; destinatario, asunto, texto y firma.
+- **Numeración correlativa automática** con formato 0001-00000001, una para recibos y otra para notas. La pone la base de datos al emitir, así que no se repite aunque dos personas emitan a la vez. El dueño puede cambiar el punto de venta o el número desde el que se empieza a numerar (para seguir un talonario que ya se usaba).
+- Cada documento emitido queda guardado y se puede volver a ver e imprimir. Dueño y contadores emiten; el lector solo mira; solo el dueño anula (con motivo obligatorio). Un número anulado no se vuelve a usar y el documento sale marcado «DOCUMENTO ANULADO».
+- Base: tablas `rn_recibos`, `rn_notas` y `rn_config`; funciones `rn_emitir`, `rn_anular` y `rn_config_guardar`; todo queda en Auditoría.
+- **Archivo firmado**: nueva pestaña en Recibos y Notas con todos los recibos y notas en una sola lista. Se adjunta la foto o el PDF escaneado del documento firmado (hasta 10 MB, puede haber varios por documento), se abre desde ahí y se filtra por «No firmado» / «Con firmado». En las listas de recibos y notas aparece la marca «Firmado». Dueño y contadores adjuntan; el lector solo mira; solo el dueño puede quitar un archivo.
+- La nota tiene el mismo margen interno que el recibo (el texto queda alineado con el de la tabla).
+- Base: bucket privado `recibos-notas` y tabla `rn_adjuntos`, con permisos y registro en Auditoría.
