@@ -640,3 +640,6 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 ## Codes 2.28 — Resumen económico por obra en Administración → Resumen
 - El Excel con el resumen económico y el prorrateo de cada obra se baja ahora desde **Administración → Resumen**, en la tabla «Por centro de costo» (y en «Centros finalizados o inactivos»), con un botón «Resumen de obra» al final de la fila de cada obra, después del saldo pendiente. Solo lo ve quien tiene acceso a Administración (dueño, contadores y lector).
 - En **Avance de obra** el botón «Descargar Excel» sigue al lado del porcentaje, pero ahora baja solo el avance de esa obra (ítems y certificaciones), sin datos económicos: el ingeniero ya no puede ver ingresos, gastos ni ganancia.
+
+## Codes 2.29 — Resumen de obra también en PDF
+- En Administración → Resumen, cada obra tiene ahora dos botones: **Excel** y **PDF**. El PDF lleva el mismo diseño que el presupuesto (logo, datos de CODES, barras rojas) con la situación a hoy, ingresos, gastos por proveedor, resultado por mes y el prorrateo con la ganancia estimada.
