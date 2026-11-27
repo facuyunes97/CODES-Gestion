@@ -630,3 +630,9 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 
 ## Codes 2.26 — Centros de costo en Recibos y Notas
 - El selector «Obra / centro de costo» del recibo y de la nota ahora ofrece todos los centros de costo (Administración general, obras, CODES Maquinaria, campo, USD, etc.; los inactivos se marcan), no solo las obras. En el documento sale «Obra» o «Centro de costo» según corresponda.
+
+## Codes 2.27 — Firma del recibo
+- El recibo termina con la línea de firma y el texto «Firma y aclaración», sin otros datos: quien recibe el pago completa a mano su firma, aclaración y datos.
+- **Eliminar documentos mal cargados**: en las listas de Recibos y de Notas, solo el dueño tiene el botón «Eliminar» (con confirmación). Borra el documento y sus archivos firmados de forma definitiva y queda en Auditoría. Los contadores no pueden. Para algo ya entregado sigue estando «Anular». Si se elimina el último número emitido, ese número se vuelve a usar.
+- **Archivo firmado** separado en «Recibos» y «Notas», y cada uno ordenado por mes (el más reciente arriba), con el resumen de cada mes: cuántos hay, cuántos firmados y cuántos sin firmar.
+- Base: función `rn_eliminar` (solo dueño).
