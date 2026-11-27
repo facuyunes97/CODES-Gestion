@@ -602,3 +602,10 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
   - IIBB lleva jurisdicción; cada retención lleva su Nº de certificado.
 - **Modificar un ingreso**: columnas nuevas «Monto gravado», «IIBB %», «Seg. social %» y «Anticipo Ganancias %». El resumen de confirmación muestra cada retención antes y después, y se recalculan la forma de pago y el impuesto D/C. Bloqueadas si el ingreso tiene varias formas de pago, un cheque de terceros o más de una factura.
 - En la base se guarda el importe de cada retención (no el porcentaje): al reabrir, el porcentaje se calcula dividiendo por el monto gravado.
+
+## Codes 2.23 — Ingreso neto con retenciones aprobadas por el contador
+- El contador carga los montos de retenciones (IIBB, SUSS, Ganancias) y, recién cuando las aprueba, el ingreso pasa a contar por el neto (total − retenciones). Sin aprobar cuenta por el total.
+- Casilla "Retenciones revisadas y aprobadas por el contador" al cargar; botones "Aprobar retenciones" / "Quitar aprobación" en el detalle (dueño y contadores). Queda en el historial.
+- Si se modifica el total o las retenciones de un ingreso aprobado, se quita la aprobación.
+- Lista, totales, Resumen, obras y contratos suman el neto solo de los aprobados; la lista muestra "Bruto" o "Ret. sin aprobar".
+- Base: columna `transacciones.retenciones_ok`, `guardar_transaccion` actualizada y función `aprobar_retenciones`. Los ingresos con retenciones ya cargadas quedan sin aprobar.
