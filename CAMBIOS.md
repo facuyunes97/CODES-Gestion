@@ -609,3 +609,10 @@ Versión celular (pantallas de hasta 860 px); en la compu no cambia nada.
 - Si se modifica el total o las retenciones de un ingreso aprobado, se quita la aprobación.
 - Lista, totales, Resumen, obras y contratos suman el neto solo de los aprobados; la lista muestra "Bruto" o "Ret. sin aprobar".
 - Base: columna `transacciones.retenciones_ok`, `guardar_transaccion` actualizada y función `aprobar_retenciones`. Los ingresos con retenciones ya cargadas quedan sin aprobar.
+
+## Codes 2.24 — Excel por obra con resumen económico y prorrateo
+- "Descargar Excel" ahora está dentro de cada obra en Avance de obra, al lado del porcentaje, y baja solo esa obra.
+- El Excel de la obra trae las hojas: Resumen económico (situación a hoy, ingresos, gastos por proveedor, resultado por mes), Prorrateo (lo que falta cobrar, cuánto se gastó por cada $100 cobrados, gasto estimado por proveedor y ganancia estimada), Movimientos, y el detalle de avance (ítems y certificaciones).
+- Con el logo de CODES, pestañas y encabezados en rojo de marca y pie con los datos de la empresa.
+- El resumen económico y el prorrateo solo se incluyen para dueño, contadores y lector; el ingeniero baja solo el avance.
+- El generador de Excel ahora soporta estilos, celdas combinadas e imágenes.
